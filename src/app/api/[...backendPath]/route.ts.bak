@@ -1,0 +1,39 @@
+import { NextResponse } from "next/server";
+import { proxyBackendRequest } from "@/lib/backend-route-proxy";
+
+/**
+ * Catch-all proxy for all backend requests.
+ * This handles any request that doesn't have a specific route file.
+ */
+export async function GET(req: Request, ctx: { params: Promise<{ backendPath: string[] }> }) {
+  const { backendPath } = await ctx.params;
+  const path = `/${backendPath.join("/")}`;
+  return proxyBackendRequest(req, path);
+}
+
+export async function POST(req: Request, ctx: { params: Promise<{ backendPath: string[] }> }) {
+  const { backendPath } = await ctx.params;
+  const path = `/${backendPath.join("/")}`;
+  const body = await req.text();
+  return proxyBackendRequest(req, path, { method: "POST", body });
+}
+
+export async function PATCH(req: Request, ctx: { params: Promise<{ backendPath: string[] }> }) {
+  const { backendPath } = await ctx.params;
+  const path = `/${backendPath.join("/")}`;
+  const body = await req.text();
+  return proxyBackendRequest(req, path, { method: "PATCH", body });
+}
+
+export async function PUT(req: Request, ctx: { params: Promise<{ backendPath: string[] }> }) {
+  const { backendPath } = await ctx.params;
+  const path = `/${backendPath.join("/")}`;
+  const body = await req.text();
+  return proxyBackendRequest(req, path, { method: "PUT", body });
+}
+
+export async function DELETE(req: Request, ctx: { params: Promise<{ backendPath: string[] }> }) {
+  const { backendPath } = await ctx.params;
+  const path = `/${backendPath.join("/")}`;
+  return proxyBackendRequest(req, path, { method: "DELETE" });
+}

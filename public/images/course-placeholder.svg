@@ -1,0 +1,43 @@
+<svg width="1200" height="1500" viewBox="0 0 1200 1500" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="1500" rx="64" fill="url(#bg)"/>
+  <rect x="64" y="64" width="1072" height="1372" rx="48" fill="url(#panel)" fill-opacity="0.78" stroke="white" stroke-opacity="0.24"/>
+  <circle cx="240" cy="260" r="220" fill="url(#glowA)" fill-opacity="0.8"/>
+  <circle cx="980" cy="1220" r="260" fill="url(#glowB)" fill-opacity="0.7"/>
+  <circle cx="950" cy="280" r="150" fill="url(#glowC)" fill-opacity="0.55"/>
+  <rect x="140" y="156" width="220" height="48" rx="24" fill="white" fill-opacity="0.18" stroke="white" stroke-opacity="0.18"/>
+  <text x="184" y="188" fill="white" font-size="24" font-family="Inter, Arial, sans-serif" font-weight="700" letter-spacing="0.22em">4PUPILS</text>
+  <text x="140" y="470" fill="white" font-size="112" font-family="Inter, Arial, sans-serif" font-weight="800">Course</text>
+  <text x="140" y="585" fill="white" font-size="112" font-family="Inter, Arial, sans-serif" font-weight="800">Preview</text>
+  <text x="140" y="690" fill="white" fill-opacity="0.78" font-size="38" font-family="Inter, Arial, sans-serif" font-weight="500">Premium learning experience with clean</text>
+  <text x="140" y="742" fill="white" fill-opacity="0.78" font-size="38" font-family="Inter, Arial, sans-serif" font-weight="500">structure, clear outcomes and refined UI.</text>
+  <rect x="140" y="980" width="290" height="92" rx="30" fill="white" fill-opacity="0.14" stroke="white" stroke-opacity="0.16"/>
+  <rect x="454" y="980" width="270" height="92" rx="30" fill="white" fill-opacity="0.14" stroke="white" stroke-opacity="0.16"/>
+  <rect x="748" y="980" width="244" height="92" rx="30" fill="white" fill-opacity="0.14" stroke="white" stroke-opacity="0.16"/>
+  <text x="192" y="1037" fill="white" font-size="30" font-family="Inter, Arial, sans-serif" font-weight="600">Clear value</text>
+  <text x="512" y="1037" fill="white" font-size="30" font-family="Inter, Arial, sans-serif" font-weight="600">Premium UI</text>
+  <text x="806" y="1037" fill="white" font-size="30" font-family="Inter, Arial, sans-serif" font-weight="600">EdTech</text>
+  <defs>
+    <linearGradient id="bg" x1="62" y1="68" x2="1115" y2="1441" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#08111F"/>
+      <stop offset="0.39" stop-color="#0E3653"/>
+      <stop offset="0.73" stop-color="#1174B0"/>
+      <stop offset="1" stop-color="#6FD3FF"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="140" y1="120" x2="1040" y2="1360" gradientUnits="userSpaceOnUse">
+      <stop stop-color="white" stop-opacity="0.12"/>
+      <stop offset="1" stop-color="white" stop-opacity="0.03"/>
+    </linearGradient>
+    <radialGradient id="glowA" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(240 260) rotate(90) scale(220)">
+      <stop stop-color="white"/>
+      <stop offset="1" stop-color="white" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowB" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(980 1220) rotate(90) scale(260)">
+      <stop stop-color="#D8F3FF"/>
+      <stop offset="1" stop-color="#D8F3FF" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowC" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(950 280) rotate(90) scale(150)">
+      <stop stop-color="#9CE0FF"/>
+      <stop offset="1" stop-color="#9CE0FF" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+</svg>
