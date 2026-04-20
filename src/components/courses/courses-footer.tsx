@@ -33,8 +33,6 @@ const CoursesFooter = () => {
         { label: "Войти", href: "/auth/sign-in" },
         { label: "Платформа", href: "/platform" },
         { label: "Уроки", href: "/platform/lessons" },
-        { label: "Задания", href: "/platform/assignments" },
-        { label: "Расписание", href: "/platform/schedule" },
         { label: "Профиль", href: "/platform/profile" },
       ],
     },
@@ -153,10 +151,6 @@ const CoursesFooter = () => {
               </p>
 
               <p>
-                {`Внутри ${brand.name} собраны курсы, практические задания, гайды, навигация по направлениям и инструменты для старта, чтобы обучение воспринималось не как набор отдельных уроков, а как цельная и аккуратно собранная система развития в одном месте.`}
-              </p>
-
-              <p>
                 Если вы хотите быстро определиться с направлением, можно начать
                 с{" "}
                 <Link
@@ -216,7 +210,7 @@ function FooterColumn({ title, links }: FooterColumnProps) {
         </h3>
       )}
 
-      <ul className="space-y-4">
+      <ul className="space-y-3">
         {links.map((item) => (
           <li key={item.label}>
             {item.external ? (

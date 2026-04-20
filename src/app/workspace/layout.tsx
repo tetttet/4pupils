@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 
 import type { ReactNode } from "react";
 import { brand } from "@/lib/brand";
+import WorkspaceFooter from "@/components/workspace/workspace-footer";
 
 export const metadata: Metadata = {
   title: `Корпоративный - ${brand.upper}`,
@@ -15,6 +16,7 @@ export default function WorkspaceLayout({ children }: { children: ReactNode }) {
     <>
       <HeaderWorkspace />
       {children}
+      <WorkspaceFooter />
     </>
   );
 }
