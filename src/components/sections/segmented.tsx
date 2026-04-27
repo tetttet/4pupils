@@ -51,26 +51,24 @@ const ALL_COURSES_LABEL = "Все курсы";
 const FREE_PRICE_LABEL = "Бесплатно";
 const STARTER_LEVEL_LABEL = "С нуля";
 
-const EMPTY_STATE_COPY: Record<
-  TabKey,
-  { title: string; description: string }
-> = {
-  subjects: {
-    title: "Пока нет опубликованных направлений",
-    description:
-      "Как только в базе появятся одобренные курсы, они автоматически отобразятся здесь.",
-  },
-  free: {
-    title: "Пока нет бесплатных курсов",
-    description:
-      "Как только в базе появятся бесплатные опубликованные курсы, они сразу появятся в этом разделе.",
-  },
-  starter: {
-    title: "Пока нет курсов для старта",
-    description:
-      "Когда в базе появятся опубликованные курсы уровня «С нуля», мы сразу покажем их здесь.",
-  },
-};
+const EMPTY_STATE_COPY: Record<TabKey, { title: string; description: string }> =
+  {
+    subjects: {
+      title: "Пока нет опубликованных направлений",
+      description:
+        "Как только в базе появятся одобренные курсы, они автоматически отобразятся здесь.",
+    },
+    free: {
+      title: "Пока нет бесплатных курсов",
+      description:
+        "Как только в базе появятся бесплатные опубликованные курсы, они сразу появятся в этом разделе.",
+    },
+    starter: {
+      title: "Пока нет курсов для старта",
+      description:
+        "Когда в базе появятся опубликованные курсы уровня «С нуля», мы сразу покажем их здесь.",
+    },
+  };
 
 const Segmented = React.memo(function Segmented({
   options,
@@ -411,7 +409,10 @@ export default function Subjects() {
   const [isPending, startTransition] = React.useTransition();
   const { courses, loading, error, refresh } = useApprovedCourses();
 
-  const subjectsData = React.useMemo(() => buildSubjectsData(courses), [courses]);
+  const subjectsData = React.useMemo(
+    () => buildSubjectsData(courses),
+    [courses],
+  );
   const subjects = React.useMemo(() => subjectsData[tab], [subjectsData, tab]);
 
   const handleTabChange = React.useCallback((k: TabKey) => {
@@ -429,22 +430,21 @@ export default function Subjects() {
 
   return (
     <main className="relative overflow-hidden bg-white">
-
       <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
         {/* top row */}
         <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
             <h1 className="mt-5 text-3xl font-extrabold tracking-tight text-[var(--frontier-home-ink)] md:text-5xl">
-              Репетиторы и подготовка
+              Сделайте первый шаг
               <span className="block text-[var(--frontier-home-primary)]">
-                в одном месте
+                к новым знаниям
               </span>
             </h1>
 
             <p className="mt-4 max-w-176 text-base leading-7 text-[var(--frontier-home-ink-muted)] md:text-lg">
-              Выберите направление, формат или стартовый уровень — мы покажем
-              подходящие курсы, удобные варианты обучения и актуальные
-              категории из каталога.
+              Выберите направление, формат или стартовый уровень — чтобы найти
+              подходящие курсы, удобные варианты обучения и актуальные категории
+              из каталога.
             </p>
           </div>
 

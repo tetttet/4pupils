@@ -4,7 +4,7 @@ import React, { useMemo, useRef } from "react";
 import { useInView } from "motion/react";
 import { AnimatedNumber } from "@/components/motion-primitives/animated-number";
 import H2Text from "../text/h2-text";
-import { Users, GraduationCap, MessageCircleMore } from "lucide-react";
+import { BookOpenCheck, CalendarDays, Layers3 } from "lucide-react";
 
 type AnimatedNumberInViewProps = {
   number: number;
@@ -39,28 +39,34 @@ function AnimatedNumberInView({
 type Stat = {
   value: string;
   label: string;
+  description: string;
   suffix?: string;
   icon: React.ReactNode;
 };
 
 const stats: Stat[] = [
   {
-    value: "15 000",
-    suffix: "+",
-    label: "проверенных репетиторов",
-    icon: <Users className="h-5 w-5" />,
+    value: "2026",
+    label: "Год основания",
+    description:
+      "Год запуска 4pupils — с идеей сделать образование ближе и доступнее для всех",
+    icon: <CalendarDays className="h-5 w-5" />,
   },
   {
-    value: "50 000",
+    value: "100",
     suffix: "+",
-    label: "довольных учеников",
-    icon: <GraduationCap className="h-5 w-5" />,
+    label: "учебных взаимодействий",
+    description:
+      "Структурированные материалы, которые помогают изучать ключевые темы шаг за шагом.",
+    icon: <BookOpenCheck className="h-5 w-5" />,
   },
   {
-    value: "14 000",
+    value: "10",
     suffix: "+",
-    label: "отзывов учеников",
-    icon: <MessageCircleMore className="h-5 w-5" />,
+    label: "образовательных модулей",
+    description:
+      "Первые пользователи уже проходят обучение и помогают улучшать платформу.",
+    icon: <Layers3 className="h-5 w-5" />,
   },
 ];
 
@@ -104,14 +110,14 @@ export default function CountDown() {
           {/* left */}
           <div className="text-left">
             <H2Text
-              title="Немного <br /> цифр о нас"
+              title="4Pupils в цифрах"
               className="mt-5! mb-0! text-3xl! text-[var(--frontier-home-ink)]! sm:text-4xl! lg:text-5xl!"
             />
 
             <p className="mt-5 max-w-[42ch] text-sm leading-7 text-[var(--frontier-home-ink-muted)] sm:text-[15px]">
-              Мы создаём удобную образовательную платформу, где ученики могут
-              быстро находить преподавателей, выбирать подходящие курсы и
-              получать качественное обучение в комфортном формате.
+              Мы создаём удобную образовательную платформу, где ученики находят
+своего преподавателя, а репетиторы строят карьеру в образовании с
+первых дней работы с нами.
             </p>
           </div>
 
@@ -152,8 +158,7 @@ export default function CountDown() {
                 <div className="relative mt-5 h-px w-full bg-linear-to-r from-[rgba(var(--frontier-home-primary-rgb),0.22)] via-[rgba(var(--frontier-home-primary-deep-rgb),0.06)] to-transparent" />
 
                 <p className="relative mt-4 text-xs leading-6 text-[var(--frontier-home-ink-muted)] sm:text-[13px]">
-                  Показатель, который отражает развитие платформы и доверие со
-                  стороны учеников и преподавателей.
+                  {s.description}
                 </p>
               </div>
             ))}

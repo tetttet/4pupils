@@ -5,6 +5,7 @@ import { MobileMenuShell } from "@/components/layout/header/mobile-menu-shell";
 import type { HeaderNavLink } from "@/components/layout/header/nav-links";
 import BaseButton from "@/components/ui/base-button";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
@@ -58,10 +59,6 @@ const HeaderWorkspace = () => {
   }, []);
 
   const scrolled = scrollProgress > 0.08;
-  const titleStyle: React.CSSProperties = {
-    left: `${scrollProgress * 50}%`,
-    transform: `translate(${scrollProgress * -50}%, -50%) scale(${1 - scrollProgress * 0.08})`,
-  };
 
   return (
     <header
@@ -70,13 +67,22 @@ const HeaderWorkspace = () => {
       }
     >
       <div className="mx-auto max-w-380 px-6 sm:px-10 lg:px-16">
-        <div className="relative flex h-16 items-center">
+        <div className="relative flex h-16 items-center gap-4">
           <Link
-            className="absolute top-1/2 z-10 max-w-[calc(100%-4.5rem)] origin-center truncate text-[20px] font-semibold tracking-[-0.04em] text-black transition-[color] duration-300 ease-out select-none sm:max-w-[calc(100%-5rem)] sm:text-[24px] lg:text-[28px] xl:max-w-none"
+            className={cn(
+              "relative z-20 inline-flex shrink-0 items-center transition-all duration-300 ease-out hover:-translate-y-0.5",
+            )}
             href="/o/"
-            style={titleStyle}
           >
-            4Pupils Корпоративный
+            <Image
+              src="/logos/logo-corporative.png"
+              alt="4Pupil Корпоративный"
+              width={195}
+              height={32}
+              className="h-auto w-[158px] sm:w-[178px] xl:w-[195px]"
+              priority
+              sizes="(min-width: 1280px) 195px, (min-width: 640px) 178px, 158px"
+            />
           </Link>
 
           <nav
@@ -119,10 +125,17 @@ const HeaderWorkspace = () => {
             menuId="workspace-mobile-menu"
             overlayBrand={
               <Link
-                className="inline-flex max-w-full text-[22px] font-semibold tracking-[-0.04em] text-white transition-opacity hover:opacity-90 sm:text-[26px]"
+                className="inline-flex max-w-full rounded-full border border-white bg-white px-4 py-2 backdrop-blur-sm transition-all hover:bg-white/14"
                 href="/o/"
               >
-                4Pupil Корпоративный
+                <Image
+                  src="/logos/logo-corporative.png"
+                  alt="4Pupil Корпоративный"
+                  width={195}
+                  height={32}
+                  className="h-auto w-[160px] sm:w-[185px]"
+                  sizes="(min-width: 640px) 185px, 160px"
+                />
               </Link>
             }
             responsiveClassName="xl:hidden"

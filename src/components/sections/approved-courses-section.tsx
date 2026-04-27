@@ -15,15 +15,13 @@ export default function ApprovedCoursesSection() {
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl space-y-4">
           <h2 className="text-3xl font-extrabold tracking-tight text-(--frontier-home-ink) sm:text-4xl lg:text-5xl">
-            Курсы, которые
+            Начните обучение
             <span className="block text-(--frontier-home-primary)">
-              уже готовы к просмотру
+              уже сегодня
             </span>
           </h2>
           <p className="text-sm leading-7 text-(--frontier-home-ink-muted) sm:text-base">
-            Те же основные оттенки из hero-блока, но в более светлой подаче:
-            чтобы секция оставалась воздушной и при этом визуально была частью
-            одной системы.
+            Доступные курсы по ключевым направлениям — открывайте и учитесь в своем темпе
           </p>
         </div>
 

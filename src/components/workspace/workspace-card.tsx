@@ -1,7 +1,13 @@
 "use client";
 
 import { Flame, Sparkles, Zap, Megaphone, BadgeCheck } from "lucide-react";
-import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "motion/react";
+import {
+  motion,
+  useReducedMotion,
+  useScroll,
+  useSpring,
+  useTransform,
+} from "motion/react";
 import type { ComponentProps, Ref } from "react";
 import { useRef } from "react";
 
@@ -13,10 +19,13 @@ type CardProps = {
   badge: string;
   title: string;
   description: string;
-  price: string;
+  highlight: string;
   note: string;
   button: string;
   variant?: "default" | "featured";
+  illustration?: "left" | "right";
+  featuredText?: string;
+  featuredItems?: string[];
 };
 
 type CourseCardItem = CardProps & {
@@ -32,35 +41,45 @@ type WorkSpaceCardProps = {
 
 const workspaceCards: CourseCardItem[] = [
   {
-    id: "marketing",
-    badge: "Практика на воркшопах",
-    title: "Нейросети для маркетинга",
+    id: "all-courses",
+    badge: "Все курсы в одном месте",
+    title: "Внутренние тренинги и внешние уроки в едином пространстве",
     description:
-      "Внедрите нейросети в маркетинговые процессы, чтобы автоматизировать рутину и повысить эффективность работы.",
-    price: "70 800 руб.",
-    note: "*при оплате от юридического лица",
-    button: "В каталог",
+      "Соберите обучение для сотрудников и клиентов на одной платформе и назначайте курсы отдельным сотрудникам, отделам или всей компании сразу.",
+    highlight: "Единое пространство",
+    note: "Для сотрудников, отделов и всей компании",
+    button: "Создать страницу компании",
+    illustration: "left",
   },
   {
-    id: "featured",
-    badge: "Горячая новинка",
-    title: "Нейросети для работы",
+    id: "fast-start",
+    badge: "Простой старт",
+    title: "Создайте страницу компании и начните обучение в первый день",
     description:
-      "Научим вас и вашу команду работать с 10 популярными нейросетями, автоматизировать рутину, генерировать идеи и применять их на практике",
-    price: "79 800 руб.",
-    note: "*при оплате от юридического лица",
-    button: "В каталог",
+      "Заполните собственное образовательное пространство, настройте сайт под стиль вашего бренда и откройте гибкий доступ к платформе без долгого запуска.",
+    highlight: "0 тенге",
+    note: "первые 3 месяца — бесплатно",
+    button: "Начать бесплатно",
     variant: "featured",
+    featuredText:
+      "Суперсила сайта — в доступности. Откройте для себя удобство запуска, настройки и управления обучением в одном интерфейсе.",
+    featuredItems: [
+      "Настройте сайт\nпод стиль бренда",
+      "Загрузите готовые курсы\nили создайте новые",
+      "Откройте доступ\nсотрудникам, партнерам и клиентам",
+      "Гибкий старт\nс первого дня",
+    ],
   },
   {
-    id: "business",
-    badge: "Практика на воркшопах",
-    title: "Нейросети для бизнеса",
+    id: "analytics",
+    badge: "Аналитика прогресса",
+    title: "Держите развитие компании под контролем",
     description:
-      "Освойте AI-инструменты, которые помогут повысить эффективность бизнеса, оптимизировать расходы и увеличить прибыль",
-    price: "97 200 руб.",
-    note: "*при оплате от юридического лица",
-    button: "В каталог",
+      "Отслеживайте результаты сотрудников и успех курсов через удобный интерфейс без лишних отчетов, таблиц и бумаг.",
+    highlight: "Прозрачная аналитика",
+    note: "Прогресс сотрудников и эффективность курсов",
+    button: "Посмотреть возможности",
+    illustration: "right",
   },
 ];
 
@@ -113,27 +132,24 @@ const SideEmbossRight = () => {
   );
 };
 
-const FeaturedVisual = () => {
+const FeaturedVisual = ({
+  items = [
+    "Настройте сайт\nпод стиль бренда",
+    "Загрузите готовые курсы\nили создайте новые",
+    "Откройте доступ\nсотрудникам, партнерам и клиентам",
+    "Гибкий старт\nс первого дня",
+  ],
+}: {
+  items?: string[];
+}) => {
   return (
     <div className="relative mt-7 h-[300px] w-full overflow-hidden rounded-[32px]">
       <div className="absolute left-0 top-8 z-20 max-w-[160px] space-y-6 text-[16px] leading-[1.05] text-white/82">
-        <p>Создай список дел...</p>
-        <p>
-          Проанализируй
-          <br />
-          эти документы
-          <br />и напиши...
-        </p>
-        <p>
-          Создай саммари
-          <br />
-          встречи...
-        </p>
-        <p>
-          Напиши текст
-          <br />
-          для презентации...
-        </p>
+        {items.map((item) => (
+          <p key={item} className="whitespace-pre-line">
+            {item}
+          </p>
+        ))}
       </div>
 
       <div className="absolute right-[88px] top-[22px] h-[230px] w-[230px] rounded-[32px] bg-white/14 backdrop-blur-[3px]" />
@@ -175,10 +191,13 @@ const CourseCard = ({
   badge,
   title,
   description,
-  price,
+  highlight,
   note,
   button,
   variant = "default",
+  illustration,
+  featuredText,
+  featuredItems,
 }: CardProps) => {
   const isFeatured = variant === "featured";
 
@@ -214,8 +233,8 @@ const CourseCard = ({
           className={[
             "mx-auto font-medium leading-[0.98]",
             isFeatured
-              ? "max-w-[420px] text-[34px]"
-              : "max-w-[270px] text-[34px] text-[#222]",
+              ? "max-w-[470px] text-[34px]"
+              : "max-w-[320px] text-[31px] text-[#222]",
           ].join(" ")}
         >
           {title}
@@ -225,8 +244,8 @@ const CourseCard = ({
           className={[
             "mx-auto mt-4 leading-[1.15]",
             isFeatured
-              ? "max-w-[430px] text-[20px] text-white/88"
-              : "max-w-[315px] text-[22px] text-[#6a6a6a]",
+              ? "max-w-[460px] text-[20px] text-white/88"
+              : "max-w-[340px] text-[20px] text-[#6a6a6a]",
           ].join(" ")}
         >
           {description}
@@ -238,18 +257,15 @@ const CourseCard = ({
           <div className="mt-5 rounded-[22px] border border-white/30 bg-white/12 px-6 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] backdrop-blur-sm">
             <div className="flex items-center gap-3 text-[14px] leading-[1.2] text-white/90">
               <Zap className="h-6 w-6 shrink-0 fill-white" />
-              <p>
-                Суперсила программ — воркшопы. Узнаете обо всех новинках в
-                режиме реального времени
-              </p>
+              <p>{featuredText}</p>
             </div>
           </div>
 
-          <FeaturedVisual />
+          <FeaturedVisual items={featuredItems} />
         </>
       ) : (
         <>
-          {title.includes("маркетинга") ? (
+          {illustration === "left" ? (
             <SideEmbossLeft />
           ) : (
             <SideEmbossRight />
@@ -264,7 +280,7 @@ const CourseCard = ({
             isFeatured ? "text-[28px] text-white" : "text-[28px] text-[#222]",
           ].join(" ")}
         >
-          {price}
+          {highlight}
         </div>
         <p
           className={[
@@ -307,7 +323,11 @@ function DesktopWorkspaceCards() {
   const leftX = useTransform(smoothProgress, [0, 1], [210, 0]);
   const leftY = useTransform(smoothProgress, [0, 1], [56, 0]);
   const leftScale = useTransform(smoothProgress, [0, 1], [0.9, 1]);
-  const leftOpacity = useTransform(smoothProgress, [0, 0.5, 1], [0.46, 0.78, 1]);
+  const leftOpacity = useTransform(
+    smoothProgress,
+    [0, 0.5, 1],
+    [0.46, 0.78, 1],
+  );
   const leftRotateZ = useTransform(smoothProgress, [0, 1], [3, 0]);
   const leftRotateY = useTransform(smoothProgress, [0, 1], [14, 0]);
 
@@ -412,14 +432,16 @@ export default function WorkSpaceCard({
             className="mx-auto max-w-[980px] text-[34px] font-normal leading-[1.03] tracking-[-0.04em] text-[#1b1b1b] md:text-[52px] lg:text-[60px]"
             style={headingStyle}
           >
-            Обучаем работе с ИИ так, как умеем только мы, с технологиями Яндекса
+            Все корпоративное обучение в одном месте
           </motion.h1>
 
           <motion.p
             className="mt-5 text-[20px] font-normal text-[#7b7b7b] md:text-[24px]"
             style={subheadingStyle}
           >
-            Самые практичные курсы по нейросетям
+            Создайте страницу компании, загрузите готовые курсы или соберите
+            новые прямо на платформе и откройте доступ сотрудникам,
+            партнерам и клиентам.
           </motion.p>
         </div>
 

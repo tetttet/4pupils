@@ -1,7 +1,9 @@
+import Link from "next/link";
+
 import { Logo } from "@/components/layout/logo";
 import { Button } from "@/components/ui/button";
 import { brand } from "@/lib/brand";
-import { footerLinkGroups, socialLinks } from "./nav-links";
+import { footerActionLinks, footerLinkGroups } from "./nav-links";
 
 export function StickyFooter() {
   return (
@@ -16,7 +18,7 @@ export function StickyFooter() {
               онлайн-обучения и развития.
             </p>
             <div className="flex gap-2">
-              {socialLinks.map((link) => (
+              {footerActionLinks.map((link) => (
                 <Button
                   asChild
                   key={link.title}
@@ -56,9 +58,9 @@ export function StickyFooter() {
             &copy; {new Date().getFullYear()} <b>{brand.name}</b>, Все права
             защищены.
           </p>
-          <a className="hover:text-foreground" href="#">
-            Политика конфиденциальности и условия использования
-          </a>
+          <Link className="hover:text-foreground" href="/docs/privacy-policy">
+            Политика конфиденциальности
+          </Link>
         </div>
       </div>
     </footer>
