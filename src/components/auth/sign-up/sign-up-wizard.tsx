@@ -334,7 +334,7 @@ export function SignUpWizard(props: Props) {
 
           <div className="mt-4">
             <div className="h-px w-full bg-border" />
-            <div className="mt-4 rounded-lg border bg-muted/30 p-4 text-center text-sm text-muted-foreground">
+            <div className="mt-4 rounded-lg border bg-muted/30 p-4 text-center text-[12px] text-muted-foreground">
               Получите доступ ко всем возможностям платформы и сохраните
               прогресс обучения
             </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { Logo } from "@/components/layout/logo";
@@ -10,13 +11,18 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
-import { AtSignIcon, ChevronLeftIcon, LockIcon } from "lucide-react";
-import { FloatingPaths } from "@/components/auth/sign-in/floating-paths";
+import {
+  AtSignIcon,
+  ChevronLeftIcon,
+  LockIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/context/auth-context";
 import { buildAuthHref, getSafeNextPath } from "@/lib/auth-redirect";
 import { brand } from "@/lib/brand";
 import UnderAuth from "../under-auth";
+
+const authPhotoSrc = "/images/bg/bg-article.jpg";
 
 export function AuthPage() {
   const router = useRouter();
@@ -74,37 +80,40 @@ export function AuthPage() {
   return (
     <main className="relative md:h-screen md:overflow-hidden lg:grid lg:grid-cols-2 border-t border-gray-300">
       {/* Left / Marketing */}
-      <div className="relative hidden h-full flex-col border-r bg-secondary p-10 lg:flex dark:bg-secondary/20">
-        <div className="absolute inset-0 bg-linear-to-b from-transparent via-transparent to-background" />
-        <Logo />
+      <div className="relative hidden h-full overflow-hidden border-r bg-black lg:flex">
+        {/* Replace authPhotoSrc above when the final sign-in photo is ready. */}
+        <Image
+          src={authPhotoSrc}
+          alt="Учебное пространство"
+          fill
+          priority
+          sizes="50vw"
+          className="object-cover"
+        />
+        <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/75 via-black/25 to-black/45" />
 
-        <div className="z-10 mt-4 space-y-6">
-          <div className="space-y-2">
-            <h2 className="text-2xl font-semibold tracking-tight">
-              Learn faster with focus
-            </h2>
-            <p className="text-sm text-muted-foreground leading-relaxed max-w-sm">
-              Keep your progress, unlock personalized content, and access your
-              saved paths. Sign in to continue where you left off.
-            </p>
+        <div className="relative z-10 flex h-full w-full flex-col p-10 text-white">
+          <div className="inline-flex w-fit rounded-md bg-white/90 px-3 py-2 shadow-sm">
+            <Logo />
           </div>
-        </div>
 
-        <div className="z-10 mt-auto">
-          <blockquote className="space-y-2">
-            <p className="text-lg">
-              &ldquo;{brand.name} is the future of learning. It has transformed the
-              way I acquire new skills and knowledge.&rdquo;
+          <div className="mt-auto max-w-xl space-y-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/70">
+              {brand.name}
             </p>
-            <footer className="font-semibold text-sm">
-              ~ Turan-Yahya Gazizuly
-            </footer>
-          </blockquote>
-        </div>
-
-        <div className="absolute inset-0">
-          <FloatingPaths position={1} />
-          <FloatingPaths position={-1} />
+            <h2 className="text-5xl font-bold leading-tight">
+              Добро пожаловать обратно
+            </h2>
+            <p className="max-w-md text-base leading-relaxed text-white/80">
+              Войдите в аккаунт, чтобы продолжить обучение, вернуться к курсам
+              и видеть свой прогресс без лишних шагов.
+            </p>
+            <div className="flex max-w-md items-center gap-4 border-t border-white/25 pt-5">
+              <p className="text-sm text-white/75">
+                Курсы, материалы и прогресс в одном личном кабинете.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -127,10 +136,6 @@ export function AuthPage() {
         </Button>
 
         <div className="mx-auto w-full space-y-5 sm:w-sm">
-          <div className="h-5 lg:hidden">
-            <Logo />
-          </div>
-
           <div className="flex flex-col space-y-2">
             <div className="space-y-1">
               <h1 className="font-bold text-2xl tracking-wide mt-4 lg:mt-0">
@@ -215,7 +220,7 @@ export function AuthPage() {
 
             <div className="mt-4">
               <div className="h-px w-full bg-border" />
-              <div className="mt-4 rounded-lg border bg-muted/30 p-4 text-center text-sm text-muted-foreground">
+              <div className="mt-4 rounded-lg border bg-muted/30 p-4 text-center text-[12px] text-muted-foreground">
                 Получите доступ ко всем возможностям платформы и сохраните
                 прогресс обучения
               </div>
