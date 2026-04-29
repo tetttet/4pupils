@@ -183,9 +183,7 @@ function getSubjectIcon(label: string, featured = false) {
 
   if (
     normalizedLabel.includes("англ") ||
-    normalizedLabel.includes("язык") ||
-    normalizedLabel.includes("ielts") ||
-    normalizedLabel.includes("toefl")
+    normalizedLabel.includes("язык")
   ) {
     return <Languages className="h-5 w-5" />;
   }

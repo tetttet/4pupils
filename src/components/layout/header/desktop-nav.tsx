@@ -44,7 +44,7 @@ export function DesktopNav() {
   }, []);
 
   return (
-    <div className="hidden items-center gap-7 md:flex" ref={containerRef}>
+    <div className="hidden items-center gap-4 md:flex" ref={containerRef}>
       {headerLinks.map((item) => {
         const hasSubmenu = Boolean(item.submenu?.length);
         const hasActiveChild = item.submenu?.some((subItem) =>

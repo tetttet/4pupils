@@ -460,7 +460,7 @@ function CreateFormSidebar({
   stepIndex,
   slugLocked,
   showHints,
-  onFillIelts,
+  onFillExample,
   onToggleHints,
   isEditMode,
   title,
@@ -479,7 +479,7 @@ function CreateFormSidebar({
   stepIndex: number;
   slugLocked: boolean;
   showHints: boolean;
-  onFillIelts: () => void;
+  onFillExample: () => void;
   onToggleHints: () => void;
   isEditMode: boolean;
   title: string;
@@ -535,9 +535,9 @@ function CreateFormSidebar({
             type="button"
             variant="outline"
             className="w-full rounded-none border-zinc-300"
-            onClick={onFillIelts}
+            onClick={onFillExample}
           >
-            Заполнить примером IELTS
+            Заполнить примером курса
           </Button>
           <Button
             type="button"
@@ -845,19 +845,19 @@ export default function CourseCreateWizard({
     };
   }, [applyCourseToForm, courseId, isEditMode]);
 
-  function fillIeltsExample() {
+  function fillCourseExample() {
     setErr(null);
     setOkMsg(null);
 
-    setTitle("IELTS: подготовка к Band 7+ за 8 недель");
+    setTitle("Английский разговорный клуб за 8 недель");
     setSlugLocked(false);
 
     setShortDescription(
-      "Пошаговая подготовка к IELTS Academic/General: Speaking, Writing, Reading, Listening + стратегии и проверка работ.",
+      "Практический курс для тех, кто хочет увереннее говорить на английском в учебе, работе и путешествиях.",
     );
 
     setDescription(
-      "Курс для тех, кто хочет системно подготовиться к IELTS и повысить band score.\n\nФормат:\n— 8 недель, 3 занятия в неделю\n— домашние задания + шаблоны\n— разбор Writing Task 1/2, Speaking part 1–3\n— мок-тесты и стратегия тайминга\n\nВнутри: чек-листы, темы эссе, лексика, типовые ошибки и как их исправлять.",
+      "Курс для тех, кто хочет снять языковой барьер и говорить свободнее.\n\nФормат:\n— 8 недель, 3 занятия в неделю\n— короткие домашние задания\n— разговорные сценарии для учебы, работы и поездок\n— разбор типовых ошибок\n\nВнутри: чек-листы, словарь по темам, парная практика и персональный план развития.",
     );
 
     setLanguage("ru");
@@ -865,12 +865,12 @@ export default function CourseCreateWizard({
     setCategory("other");
 
     setTags([
-      "IELTS",
       "English",
       "Speaking",
-      "Writing Task 2",
-      "Band 7",
-      "Mock tests",
+      "Conversation",
+      "Vocabulary",
+      "Grammar",
+      "Practice",
     ]);
 
     setRequirements([
@@ -880,10 +880,10 @@ export default function CourseCreateWizard({
     ]);
 
     setOutcomes([
-      "Понимать структуру экзамена и стратегии по секциям",
-      "Писать эссе Task 2 по шаблону и повышать coherence",
-      "Отвечать в Speaking увереннее (part 2/3)",
-      "Улучшить тайм-менеджмент в Reading",
+      "Говорить увереннее в типовых учебных и рабочих ситуациях",
+      "Собирать короткие ответы без долгих пауз",
+      "Использовать тематическую лексику в живом разговоре",
+      "Понимать свои частые ошибки и исправлять их",
       "Собрать персональный список ошибок и план улучшения",
     ]);
 
@@ -967,8 +967,21 @@ export default function CourseCreateWizard({
     return fd;
   }
 
-  async function onSubmit(e: React.FormEvent) {
+  function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (loading) return;
+
+    setErr(null);
+    setOkMsg(null);
+
+    if (stepIndex < steps.length - 1) {
+      goNext();
+    }
+  }
+
+  async function saveCourse() {
+    if (loading) return;
+
     setErr(null);
     setOkMsg(null);
 
@@ -1156,7 +1169,7 @@ export default function CourseCreateWizard({
                       htmlFor="title"
                       note={
                         showHints
-                          ? "Пиши название через итог и формат. Пример: IELTS: Band 7+ за 8 недель."
+                          ? "Пиши название через итог и формат. Пример: Разговорный английский за 8 недель."
                           : null
                       }
                     >
@@ -1164,7 +1177,7 @@ export default function CourseCreateWizard({
                         id="title"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
-                        placeholder="Например: IELTS: Band 7+ за 8 недель"
+                        placeholder="Например: Разговорный английский за 8 недель"
                         className={CONTROL_CLASS}
                       />
                       <p className="text-xs leading-5 text-zinc-500">
@@ -1206,7 +1219,7 @@ export default function CourseCreateWizard({
                         id="slug"
                         value={slug}
                         onChange={(e) => setSlug(e.target.value)}
-                        placeholder="ielts-band-7-plus"
+                        placeholder="english-speaking-club"
                         disabled={!slugLocked}
                         className={CONTROL_CLASS}
                       />
@@ -1233,7 +1246,7 @@ export default function CourseCreateWizard({
                         value={shortDescription}
                         onChange={(e) => setShortDescription(e.target.value)}
                         rows={2}
-                        placeholder="Например: Подготовка к IELTS с фокусом на Writing и Speaking + мок-тесты."
+                        placeholder="Например: Практика разговорного английского с живыми сценариями и обратной связью."
                         className={CONTROL_CLASS}
                       />
                     </FieldCell>
@@ -1317,7 +1330,7 @@ export default function CourseCreateWizard({
                       hint="Ключевые слова, по которым курс будет находиться в поиске."
                       value={tags}
                       onChange={setTags}
-                      placeholder="Например: IELTS, Speaking, Writing Task 2"
+                      placeholder="Например: English, Speaking, Vocabulary"
                       addButtonLabel="Добавить тег"
                       botHint={
                         showHints
@@ -1345,7 +1358,7 @@ export default function CourseCreateWizard({
                       hint="Что человек сможет после курса."
                       value={outcomes}
                       onChange={setOutcomes}
-                      placeholder="Например: писать эссе Task 2 по структуре"
+                      placeholder="Например: уверенно вести короткий разговор"
                       addButtonLabel="Добавить"
                       botHint={
                         showHints
@@ -1578,7 +1591,8 @@ export default function CourseCreateWizard({
                   </Button>
                 ) : (
                   <Button
-                    type="submit"
+                    type="button"
+                    onClick={saveCourse}
                     disabled={loading}
                     className="min-w-45 rounded-none bg-zinc-900 text-white hover:bg-zinc-800"
                   >
@@ -1600,7 +1614,7 @@ export default function CourseCreateWizard({
           stepIndex={stepIndex}
           slugLocked={slugLocked}
           showHints={showHints}
-          onFillIelts={fillIeltsExample}
+          onFillExample={fillCourseExample}
           onToggleHints={() => setShowHints((value) => !value)}
           isEditMode={isEditMode}
           title={title}

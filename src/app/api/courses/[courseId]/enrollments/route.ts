@@ -1,6 +1,6 @@
 import { proxyBackendWithBody } from "@/lib/backend-route-proxy";
 
-type Ctx = { params: Promise<{ courseId: string }> | { courseId: string } };
+type Ctx = { params: Promise<{ courseId: string }> };
 
 async function getCourseId(ctx: Ctx) {
   const params = await ctx.params;

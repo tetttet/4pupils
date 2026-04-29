@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { BACKEND_URL } from "@/lib/backend-url.server";
 import { forwardSetCookie } from "@/lib/forward-set-cookie";
 
-type Ctx = { params: Promise<{ id: string }> | { id: string } };
+type Ctx = { params: Promise<{ id: string }> };
 
 async function getId(ctx: Ctx) {
   const p = await ctx.params;

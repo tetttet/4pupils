@@ -9,7 +9,7 @@ export const learningFitSubjects = [
   {
     id: "languages",
     label: "Языки и English",
-    description: "Разговорный английский, грамматика, IELTS, TOEFL и другие языки.",
+    description: "Разговорный английский, грамматика, словарь и языковая практика.",
     keywords: [
       "english",
       "language",
@@ -19,8 +19,6 @@ export const learningFitSubjects = [
       "grammar",
       "speaking",
       "vocabulary",
-      "ielts",
-      "toefl",
       "toeic",
       "esl",
     ],
@@ -156,7 +154,6 @@ export const learningFitSubjects = [
       "exam",
       "ege",
       "ent",
-      "sat",
       "подготов",
       "школ",
       "экзамен",
@@ -267,14 +264,11 @@ export const learningFitGoals = [
   {
     id: "exam",
     label: "Под экзамен",
-    description: "Нужен более целевой трек: IELTS, ЕНТ, ЕГЭ, SAT и похожее.",
+    description: "Нужен более целевой трек: ЕНТ, ЕГЭ, тесты, аттестация или олимпиада.",
     keywords: [
       "exam",
       "test",
-      "ielts",
-      "toefl",
       "toeic",
-      "sat",
       "ege",
       "ent",
       "сертиф",

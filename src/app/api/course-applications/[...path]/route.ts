@@ -3,7 +3,7 @@ import {
   proxyBackendWithBody,
 } from "@/lib/backend-route-proxy";
 
-type Ctx = { params: Promise<{ path: string[] }> | { path: string[] } };
+type Ctx = { params: Promise<{ path: string[] }> };
 
 async function getPath(ctx: Ctx) {
   const params = await ctx.params;

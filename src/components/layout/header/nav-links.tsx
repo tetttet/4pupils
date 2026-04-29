@@ -11,8 +11,8 @@ export type HeaderNavSubLink = {
 
 export const headerLinks: HeaderNavLink[] = [
   {
-    label: "Главная",
-    href: "/o",
+    label: "Наша команда",
+    href: "/o/team/introduction",
   },
    {
     label: "Корпоративный",
@@ -35,6 +35,10 @@ export const headerLinks: HeaderNavLink[] = [
   {
     label: "Гайды",
     href: "/guides",
+  },
+  {
+    label: "Попробуйте Atlas",
+    href: "/ai/homemade/atlas",
   },
   {
     label: "Платформа",
