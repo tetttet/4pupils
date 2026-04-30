@@ -156,6 +156,11 @@ export const TEACHER_NAV = [
     ],
   },
   {
+    title: "Настройки",
+    href: "/dashboard/teacher/settings",
+    icon: Settings,
+  },
+  {
     title: "Профиль",
     href: "/dashboard/teacher/profile",
     icon: UserRound,

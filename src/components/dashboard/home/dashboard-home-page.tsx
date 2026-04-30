@@ -35,7 +35,12 @@ import {
   DashboardSummaryTilesSkeleton,
   DashboardUpdatedBadgeSkeleton,
 } from "@/components/dashboard/home/dashboard-home-skeletons";
+import {
+  TeacherDashboardWidgetLayout,
+  type TeacherDashboardWidgetId,
+} from "@/components/dashboard/teacher/teacherDashboardWidgets";
 import { useAuth } from "@/context/auth-context";
+import { useTeacherDashboardWidgets } from "@/hooks/use-teacher-dashboard-widgets";
 import { apiFetch } from "@/lib/api";
 import { readApiData } from "@/lib/api-response";
 import { getUserFacingErrorMessage } from "@/lib/error-messages";
@@ -1065,38 +1070,302 @@ function TeacherDashboardHome({ firstName }: { firstName: string }) {
     };
   }, [applications, courses, enrollments]);
 
-  const quickLinks: QuickLink[] = [
-    {
-      href: "/dashboard/teacher/courses",
-      title: "Курсы",
-      description:
-        "Каталог, статусы, готовность карточек и вся операционная работа по курсам.",
-      note: "рабочая зона каталога",
-      icon: BookOpen,
-      metric: `${formatCount(analytics.totalCourses)} всего`,
-    },
-    {
-      href: "/dashboard/teacher/applications",
-      title: "Заявки",
-      description:
-        "Очередь обращений, pipeline решений и аналитика по спросу на ваши программы.",
-      note: "входящие и конверсия",
-      icon: ClipboardCheck,
-      metric: `${formatCount(analytics.openApplications)} открыто`,
-    },
-    {
-      href: "/dashboard/teacher/lessons",
-      title: "Уроки",
-      description:
-        "Прогресс учеников, активность групп и точки, где нужно вернуть темп.",
-      note: "уроки и студенты",
-      icon: GraduationCap,
-      metric: `${formatCount(analytics.activeStudents)} активных`,
-    },
-  ];
+  const quickLinks: QuickLink[] = React.useMemo(
+    () => [
+      {
+        href: "/dashboard/teacher/courses",
+        title: "Курсы",
+        description:
+          "Каталог, статусы, готовность карточек и вся операционная работа по курсам.",
+        note: "рабочая зона каталога",
+        icon: BookOpen,
+        metric: `${formatCount(analytics.totalCourses)} всего`,
+      },
+      {
+        href: "/dashboard/teacher/applications",
+        title: "Заявки",
+        description:
+          "Очередь обращений, pipeline решений и аналитика по спросу на ваши программы.",
+        note: "входящие и конверсия",
+        icon: ClipboardCheck,
+        metric: `${formatCount(analytics.openApplications)} открыто`,
+      },
+      {
+        href: "/dashboard/teacher/lessons",
+        title: "Уроки",
+        description:
+          "Прогресс учеников, активность групп и точки, где нужно вернуть темп.",
+        note: "уроки и студенты",
+        icon: GraduationCap,
+        metric: `${formatCount(analytics.activeStudents)} активных`,
+      },
+    ],
+    [
+      analytics.activeStudents,
+      analytics.openApplications,
+      analytics.totalCourses,
+    ],
+  );
 
   const heroDateLabel = dateFormatter.format(new Date());
   const lastUpdatedLabel = formatDateTime(analytics.lastUpdatedAt);
+  const { visibleWidgets } = useTeacherDashboardWidgets();
+
+  const renderDashboardWidget = React.useCallback(
+    (widgetId: TeacherDashboardWidgetId) => {
+      switch (widgetId) {
+        case "quick-links":
+          return loading ? (
+            <DashboardQuickLinksSkeleton />
+          ) : (
+            <div className="grid gap-px border border-zinc-300 bg-zinc-300 xl:grid-cols-3">
+              {quickLinks.map((item) => (
+                <QuickLinkCard key={item.href} {...item} />
+              ))}
+            </div>
+          );
+
+        case "summary-tiles":
+          return loading ? (
+            <DashboardSummaryTilesSkeleton darkFirst />
+          ) : (
+            <div className="grid gap-px border border-zinc-300 bg-zinc-300 sm:grid-cols-2 xl:grid-cols-4">
+              <SummaryTile
+                label="Курсов"
+                value={formatCount(analytics.totalCourses)}
+                note={`${formatCount(analytics.readyToSubmit)} готовы к отправке дальше.`}
+                emphasis="dark"
+              />
+              <SummaryTile
+                label="Студентов"
+                value={formatCount(analytics.uniqueStudents)}
+                note={`${formatCount(analytics.activeStudents)} сейчас в активном обучении.`}
+              />
+              <SummaryTile
+                label="Открытых заявок"
+                value={formatCount(analytics.openApplications)}
+                note={`${formatCount(analytics.agingApplications)} уже начинают стареть.`}
+              />
+              <SummaryTile
+                label="Средний прогресс"
+                value={formatPercent(analytics.averageProgress)}
+                note={`${formatCount(analytics.lowMomentumStudents)} учеников идут слишком медленно.`}
+              />
+            </div>
+          );
+
+        case "operational-slice":
+          return loading ? (
+            <DashboardOperationalSkeleton />
+          ) : (
+            <Panel
+              title="Операционный срез"
+              subtitle="Быстрый взгляд на три главных потока: карточки курсов, очередь заявок и обучение студентов."
+              actions={
+                <div className="text-xs uppercase tracking-[0.14em] text-zinc-500">
+                  live dashboard
+                </div>
+              }
+            >
+              <div className="grid gap-px border-t border-zinc-300 bg-zinc-300 xl:grid-cols-3">
+                <div className="bg-white">
+                  <div className="border-b border-zinc-300 bg-zinc-100 px-4 py-3 text-[11px] uppercase tracking-[0.16em] text-zinc-600">
+                    Курсы
+                  </div>
+                  <HorizontalBarChart
+                    rows={analytics.courseStatusRows}
+                    emptyLabel="Статусы появятся после создания курсов."
+                  />
+                </div>
+
+                <div className="bg-white">
+                  <div className="border-b border-zinc-300 bg-zinc-100 px-4 py-3 text-[11px] uppercase tracking-[0.16em] text-zinc-600">
+                    Заявки
+                  </div>
+                  <HorizontalBarChart
+                    rows={analytics.applicationStatusRows}
+                    emptyLabel="Как только придут обращения, здесь появится очередь."
+                  />
+                </div>
+
+                <div className="bg-white">
+                  <div className="border-b border-zinc-300 bg-zinc-100 px-4 py-3 text-[11px] uppercase tracking-[0.16em] text-zinc-600">
+                    Уроки
+                  </div>
+                  <HorizontalBarChart
+                    rows={analytics.enrollmentStatusRows}
+                    emptyLabel="После enrollments здесь будет видна структура учеников."
+                  />
+                </div>
+              </div>
+            </Panel>
+          );
+
+        case "today-focus":
+          return loading ? (
+            <DashboardFocusSkeleton />
+          ) : (
+            <Panel
+              title="Фокус на сегодня"
+              subtitle="Конкретные точки, которые лучше не откладывать. Всё ведет сразу в нужный раздел."
+            >
+              <FocusList items={analytics.focusItems} />
+            </Panel>
+          );
+
+        case "readiness-histogram":
+          return loading ? (
+            <DashboardHistogramPanelSkeleton />
+          ) : (
+            <Panel
+              title="Гистограмма готовности курсов"
+              subtitle="Показывает, насколько ровно собран каталог и где карточки еще проседают по базовым полям."
+              actions={
+                <div className="text-xs uppercase tracking-[0.14em] text-zinc-500">
+                  avg: {formatPercent(analytics.averageReadiness)}
+                </div>
+              }
+            >
+              <HistogramChart
+                rows={analytics.readinessHistogramRows}
+                emptyLabel="Когда появятся курсы, здесь построится распределение по готовности."
+              />
+            </Panel>
+          );
+
+        case "course-demand":
+          return loading ? (
+            <DashboardCourseTablePanelSkeleton />
+          ) : (
+            <Panel
+              title="Курсы по нагрузке и спросу"
+              subtitle="Верхняя часть рабочего пула: где уже есть движение, заявки и ученики."
+              actions={
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="rounded-none border-zinc-300"
+                >
+                  <Link href="/dashboard/teacher/courses">
+                    Вся рабочая зона
+                    <ArrowUpRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              }
+            >
+              <CompactTable
+                headers={[
+                  "Курс",
+                  "Ученики",
+                  "Заявки",
+                  "Готовность",
+                  "Следующий шаг",
+                ]}
+                rows={analytics.topCourseRows.map((item) => [
+                  <div
+                    key={`${item.course.course_id}-course`}
+                    className="space-y-1"
+                  >
+                    <div className="font-semibold text-zinc-950">
+                      {item.course.title}
+                    </div>
+                    <div className="font-mono text-xs text-zinc-500">
+                      {item.course.slug}
+                    </div>
+                  </div>,
+                  <div
+                    key={`${item.course.course_id}-students`}
+                    className="space-y-1"
+                  >
+                    <div className="font-medium text-zinc-950">
+                      {formatCount(item.studentsCount)}
+                    </div>
+                    <div className="text-xs text-zinc-500">
+                      {formatCount(item.activeStudents)} активных /{" "}
+                      {formatCount(item.completedStudents)} завершили
+                    </div>
+                  </div>,
+                  <div
+                    key={`${item.course.course_id}-applications`}
+                    className="space-y-1"
+                  >
+                    <div className="font-medium text-zinc-950">
+                      {formatCount(item.applicationsCount)}
+                    </div>
+                    <div className="text-xs text-zinc-500">
+                      {formatCount(item.openApplications)} ждут решения
+                    </div>
+                  </div>,
+                  <div
+                    key={`${item.course.course_id}-readiness`}
+                    className="space-y-2"
+                  >
+                    <div className="flex items-center justify-between gap-2 text-xs uppercase tracking-[0.14em] text-zinc-500">
+                      <span>{item.readiness.score}%</span>
+                      <span>{formatPercent(item.averageProgress)}</span>
+                    </div>
+                    <div className="h-2 bg-zinc-200">
+                      <div
+                        className="h-full bg-zinc-900"
+                        style={{ width: `${item.readiness.score}%` }}
+                      />
+                    </div>
+                    <div className="text-xs text-zinc-500">
+                      Прогресс группы: {formatPercent(item.averageProgress)}
+                    </div>
+                  </div>,
+                  <div
+                    key={`${item.course.course_id}-action`}
+                    className="max-w-md leading-6"
+                  >
+                    {item.action}
+                  </div>,
+                ])}
+                emptyLabel="Когда появятся курсы, здесь соберется верхняя часть по нагрузке."
+              />
+            </Panel>
+          );
+
+        case "control-numbers":
+          return loading ? (
+            <DashboardControlNumbersSkeleton />
+          ) : (
+            <Panel
+              title="Контрольные цифры"
+              subtitle="Короткий свод по времени реакции, конверсии и прогрессу без перехода в глубину."
+            >
+              <div className="grid gap-px border-t border-zinc-300 bg-zinc-300 md:grid-cols-2 xl:grid-cols-4">
+                <SummaryTile
+                  label="Всего заявок"
+                  value={formatCount(analytics.totalApplications)}
+                  note={`Approval rate: ${formatPercent(analytics.approvalRate)}.`}
+                />
+                <SummaryTile
+                  label="Средний разбор"
+                  value={formatDurationHours(analytics.averageReviewTime)}
+                  note="Считается по заявкам, где уже было принято решение."
+                />
+                <SummaryTile
+                  label="Всего enrollments"
+                  value={formatCount(analytics.totalEnrollments)}
+                  note={`Completion rate: ${formatShare(
+                    analytics.completedStudents,
+                    analytics.totalEnrollments,
+                  )}.`}
+                />
+                <SummaryTile
+                  label="Просевший темп"
+                  value={formatCount(analytics.staleStudents)}
+                  note="Ученики без активности больше недели."
+                />
+              </div>
+            </Panel>
+          );
+      }
+    },
+    [analytics, loading, quickLinks],
+  );
 
   return (
     <>
@@ -1239,251 +1508,10 @@ function TeacherDashboardHome({ firstName }: { firstName: string }) {
           </Panel>
         ) : null}
 
-        {loading ? (
-          <DashboardQuickLinksSkeleton />
-        ) : (
-          <div className="grid gap-px border border-zinc-300 bg-zinc-300 xl:grid-cols-3">
-            {quickLinks.map((item) => (
-              <QuickLinkCard key={item.href} {...item} />
-            ))}
-          </div>
-        )}
-
-        {loading ? (
-          <DashboardSummaryTilesSkeleton darkFirst />
-        ) : (
-          <div className="grid gap-px border border-zinc-300 bg-zinc-300 sm:grid-cols-2 xl:grid-cols-4">
-            <SummaryTile
-              label="Курсов"
-              value={formatCount(analytics.totalCourses)}
-              note={`${formatCount(analytics.readyToSubmit)} готовы к отправке дальше.`}
-              emphasis="dark"
-            />
-            <SummaryTile
-              label="Студентов"
-              value={formatCount(analytics.uniqueStudents)}
-              note={`${formatCount(analytics.activeStudents)} сейчас в активном обучении.`}
-            />
-            <SummaryTile
-              label="Открытых заявок"
-              value={formatCount(analytics.openApplications)}
-              note={`${formatCount(analytics.agingApplications)} уже начинают стареть.`}
-            />
-            <SummaryTile
-              label="Средний прогресс"
-              value={formatPercent(analytics.averageProgress)}
-              note={`${formatCount(analytics.lowMomentumStudents)} учеников идут слишком медленно.`}
-            />
-          </div>
-        )}
-
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
-          {loading ? (
-            <DashboardOperationalSkeleton />
-          ) : (
-            <Panel
-              title="Операционный срез"
-              subtitle="Быстрый взгляд на три главных потока: карточки курсов, очередь заявок и обучение студентов."
-              actions={
-                <div className="text-xs uppercase tracking-[0.14em] text-zinc-500">
-                  live dashboard
-                </div>
-              }
-            >
-              <div className="grid gap-px border-t border-zinc-300 bg-zinc-300 xl:grid-cols-3">
-                <div className="bg-white">
-                  <div className="border-b border-zinc-300 bg-zinc-100 px-4 py-3 text-[11px] uppercase tracking-[0.16em] text-zinc-600">
-                    Курсы
-                  </div>
-                  <HorizontalBarChart
-                    rows={analytics.courseStatusRows}
-                    emptyLabel="Статусы появятся после создания курсов."
-                  />
-                </div>
-
-                <div className="bg-white">
-                  <div className="border-b border-zinc-300 bg-zinc-100 px-4 py-3 text-[11px] uppercase tracking-[0.16em] text-zinc-600">
-                    Заявки
-                  </div>
-                  <HorizontalBarChart
-                    rows={analytics.applicationStatusRows}
-                    emptyLabel="Как только придут обращения, здесь появится очередь."
-                  />
-                </div>
-
-                <div className="bg-white">
-                  <div className="border-b border-zinc-300 bg-zinc-100 px-4 py-3 text-[11px] uppercase tracking-[0.16em] text-zinc-600">
-                    Уроки
-                  </div>
-                  <HorizontalBarChart
-                    rows={analytics.enrollmentStatusRows}
-                    emptyLabel="После enrollments здесь будет видна структура учеников."
-                  />
-                </div>
-              </div>
-            </Panel>
-          )}
-
-          {loading ? (
-            <DashboardFocusSkeleton />
-          ) : (
-            <Panel
-              title="Фокус на сегодня"
-              subtitle="Конкретные точки, которые лучше не откладывать. Всё ведет сразу в нужный раздел."
-            >
-              <FocusList items={analytics.focusItems} />
-            </Panel>
-          )}
-        </div>
-
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-          {loading ? (
-            <DashboardHistogramPanelSkeleton />
-          ) : (
-            <Panel
-              title="Гистограмма готовности курсов"
-              subtitle="Показывает, насколько ровно собран каталог и где карточки еще проседают по базовым полям."
-              actions={
-                <div className="text-xs uppercase tracking-[0.14em] text-zinc-500">
-                  avg: {formatPercent(analytics.averageReadiness)}
-                </div>
-              }
-            >
-              <HistogramChart
-                rows={analytics.readinessHistogramRows}
-                emptyLabel="Когда появятся курсы, здесь построится распределение по готовности."
-              />
-            </Panel>
-          )}
-
-          {loading ? (
-            <DashboardCourseTablePanelSkeleton />
-          ) : (
-            <Panel
-              title="Курсы по нагрузке и спросу"
-              subtitle="Верхняя часть рабочего пула: где уже есть движение, заявки и ученики."
-              actions={
-                <Button
-                  asChild
-                  variant="outline"
-                  size="sm"
-                  className="rounded-none border-zinc-300"
-                >
-                  <Link href="/dashboard/teacher/courses">
-                    Вся рабочая зона
-                    <ArrowUpRight className="h-4 w-4" />
-                  </Link>
-                </Button>
-              }
-            >
-              <CompactTable
-                headers={[
-                  "Курс",
-                  "Ученики",
-                  "Заявки",
-                  "Готовность",
-                  "Следующий шаг",
-                ]}
-                rows={analytics.topCourseRows.map((item) => [
-                  <div
-                    key={`${item.course.course_id}-course`}
-                    className="space-y-1"
-                  >
-                    <div className="font-semibold text-zinc-950">
-                      {item.course.title}
-                    </div>
-                    <div className="font-mono text-xs text-zinc-500">
-                      {item.course.slug}
-                    </div>
-                  </div>,
-                  <div
-                    key={`${item.course.course_id}-students`}
-                    className="space-y-1"
-                  >
-                    <div className="font-medium text-zinc-950">
-                      {formatCount(item.studentsCount)}
-                    </div>
-                    <div className="text-xs text-zinc-500">
-                      {formatCount(item.activeStudents)} активных /{" "}
-                      {formatCount(item.completedStudents)} завершили
-                    </div>
-                  </div>,
-                  <div
-                    key={`${item.course.course_id}-applications`}
-                    className="space-y-1"
-                  >
-                    <div className="font-medium text-zinc-950">
-                      {formatCount(item.applicationsCount)}
-                    </div>
-                    <div className="text-xs text-zinc-500">
-                      {formatCount(item.openApplications)} ждут решения
-                    </div>
-                  </div>,
-                  <div
-                    key={`${item.course.course_id}-readiness`}
-                    className="space-y-2"
-                  >
-                    <div className="flex items-center justify-between gap-2 text-xs uppercase tracking-[0.14em] text-zinc-500">
-                      <span>{item.readiness.score}%</span>
-                      <span>{formatPercent(item.averageProgress)}</span>
-                    </div>
-                    <div className="h-2 bg-zinc-200">
-                      <div
-                        className="h-full bg-zinc-900"
-                        style={{ width: `${item.readiness.score}%` }}
-                      />
-                    </div>
-                    <div className="text-xs text-zinc-500">
-                      Прогресс группы: {formatPercent(item.averageProgress)}
-                    </div>
-                  </div>,
-                  <div
-                    key={`${item.course.course_id}-action`}
-                    className="max-w-md leading-6"
-                  >
-                    {item.action}
-                  </div>,
-                ])}
-                emptyLabel="Когда появятся курсы, здесь соберется верхняя часть по нагрузке."
-              />
-            </Panel>
-          )}
-        </div>
-
-        {loading ? (
-          <DashboardControlNumbersSkeleton />
-        ) : (
-          <Panel
-            title="Контрольные цифры"
-            subtitle="Короткий свод по времени реакции, конверсии и прогрессу без перехода в глубину."
-          >
-            <div className="grid gap-px border-t border-zinc-300 bg-zinc-300 md:grid-cols-2 xl:grid-cols-4">
-              <SummaryTile
-                label="Всего заявок"
-                value={formatCount(analytics.totalApplications)}
-                note={`Approval rate: ${formatPercent(analytics.approvalRate)}.`}
-              />
-              <SummaryTile
-                label="Средний разбор"
-                value={formatDurationHours(analytics.averageReviewTime)}
-                note="Считается по заявкам, где уже было принято решение."
-              />
-              <SummaryTile
-                label="Всего enrollments"
-                value={formatCount(analytics.totalEnrollments)}
-                note={`Completion rate: ${formatShare(
-                  analytics.completedStudents,
-                  analytics.totalEnrollments,
-                )}.`}
-              />
-              <SummaryTile
-                label="Просевший темп"
-                value={formatCount(analytics.staleStudents)}
-                note="Ученики без активности больше недели."
-              />
-            </div>
-          </Panel>
-        )}
+        <TeacherDashboardWidgetLayout
+          widgets={visibleWidgets}
+          renderWidget={renderDashboardWidget}
+        />
       </div>
     </>
   );
