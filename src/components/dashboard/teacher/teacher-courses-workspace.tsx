@@ -28,6 +28,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import CourseDetailsDialog from "@/components/dashboard/teacher/course-details-dialog";
+import {
+  TeacherCourseMetricGridSkeleton,
+  TeacherCoursePanelCountSkeleton,
+  TeacherCoursePipelineStatusGridSkeleton,
+  TeacherCourseTableRowsSkeleton,
+} from "@/components/dashboard/teacher/course-workspace/skeletons";
 
 type TeacherCoursesWorkspaceMode =
   | "workspace"
@@ -313,7 +319,7 @@ function WorkspaceLink({
   href: string;
   title: string;
   description: string;
-  note: string;
+  note: React.ReactNode;
   icon: React.ElementType;
 }) {
   return (
@@ -407,11 +413,7 @@ function WorkspaceTable({
 
         <tbody>
           {loading ? (
-            <tr>
-              <td className="px-4 py-8 text-zinc-500" colSpan={5}>
-                Загружаем курсы...
-              </td>
-            </tr>
+            <TeacherCourseTableRowsSkeleton />
           ) : rows.length === 0 ? (
             <tr>
               <td className="px-4 py-10" colSpan={5}>
@@ -975,16 +977,24 @@ export default function TeacherCoursesWorkspace({
       href: "/dashboard/teacher/courses",
       title: "Рабочая зона",
       description: "Главная панель со сводкой, фокусом и всем каталогом курсов.",
-      note: `${formatCount(rows.length)} курсов в кабинете`,
+      note: loading ? (
+        <TeacherCoursePanelCountSkeleton className="h-3 w-32 bg-zinc-200" />
+      ) : (
+        `${formatCount(rows.length)} курсов в кабинете`
+      ),
       icon: LayoutGrid,
     },
     {
       href: "/dashboard/teacher/courses/pipeline",
       title: "Поток курсов",
       description: "Контроль очереди: черновики, модерация, доработки и архив.",
-      note: `${formatCount(
-        statusCounts.draft + statusCounts.submitted + statusCounts.rejected,
-      )} активных статусов`,
+      note: loading ? (
+        <TeacherCoursePanelCountSkeleton className="h-3 w-32 bg-zinc-200" />
+      ) : (
+        `${formatCount(
+          statusCounts.draft + statusCounts.submitted + statusCounts.rejected,
+        )} активных статусов`
+      ),
       icon: Clipboard,
     },
     {
@@ -992,14 +1002,22 @@ export default function TeacherCoursesWorkspace({
       title: "Аналитика",
       description:
         "Распределение по языкам, категориям, наполнению и общему качеству.",
-      note: `${averageReadiness}% средняя готовность`,
+      note: loading ? (
+        <TeacherCoursePanelCountSkeleton className="h-3 w-32 bg-zinc-200" />
+      ) : (
+        `${averageReadiness}% средняя готовность`
+      ),
       icon: BookOpen,
     },
     {
       href: "/dashboard/teacher/courses/readiness",
       title: "Чек-лист",
       description: "Список пробелов по каждой карточке перед отправкой и публикацией.",
-      note: `${formatCount(attentionRows.length)} требуют внимания`,
+      note: loading ? (
+        <TeacherCoursePanelCountSkeleton className="h-3 w-32 bg-zinc-200" />
+      ) : (
+        `${formatCount(attentionRows.length)} требуют внимания`
+      ),
       icon: Check,
     },
     {
@@ -1124,9 +1142,13 @@ export default function TeacherCoursesWorkspace({
         title="Все курсы"
         subtitle="Основная таблица по каталогу преподавателя. Открытие курса выводит правую рабочую панель вместо popup."
         actions={
-          <div className="text-xs uppercase tracking-[0.14em] text-zinc-500">
-            Показано: {formatCount(filteredRows.length)}
-          </div>
+          loading ? (
+            <TeacherCoursePanelCountSkeleton />
+          ) : (
+            <div className="text-xs uppercase tracking-[0.14em] text-zinc-500">
+              Показано: {formatCount(filteredRows.length)}
+            </div>
+          )
         }
       >
         {renderToolbar}
@@ -1147,36 +1169,44 @@ export default function TeacherCoursesWorkspace({
 
   const renderPipelineView = (
     <div className="space-y-6">
-      <div className="grid gap-px border border-zinc-300 bg-zinc-300 md:grid-cols-2 xl:grid-cols-5">
-        {STATUS_ORDER.map((status) => (
-          <div key={status} className="bg-white p-4">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <div className="text-[11px] uppercase tracking-[0.16em] text-zinc-500">
-                  {STATUS_META[status].shortLabel}
+      {loading ? (
+        <TeacherCoursePipelineStatusGridSkeleton />
+      ) : (
+        <div className="grid gap-px border border-zinc-300 bg-zinc-300 md:grid-cols-2 xl:grid-cols-5">
+          {STATUS_ORDER.map((status) => (
+            <div key={status} className="bg-white p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <div className="text-[11px] uppercase tracking-[0.16em] text-zinc-500">
+                    {STATUS_META[status].shortLabel}
+                  </div>
+                  <div className="mt-2 text-lg font-semibold text-zinc-950">
+                    {STATUS_META[status].label}
+                  </div>
                 </div>
-                <div className="mt-2 text-lg font-semibold text-zinc-950">
-                  {STATUS_META[status].label}
+                <div className="text-3xl font-semibold text-zinc-950">
+                  {formatCount(statusCounts[status])}
                 </div>
               </div>
-              <div className="text-3xl font-semibold text-zinc-950">
-                {formatCount(statusCounts[status])}
+              <div className="mt-3 text-sm leading-6 text-zinc-600">
+                {STATUS_META[status].note}
               </div>
             </div>
-            <div className="mt-3 text-sm leading-6 text-zinc-600">
-              {STATUS_META[status].note}
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       <Panel
         title="Таблица потока"
         subtitle="Сравнивай этапы, фильтруй очередь и открывай курс в правой панели, не выпадая из контекста."
         actions={
-          <div className="text-xs uppercase tracking-[0.14em] text-zinc-500">
-            active: {formatCount(filteredRows.length)}
-          </div>
+          loading ? (
+            <TeacherCoursePanelCountSkeleton />
+          ) : (
+            <div className="text-xs uppercase tracking-[0.14em] text-zinc-500">
+              active: {formatCount(filteredRows.length)}
+            </div>
+          )
         }
       >
         {renderToolbar}
@@ -1531,33 +1561,37 @@ export default function TeacherCoursesWorkspace({
           </div>
         ) : null}
 
-        <div className="grid gap-px border border-zinc-300 bg-zinc-300 sm:grid-cols-2 xl:grid-cols-5">
-          <MetricCell
-            label="Всего курсов"
-            value={formatCount(rows.length)}
-            note="Весь каталог преподавателя в одном месте."
-          />
-          <MetricCell
-            label="Готовы к отправке"
-            value={formatCount(readyToSubmitCount)}
-            note="Карточки без базовых пробелов, которые можно продвигать дальше."
-          />
-          <MetricCell
-            label="На модерации"
-            value={formatCount(statusCounts.submitted)}
-            note="Курсы, которые сейчас ждут решения администратора."
-          />
-          <MetricCell
-            label="Public / Private"
-            value={`${formatCount(publicCount)} / ${formatCount(privateCount)}`}
-            note="Баланс видимых и внутренних курсов."
-          />
-          <MetricCell
-            label="Средняя готовность"
-            value={`${averageReadiness}%`}
-            note="Суммарный индикатор качества наполнения карточек."
-          />
-        </div>
+        {loading ? (
+          <TeacherCourseMetricGridSkeleton />
+        ) : (
+          <div className="grid gap-px border border-zinc-300 bg-zinc-300 sm:grid-cols-2 xl:grid-cols-5">
+            <MetricCell
+              label="Всего курсов"
+              value={formatCount(rows.length)}
+              note="Весь каталог преподавателя в одном месте."
+            />
+            <MetricCell
+              label="Готовы к отправке"
+              value={formatCount(readyToSubmitCount)}
+              note="Карточки без базовых пробелов, которые можно продвигать дальше."
+            />
+            <MetricCell
+              label="На модерации"
+              value={formatCount(statusCounts.submitted)}
+              note="Курсы, которые сейчас ждут решения администратора."
+            />
+            <MetricCell
+              label="Public / Private"
+              value={`${formatCount(publicCount)} / ${formatCount(privateCount)}`}
+              note="Баланс видимых и внутренних курсов."
+            />
+            <MetricCell
+              label="Средняя готовность"
+              value={`${averageReadiness}%`}
+              note="Суммарный индикатор качества наполнения карточек."
+            />
+          </div>
+        )}
 
         {mode === "workspace" ? renderWorkspaceView : null}
         {mode === "pipeline" ? renderPipelineView : null}

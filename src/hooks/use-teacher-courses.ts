@@ -73,6 +73,11 @@ export function useTeacherCourses() {
     React.useState<MutationAction>(null);
 
   const activeCourseId = active?.course_id ?? null;
+  const activeCourseIdRef = React.useRef<string | null>(null);
+
+  React.useEffect(() => {
+    activeCourseIdRef.current = activeCourseId;
+  }, [activeCourseId]);
 
   const load = React.useCallback(
     async (options: { background?: boolean } = {}) => {
@@ -103,9 +108,12 @@ export function useTeacherCourses() {
         const data = (json as ApiOk<Course[]>)?.data ?? [];
         setRows(data);
 
-        if (activeCourseId) {
+        const currentActiveCourseId = activeCourseIdRef.current;
+
+        if (currentActiveCourseId) {
           const nextActive =
-            data.find((course) => course.course_id === activeCourseId) ?? null;
+            data.find((course) => course.course_id === currentActiveCourseId) ??
+            null;
           setActive(nextActive);
 
           if (!nextActive) {
@@ -127,7 +135,7 @@ export function useTeacherCourses() {
         setRefreshing(false);
       }
     },
-    [activeCourseId],
+    [],
   );
 
   React.useEffect(() => {
