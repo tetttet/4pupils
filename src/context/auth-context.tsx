@@ -10,6 +10,7 @@ import React, {
 } from "react";
 import type { User } from "@/types/user";
 import { http } from "@/lib/http";
+import { getUserFacingErrorMessage } from "@/lib/error-messages";
 
 type LoginPayload = {
   email: string;
@@ -97,7 +98,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return {
             ok: false,
             user: null,
-            message: data?.message ?? "Login failed",
+            message: getUserFacingErrorMessage(
+              data,
+              "Не удалось войти. Проверьте email и пароль.",
+              { status: response.status },
+            ),
           };
         }
 
@@ -108,7 +113,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return {
             ok: false,
             user: null,
-            message: "User data was not returned after login",
+            message:
+              "Не удалось получить данные пользователя после входа. Обновите страницу и попробуйте снова.",
           };
         }
 
@@ -118,11 +124,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           ok: true,
           user: nextUser,
         };
-      } catch {
+      } catch (error) {
         return {
           ok: false,
           user: null,
-          message: "Unexpected login error",
+          message: getUserFacingErrorMessage(
+            error,
+            "Не удалось войти. Проверьте соединение и попробуйте снова.",
+          ),
         };
       }
     },
@@ -142,7 +151,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
           return {
             ok: false,
-            message: data?.message ?? "Register failed",
+            message: getUserFacingErrorMessage(
+              data,
+              "Не удалось зарегистрироваться. Проверьте данные и попробуйте снова.",
+              { status: response.status },
+            ),
           };
         }
 
@@ -155,10 +168,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         return { ok: true };
-      } catch {
+      } catch (error) {
         return {
           ok: false,
-          message: "Unexpected register error",
+          message: getUserFacingErrorMessage(
+            error,
+            "Не удалось зарегистрироваться. Проверьте соединение и попробуйте снова.",
+          ),
         };
       }
     },

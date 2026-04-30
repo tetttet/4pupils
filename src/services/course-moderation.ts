@@ -1,4 +1,5 @@
 import { apiFetch } from "@/lib/api";
+import { toUserFacingErrorMessage } from "@/lib/error-messages";
 import { invalidateApprovedCoursesCache } from "@/services/course";
 import type { ApiErr, ApiOk, Course, CourseLifecycle } from "@/types/course";
 
@@ -53,17 +54,20 @@ function getErrorMessage(
   fallback: string,
 ) {
   if (isApiErr(json) && typeof json.error?.message === "string") {
-    return json.error.message;
+    return toUserFacingErrorMessage(json.error.message, fallback, {
+      code: typeof json.error.code === "string" ? json.error.code : undefined,
+      status,
+    });
   }
 
   if (json && typeof json === "object") {
     const message = (json as { message?: unknown }).message;
     if (typeof message === "string" && message.trim()) {
-      return message;
+      return toUserFacingErrorMessage(message, fallback, { status });
     }
   }
 
-  return `${fallback} (HTTP ${status})`;
+  return toUserFacingErrorMessage(null, fallback, { status });
 }
 
 function normalizeNotes(notes: string) {

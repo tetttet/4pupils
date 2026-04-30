@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MailAPI } from "@/lib/mail/api";
 import type { MailDetail, MailFolder, MailListItem } from "@/types/mail";
 
+import { getUserFacingErrorMessage } from "@/lib/error-messages";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -92,8 +93,10 @@ export default function InboxMyMessage() {
       const data = await MailAPI.list({ folder, limit: 80 });
       setItems(data);
     } catch (e: unknown) {
-      const msg =
-        e instanceof Error ? e.message : "Не удалось загрузить отправленные";
+      const msg = getUserFacingErrorMessage(
+        e,
+        "Не удалось загрузить отправленные",
+      );
       setError(msg);
     } finally {
       setLoading(false);
@@ -127,8 +130,7 @@ export default function InboxMyMessage() {
       const d = await MailAPI.get(id);
       setDetail(d);
     } catch (e: unknown) {
-      const msg =
-        e instanceof Error ? e.message : "Не удалось загрузить письмо";
+      const msg = getUserFacingErrorMessage(e, "Не удалось загрузить письмо");
       setDetailError(msg);
     } finally {
       setLoadingDetail(false);

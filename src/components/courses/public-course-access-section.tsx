@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { getUserFacingErrorMessage } from "@/lib/error-messages";
 import { cn } from "@/lib/utils";
 import type { Course } from "@/types/course";
 import type {
@@ -189,9 +190,10 @@ export default function PublicCourseAccessSection({
       );
     } catch (withdrawError) {
       setError(
-        withdrawError instanceof Error
-          ? withdrawError.message
-          : "Не удалось отозвать заявку.",
+        getUserFacingErrorMessage(
+          withdrawError,
+          "Не удалось отозвать заявку.",
+        ),
       );
     } finally {
       setPendingAction(null);

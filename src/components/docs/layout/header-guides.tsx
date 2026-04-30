@@ -76,7 +76,7 @@ const HeaderGuides = ({ links }: HeaderGuidesProps) => {
 
           <nav
             className={cn(
-              "relative z-20 ml-auto hidden items-center gap-2 overflow-hidden whitespace-nowrap transition-all duration-300 xl:flex",
+              "relative z-20 ml-auto hidden min-w-0 items-center gap-1 overflow-hidden whitespace-nowrap transition-all duration-300 xl:flex 2xl:gap-2",
               scrolled
                 ? "pointer-events-none max-w-0 translate-x-4 opacity-0"
                 : "max-w-160 translate-x-0 opacity-100",
@@ -88,20 +88,23 @@ const HeaderGuides = ({ links }: HeaderGuidesProps) => {
               return (
                 <Link
                   className={cn(
-                    "inline-flex h-10 items-center px-4 text-[16px] font-medium transition-all duration-300",
+                    "inline-flex h-10 min-w-0 max-w-[11rem] items-center px-3 text-[16px] font-medium transition-all duration-300 2xl:max-w-[14rem] 2xl:px-4",
                     isActive
                       ? "text-black"
                       : "text-black/80 hover:text-black focus-visible:text-black",
                   )}
                   href={item.href}
                   key={item.href}
+                  title={item.title ?? item.label}
                 >
-                  {item.label}
+                  <span className="block max-w-full truncate">{item.label}</span>
                 </Link>
               );
             })}
 
-            <BaseButton href={guidesAction.href} label={guidesAction.label} />
+            <div className="shrink-0">
+              <BaseButton href={guidesAction.href} label={guidesAction.label} />
+            </div>
           </nav>
 
           <MobileMenuShell

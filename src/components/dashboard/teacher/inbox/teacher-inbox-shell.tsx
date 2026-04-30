@@ -11,6 +11,7 @@ import InboxNoMessage from "@/components/dashboard/admin/inbox/inbox-no-message"
 import InboxSidebar from "@/components/dashboard/admin/inbox/inbox-sidebar";
 import { AppBreadcrumb } from "@/components/ui/app-breadcrumb";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { getUserFacingErrorMessage } from "@/lib/error-messages";
 import { fmtDateTime } from "@/lib/func";
 import { MailAPI } from "@/lib/mail/api";
 import { fetchUserById } from "@/services/user";
@@ -111,9 +112,7 @@ export default function TeacherInboxShell({
 
       toast.success("Список обновлён");
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Не удалось загрузить список",
-      );
+      toast.error(getUserFacingErrorMessage(error, "Не удалось загрузить список"));
     } finally {
       toast.dismiss(toastId);
       setLoadingList(false);
@@ -164,9 +163,7 @@ export default function TeacherInboxShell({
 
       toast.success("Письмо открыто");
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Не удалось открыть письмо",
-      );
+      toast.error(getUserFacingErrorMessage(error, "Не удалось открыть письмо"));
     } finally {
       toast.dismiss(toastId);
       setLoadingActive(false);
@@ -212,7 +209,7 @@ export default function TeacherInboxShell({
           : "Убираю из избранного...",
         success: nextStarred ? "В избранном" : "Убрано из избранного",
         error: (error) =>
-          error instanceof Error ? error.message : "Не удалось обновить флаг",
+          getUserFacingErrorMessage(error, "Не удалось обновить флаг"),
       },
     );
   };
@@ -233,7 +230,7 @@ export default function TeacherInboxShell({
         loading: "Архивирую...",
         success: "Письмо в архиве",
         error: (error) =>
-          error instanceof Error ? error.message : "Не удалось архивировать",
+          getUserFacingErrorMessage(error, "Не удалось архивировать"),
       },
     );
   };
@@ -254,7 +251,7 @@ export default function TeacherInboxShell({
         loading: "Удаляю...",
         success: "Письмо перемещено в корзину",
         error: (error) =>
-          error instanceof Error ? error.message : "Не удалось удалить",
+          getUserFacingErrorMessage(error, "Не удалось удалить"),
       },
     );
   };
@@ -342,12 +339,12 @@ export default function TeacherInboxShell({
             : "Отправляю ответ...",
           success: "Ответ отправлен",
           error: (error) =>
-            error instanceof Error ? error.message : "Не удалось отправить ответ",
+            getUserFacingErrorMessage(error, "Не удалось отправить ответ"),
         },
       );
     } catch (error: unknown) {
       setReplyError(
-        error instanceof Error ? error.message : "Не удалось отправить ответ",
+        getUserFacingErrorMessage(error, "Не удалось отправить ответ"),
       );
     } finally {
       setReplyBusy(false);

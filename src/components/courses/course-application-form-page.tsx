@@ -23,6 +23,7 @@ import type {
   CourseApplicationDraftPayload,
 } from "@/types/course-application";
 import type { User } from "@/types/user";
+import { getUserFacingErrorMessage } from "@/lib/error-messages";
 import { CourseApplicationsAPI } from "@/services/course-application";
 import { indigo_dark, indigo_dark_hover } from "@/constant/color";
 
@@ -106,9 +107,10 @@ export default function CourseApplicationFormPage({
       router.replace(courseHref);
     } catch (submitError) {
       setError(
-        submitError instanceof Error
-          ? submitError.message
-          : "Не удалось отправить заявку на курс.",
+        getUserFacingErrorMessage(
+          submitError,
+          "Не удалось отправить заявку на курс.",
+        ),
       );
       setPendingSubmit(false);
     }

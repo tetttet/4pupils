@@ -21,6 +21,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
+import { getUserFacingErrorMessage } from "@/lib/error-messages";
 import { http } from "@/lib/http";
 import type { User } from "@/types/user";
 
@@ -78,7 +79,11 @@ async function fetchAllUsers(): Promise<Recipient[]> {
   const r = await http(`/api/users`, { method: "GET" });
   if (!r.ok) {
     const data = await r.json().catch(() => ({}));
-    throw new Error(data?.message || "Failed to load users");
+    throw new Error(
+      getUserFacingErrorMessage(data, "Не удалось загрузить получателей", {
+        status: r.status,
+      }),
+    );
   }
   const data = await r.json();
   return (data?.users ?? []) as Recipient[];
@@ -344,7 +349,10 @@ export default function InboxRecipients({
       const list = await fetchAllUsers();
       setUsers(list);
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "Failed to load users";
+      const msg = getUserFacingErrorMessage(
+        e,
+        "Не удалось загрузить получателей",
+      );
       toast.error(msg);
       setUsers([]);
     } finally {

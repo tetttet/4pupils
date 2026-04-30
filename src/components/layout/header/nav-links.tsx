@@ -1,6 +1,7 @@
 export type HeaderNavLink = {
   label: string;
   href: string;
+  title?: string;
   submenu?: HeaderNavSubLink[];
 };
 

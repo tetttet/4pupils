@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/auth-context";
+import { getUserFacingErrorMessage } from "@/lib/error-messages";
 import { initials } from "@/lib/func";
 import { http } from "@/lib/http";
 import { cn } from "@/lib/utils";
@@ -462,7 +463,11 @@ export function StudentProfilePageContent() {
 
         if (!response.ok) {
           const data = await response.json().catch(() => ({}));
-          throw new Error(data?.message ?? "Не удалось обновить профиль");
+          throw new Error(
+            getUserFacingErrorMessage(data, "Не удалось обновить профиль", {
+              status: response.status,
+            }),
+          );
         }
 
         const data = await response.json().catch(() => ({}));
@@ -482,10 +487,10 @@ export function StudentProfilePageContent() {
       } catch (error) {
         setFeedback({
           tone: "error",
-          message:
-            error instanceof Error
-              ? error.message
-              : "Не удалось обновить профиль",
+          message: getUserFacingErrorMessage(
+            error,
+            "Не удалось обновить профиль",
+          ),
         });
       } finally {
         setIsSaving(false);

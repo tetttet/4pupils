@@ -50,6 +50,10 @@ export function AuthPage() {
     }
   }, [loading, user, router, nextUrl, studentNextUrl]);
 
+  if (loading || user) {
+    return null;
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);

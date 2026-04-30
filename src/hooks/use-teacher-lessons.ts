@@ -3,6 +3,7 @@
 import * as React from "react";
 
 import { apiFetch } from "@/lib/api";
+import { getUserFacingErrorMessage } from "@/lib/error-messages";
 import { readApiData } from "@/lib/api-response";
 import { EnrollmentsAPI } from "@/services/enrollment";
 import type { Course } from "@/types/course";
@@ -45,9 +46,10 @@ export function useTeacherLessons() {
         setEnrollments(nextEnrollments);
       } catch (loadError) {
         setError(
-          loadError instanceof Error
-            ? loadError.message
-            : "Не удалось загрузить уроки преподавателя",
+          getUserFacingErrorMessage(
+            loadError,
+            "Не удалось загрузить уроки преподавателя",
+          ),
         );
       } finally {
         setLoading(false);

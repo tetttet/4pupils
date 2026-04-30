@@ -3,6 +3,7 @@
 import * as React from "react";
 
 import { apiFetch } from "@/lib/api";
+import { getUserFacingErrorMessage } from "@/lib/error-messages";
 import { readApiData } from "@/lib/api-response";
 import { CourseApplicationsAPI } from "@/services/course-application";
 import type { Course } from "@/types/course";
@@ -62,9 +63,10 @@ export function useTeacherCourseApplications() {
         setApplications(nextApplications);
       } catch (loadError) {
         setError(
-          loadError instanceof Error
-            ? loadError.message
-            : "Не удалось загрузить заявки преподавателя",
+          getUserFacingErrorMessage(
+            loadError,
+            "Не удалось загрузить заявки преподавателя",
+          ),
         );
       } finally {
         setLoading(false);
@@ -131,15 +133,13 @@ export function useTeacherCourseApplications() {
         setApplications((current) => upsertApplication(current, nextApplication));
         return nextApplication;
       } catch (actionLoadError) {
-        const message =
-          actionLoadError instanceof Error
-            ? actionLoadError.message
-            : "Не удалось обновить заявку";
+        const message = getUserFacingErrorMessage(
+          actionLoadError,
+          "Не удалось обновить заявку",
+        );
 
         setActionError(message);
-        throw actionLoadError instanceof Error
-          ? actionLoadError
-          : new Error(message);
+        throw new Error(message);
       } finally {
         setPendingAction(null);
       }

@@ -49,6 +49,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import UserDetailedModal from "@/components/dashboard/admin/user/user-detailed-modal";
 import { roleBadgeVariant } from "@/lib/func";
+import { getUserFacingErrorMessage } from "@/lib/error-messages";
 
 type AdminUpdatePayload = Partial<
   Pick<User, "first_name" | "last_name" | "phone" | "avatar_url" | "status">
@@ -102,17 +103,21 @@ export default function Page() {
       const r = await http(url, { method: "GET" });
       if (!r.ok) {
         const data = await r.json().catch(() => ({}));
-        throw new Error(data?.message || "Failed to load users");
+        throw new Error(
+          getUserFacingErrorMessage(
+            data,
+            "Не удалось загрузить администраторов",
+            { status: r.status },
+          ),
+        );
       }
       const data = await r.json();
       const list = (data?.users ?? []) as User[];
       setAdmins(list);
     } catch (e: unknown) {
-      if (e instanceof Error) {
-        toast.error(e.message || "Failed to load admins");
-      } else {
-        toast.error("Failed to load admins");
-      }
+      toast.error(
+        getUserFacingErrorMessage(e, "Не удалось загрузить администраторов"),
+      );
       setAdmins([]);
     } finally {
       setFetching(false);
@@ -164,7 +169,11 @@ export default function Page() {
 
       if (!r.ok) {
         const data = await r.json().catch(() => ({}));
-        throw new Error(data?.message || "Update failed");
+        throw new Error(
+          getUserFacingErrorMessage(data, "Не удалось сохранить изменения", {
+            status: r.status,
+          }),
+        );
       }
 
       const data = await r.json().catch(() => ({}));
@@ -174,12 +183,14 @@ export default function Page() {
         setAdmins((cur) => cur.map((u) => (u.id === updated.id ? updated : u)));
       }
 
-      toast.success("Updated");
+      toast.success("Изменения сохранены");
       setEditOpen(false);
       setEditUser(null);
     } catch (e: Error | unknown) {
       setAdmins(prev);
-      toast.error(e instanceof Error ? e.message : "Update failed");
+      toast.error(
+        getUserFacingErrorMessage(e, "Не удалось сохранить изменения"),
+      );
     } finally {
       setSaving(false);
     }
@@ -198,15 +209,21 @@ export default function Page() {
       const r = await http(`/api/users/${deleteUser.id}`, { method: "DELETE" });
       if (!r.ok) {
         const data = await r.json().catch(() => ({}));
-        throw new Error(data?.message || "Delete failed");
+        throw new Error(
+          getUserFacingErrorMessage(data, "Не удалось удалить администратора", {
+            status: r.status,
+          }),
+        );
       }
 
-      toast.success("Deleted");
+      toast.success("Администратор удалён");
       setDeleteOpen(false);
       setDeleteUser(null);
     } catch (e: Error | unknown) {
       setAdmins(prev);
-      toast.error(e instanceof Error ? e.message : "Delete failed");
+      toast.error(
+        getUserFacingErrorMessage(e, "Не удалось удалить администратора"),
+      );
     } finally {
       setDeleting(false);
     }

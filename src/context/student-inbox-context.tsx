@@ -3,6 +3,7 @@
 import * as React from "react";
 
 import { useAuth } from "@/context/auth-context";
+import { getUserFacingErrorMessage } from "@/lib/error-messages";
 import { MAIL_INBOX_BADGE_REFRESH_EVENT } from "@/lib/mail/inbox-events";
 import { MailAPI } from "@/lib/mail/api";
 import type { MailListItem } from "@/types/mail";
@@ -120,10 +121,10 @@ export function StudentInboxProvider({
           ready: true,
           loading: false,
           refreshing: false,
-          error:
-            error instanceof Error
-              ? error.message
-              : "Не удалось загрузить входящие сообщения",
+          error: getUserFacingErrorMessage(
+            error,
+            "Не удалось загрузить входящие сообщения",
+          ),
         }));
       });
     }

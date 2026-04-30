@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { getUserFacingErrorMessage } from "@/lib/error-messages";
 import { cn } from "@/lib/utils";
 
 import {
@@ -187,7 +188,7 @@ export default function InboxSendUser() {
     } catch (e: unknown) {
       setAutosaveState("error");
       setError(
-        e instanceof Error ? e.message : "Не удалось сохранить черновик",
+        getUserFacingErrorMessage(e, "Не удалось сохранить черновик"),
       );
     } finally {
       setSaving(false);
@@ -255,7 +256,7 @@ export default function InboxSendUser() {
       await MailAPI.send(id, { scheduledAt: null });
       setSent(true);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Не удалось отправить письмо");
+      setError(getUserFacingErrorMessage(e, "Не удалось отправить письмо"));
     } finally {
       setBusy(false);
     }

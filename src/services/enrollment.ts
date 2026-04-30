@@ -27,7 +27,7 @@ async function request<T>(path: string, init?: RequestInit, fallback?: string) {
 
   return readApiData<T>(
     res,
-    fallback || "Не удалось выполнить запрос по enrollments",
+    fallback || "Не удалось выполнить запрос по зачислениям",
   );
 }
 
@@ -47,7 +47,7 @@ export const EnrollmentsAPI = {
     return request<Enrollment[]>(
       `/api/enrollments/my${buildSearchParams(params)}`,
       { method: "GET" },
-      "Не удалось загрузить мои enrollments",
+      "Не удалось загрузить мои зачисления",
     );
   },
 
@@ -55,7 +55,7 @@ export const EnrollmentsAPI = {
     return request<Enrollment[]>(
       `/api/enrollments/teaching${buildSearchParams(params)}`,
       { method: "GET" },
-      "Не удалось загрузить enrollments по вашим курсам",
+      "Не удалось загрузить зачисления по вашим курсам",
     );
   },
 
@@ -71,7 +71,7 @@ export const EnrollmentsAPI = {
     return request<Enrollment[]>(
       `/api/admin/enrollments${buildSearchParams(params)}`,
       { method: "GET" },
-      "Не удалось загрузить все enrollments",
+      "Не удалось загрузить все зачисления",
     );
   },
 
@@ -79,7 +79,7 @@ export const EnrollmentsAPI = {
     return request<Enrollment>(
       `/api/enrollments/${enrollmentId}`,
       { method: "GET" },
-      "Не удалось загрузить enrollment",
+      "Не удалось загрузить зачисление",
     );
   },
 
@@ -134,7 +134,7 @@ export const EnrollmentsAPI = {
         method: "POST",
         body: JSON.stringify(payload),
       },
-      "Не удалось завершить enrollment",
+      "Не удалось завершить зачисление",
     );
   },
 

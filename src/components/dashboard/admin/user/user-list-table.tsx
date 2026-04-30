@@ -67,6 +67,7 @@ import { Label } from "@/components/ui/label";
 
 import { toast } from "sonner";
 import UserDetailedModal from "@/components/dashboard/admin/user/user-detailed-modal";
+import { getUserFacingErrorMessage } from "@/lib/error-messages";
 import { roleBadgeVariant, useDebounced } from "@/lib/func";
 
 // lucide icons (shadcn default)
@@ -198,7 +199,11 @@ export default function UserListTable({ userType }: { userType: USER_ROLES }) {
 
       if (!r.ok) {
         const data = await r.json().catch(() => ({}));
-        throw new Error(data?.message || "Failed to load users");
+        throw new Error(
+          getUserFacingErrorMessage(data, "Не удалось загрузить пользователей", {
+            status: r.status,
+          }),
+        );
       }
 
       const data = await r.json();
@@ -206,7 +211,9 @@ export default function UserListTable({ userType }: { userType: USER_ROLES }) {
       setUsers(list);
       setSelectedIds({});
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Failed to load users");
+      toast.error(
+        getUserFacingErrorMessage(e, "Не удалось загрузить пользователей"),
+      );
       setUsers([]);
       setSelectedIds({});
     } finally {
@@ -321,7 +328,11 @@ export default function UserListTable({ userType }: { userType: USER_ROLES }) {
 
       if (!r.ok) {
         const data = await r.json().catch(() => ({}));
-        throw new Error(data?.message || "Update failed");
+        throw new Error(
+          getUserFacingErrorMessage(data, "Не удалось сохранить изменения", {
+            status: r.status,
+          }),
+        );
       }
 
       const data = await r.json().catch(() => ({}));
@@ -331,12 +342,14 @@ export default function UserListTable({ userType }: { userType: USER_ROLES }) {
         setUsers((cur) => cur.map((u) => (u.id === updated.id ? updated : u)));
       }
 
-      toast.success("Updated");
+      toast.success("Изменения сохранены");
       setEditOpen(false);
       setEditUser(null);
     } catch (e: unknown) {
       setUsers(prev);
-      toast.error(e instanceof Error ? e.message : "Update failed");
+      toast.error(
+        getUserFacingErrorMessage(e, "Не удалось сохранить изменения"),
+      );
     } finally {
       setSaving(false);
     }
@@ -354,15 +367,21 @@ export default function UserListTable({ userType }: { userType: USER_ROLES }) {
       const r = await http(`/api/users/${deleteUser.id}`, { method: "DELETE" });
       if (!r.ok) {
         const data = await r.json().catch(() => ({}));
-        throw new Error(data?.message || "Delete failed");
+        throw new Error(
+          getUserFacingErrorMessage(data, "Не удалось удалить пользователя", {
+            status: r.status,
+          }),
+        );
       }
 
-      toast.success("Deleted");
+      toast.success("Пользователь удалён");
       setDeleteOpen(false);
       setDeleteUser(null);
     } catch (e: unknown) {
       setUsers(prev);
-      toast.error(e instanceof Error ? e.message : "Delete failed");
+      toast.error(
+        getUserFacingErrorMessage(e, "Не удалось удалить пользователя"),
+      );
     } finally {
       setDeleting(false);
     }

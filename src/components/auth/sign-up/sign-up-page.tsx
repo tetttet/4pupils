@@ -42,6 +42,10 @@ export default function SignUpPage() {
     router.replace(nextUrl);
   }, [loading, user, router, nextUrl, studentNextUrl]);
 
+  if (loading || user) {
+    return null;
+  }
+
   async function onFinalSubmit() {
     setError(null);
     setSubmitting(true);

@@ -27,6 +27,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/auth-context";
 import { apiFetch } from "@/lib/api";
 import { readApiData } from "@/lib/api-response";
+import { getUserFacingErrorMessage } from "@/lib/error-messages";
 import { CourseApplicationsAPI } from "@/services/course-application";
 import { EnrollmentsAPI } from "@/services/enrollment";
 import type { Course } from "@/types/course";
@@ -355,9 +356,10 @@ function useTeacherDashboardOverview() {
         });
       } catch (loadError) {
         setError(
-          loadError instanceof Error
-            ? loadError.message
-            : "Не удалось собрать сводку преподавателя",
+          getUserFacingErrorMessage(
+            loadError,
+            "Не удалось собрать сводку преподавателя",
+          ),
         );
       } finally {
         setLoading(false);

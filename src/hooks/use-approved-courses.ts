@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import type { Course } from "@/types/course";
+import { getUserFacingErrorMessage } from "@/lib/error-messages";
 import {
   fetchApprovedCourses,
   getApprovedCoursesSnapshot,
@@ -43,9 +44,7 @@ export function useApprovedCourses() {
         if (!isActive) return;
 
         setCourses([]);
-        setError(
-          error instanceof Error ? error.message : DEFAULT_ERROR_MESSAGE,
-        );
+        setError(getUserFacingErrorMessage(error, DEFAULT_ERROR_MESSAGE));
       } finally {
         if (isActive) {
           setLoading(false);

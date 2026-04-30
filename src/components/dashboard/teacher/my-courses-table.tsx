@@ -4,6 +4,10 @@ import * as React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
+import {
+  getUserFacingErrorMessage,
+  toUserFacingErrorMessage,
+} from "@/lib/error-messages";
 import type { ApiErr, ApiOk, Course } from "@/types/course";
 
 import { Button } from "@/components/ui/button";
@@ -118,10 +122,14 @@ export default function MyCoursesTable() {
       const json = (await readJsonSafe(res)) as ApiOk<Course[]> | ApiErr | null;
 
       if (!res.ok) {
-        type ErrorResponse = { error?: { message?: string } };
-        const msg =
-          (json as ErrorResponse)?.error?.message ||
-          `Ошибка (HTTP ${res.status})`;
+        const msg = toUserFacingErrorMessage(
+          (json as ApiErr | null)?.error?.message,
+          "Не удалось загрузить курсы",
+          {
+            code: (json as ApiErr | null)?.error?.code,
+            status: res.status,
+          },
+        );
         setErr(msg);
         return;
       }
@@ -129,11 +137,7 @@ export default function MyCoursesTable() {
       const data = (json as ApiOk<Course[]>)?.data ?? [];
       setRows(data);
     } catch (e: unknown) {
-      if (e instanceof Error) {
-        setErr(e.message);
-      } else {
-        setErr("Не удалось загрузить курсы");
-      }
+      setErr(getUserFacingErrorMessage(e, "Не удалось загрузить курсы"));
     } finally {
       setLoading(false);
     }
@@ -149,11 +153,16 @@ export default function MyCoursesTable() {
       method: "POST",
     });
     if (!res.ok) {
-      const json = await readJsonSafe(res);
-      type ErrorResponse = { error?: { message?: string } };
+      const json = (await readJsonSafe(res)) as ApiErr | null;
       setErr(
-        (json as ErrorResponse)?.error?.message ||
-          `Не удалось отправить (HTTP ${res.status})`,
+        toUserFacingErrorMessage(
+          json?.error?.message,
+          "Не удалось отправить курс",
+          {
+            code: json?.error?.code,
+            status: res.status,
+          },
+        ),
       );
       return;
     }
@@ -166,11 +175,16 @@ export default function MyCoursesTable() {
       method: "DELETE",
     });
     if (!res.ok) {
-      const json = await readJsonSafe(res);
-      type ErrorResponse = { error?: { message?: string } };
+      const json = (await readJsonSafe(res)) as ApiErr | null;
       setErr(
-        (json as ErrorResponse)?.error?.message ||
-          `Не удалось удалить (HTTP ${res.status})`,
+        toUserFacingErrorMessage(
+          json?.error?.message,
+          "Не удалось удалить курс",
+          {
+            code: json?.error?.code,
+            status: res.status,
+          },
+        ),
       );
       return;
     }

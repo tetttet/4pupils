@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 
 import InboxSidebar from "@/components/dashboard/admin/inbox/inbox-sidebar";
+import { getUserFacingErrorMessage } from "@/lib/error-messages";
 import { fmtDateTime } from "@/lib/func";
 
 import type { MailDetail, MailListItem, MailFolder } from "@/types/mail";
@@ -76,9 +77,7 @@ export default function Inbox() {
 
       toast.success("Список обновлён");
     } catch (e) {
-      toast.error(
-        e instanceof Error ? e.message : "Не удалось загрузить список",
-      );
+      toast.error(getUserFacingErrorMessage(e, "Не удалось загрузить список"));
     } finally {
       toast.dismiss(t);
       setLoadingList(false);
@@ -142,7 +141,7 @@ export default function Inbox() {
 
       toast.success("Письмо открыто");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Не удалось открыть письмо");
+      toast.error(getUserFacingErrorMessage(e, "Не удалось открыть письмо"));
     } finally {
       toast.dismiss(t);
       setLoadingActive(false);
@@ -164,7 +163,7 @@ export default function Inbox() {
         loading: "Архивирую...",
         success: "Письмо в архиве",
         error: (e) =>
-          e instanceof Error ? e.message : "Не удалось архивировать",
+          getUserFacingErrorMessage(e, "Не удалось архивировать"),
       },
     );
   };
@@ -183,7 +182,7 @@ export default function Inbox() {
       {
         loading: "Удаляю...",
         success: "Письмо перемещено в корзину",
-        error: (e) => (e instanceof Error ? e.message : "Не удалось удалить"),
+        error: (e) => getUserFacingErrorMessage(e, "Не удалось удалить"),
       },
     );
   };
@@ -280,12 +279,14 @@ export default function Inbox() {
             : "Отправляю ответ...",
           success: "Ответ отправлен",
           error: (e) =>
-            e instanceof Error ? e.message : "Не удалось отправить ответ",
+            getUserFacingErrorMessage(e, "Не удалось отправить ответ"),
         },
       );
     } catch (e: unknown) {
-      const errorMessage =
-        e instanceof Error ? e.message : "Не удалось отправить ответ";
+      const errorMessage = getUserFacingErrorMessage(
+        e,
+        "Не удалось отправить ответ",
+      );
       setReplyError(errorMessage);
       // toast уже показан в toast.promise error, но пусть локально будет тоже
     } finally {

@@ -1,4 +1,5 @@
 import { http } from "@/lib/http";
+import { getUserFacingErrorMessage } from "@/lib/error-messages";
 import { User } from "@/types/user";
 
 const userCache = new Map<string, User>();
@@ -35,7 +36,13 @@ export async function fetchUserById(id: string): Promise<User> {
     const r = await http(`/api/users/${normalizedId}`, { method: "GET" });
     if (!r.ok) {
       const data = await r.json().catch(() => ({}));
-      throw new Error(data?.message || "Failed to load users");
+      throw new Error(
+        getUserFacingErrorMessage(
+          data,
+          "Не удалось загрузить пользователя",
+          { status: r.status },
+        ),
+      );
     }
 
     const data = await r.json();

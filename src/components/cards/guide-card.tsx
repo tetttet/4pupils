@@ -20,7 +20,7 @@ export function GuideCard({ href, title, cover, date, description }: Props) {
           <img
             src={cover ?? "/images/guides/guide-1.jpg"}
             alt={title}
-            className="h-full w-full object-cover transition-transform duration-333 group-hover:scale-[1.23]"
+            className="h-full w-full object-cover transition-transform duration-333 group-hover:scale-[1.05]"
             loading="lazy"
           />
         </div>

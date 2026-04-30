@@ -43,6 +43,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useTeacherLessons } from "@/hooks/use-teacher-lessons";
+import { getUserFacingErrorMessage } from "@/lib/error-messages";
 import { normalizeText } from "@/lib/func";
 import { cn } from "@/lib/utils";
 import { fetchUserById } from "@/services/user";
@@ -829,10 +830,10 @@ export default function TeacherLessonsWorkspace({
             [userId]: {
               user: null,
               loading: false,
-              error:
-                loadError instanceof Error
-                  ? loadError.message
-                  : "Не удалось загрузить полный профиль ученика",
+              error: getUserFacingErrorMessage(
+                loadError,
+                "Не удалось загрузить полный профиль ученика",
+              ),
             },
           }));
         });
@@ -884,11 +885,11 @@ export default function TeacherLessonsWorkspace({
           ...current,
           [userId]: {
             user: null,
-            loading: false,
-            error:
-              loadError instanceof Error
-                ? loadError.message
-                : "Не удалось загрузить полный профиль ученика",
+              loading: false,
+              error: getUserFacingErrorMessage(
+                loadError,
+                "Не удалось загрузить полный профиль ученика",
+              ),
           },
         }));
       });

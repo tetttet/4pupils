@@ -20,6 +20,7 @@ import {
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useStudentPlatformPreferences } from "@/hooks/use-student-platform-preferences";
 import { useUsersDirectoryState } from "@/hooks/use-users-directory";
+import { getUserFacingErrorMessage } from "@/lib/error-messages";
 import { MailAPI } from "@/lib/mail/api";
 import {
   fmtDateTime,
@@ -201,9 +202,7 @@ export function StudentMessagesPageContent() {
           current?.id === selectedId ? current : null,
         );
         setDetailError(
-          loadError instanceof Error
-            ? loadError.message
-            : "Не удалось открыть сообщение",
+          getUserFacingErrorMessage(loadError, "Не удалось открыть сообщение"),
         );
       })
       .finally(() => {

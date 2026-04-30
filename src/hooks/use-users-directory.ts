@@ -5,6 +5,8 @@ import * as React from "react";
 import { fetchUserById, getCachedUserById } from "@/services/user";
 import type { User } from "@/types/user";
 
+const USER_IDS_KEY_SEPARATOR = "\u001f";
+
 type UsersDirectoryState = {
   usersById: Record<string, User>;
   isPending: (id: string | null | undefined) => boolean;
@@ -32,12 +34,57 @@ function getCachedUsersById(userIds: string[]) {
   }, {});
 }
 
+function buildUserIdsKey(userIds: string[]) {
+  return userIds.join(USER_IDS_KEY_SEPARATOR);
+}
+
+function readUserIdsKey(userIdsKey: string) {
+  return userIdsKey.length > 0
+    ? userIdsKey.split(USER_IDS_KEY_SEPARATOR)
+    : [];
+}
+
+function addPendingIds(
+  current: Record<string, true>,
+  idsToLoad: string[],
+) {
+  let changed = false;
+  const nextMap = { ...current };
+
+  idsToLoad.forEach((id) => {
+    if (!nextMap[id]) {
+      nextMap[id] = true;
+      changed = true;
+    }
+  });
+
+  return changed ? nextMap : current;
+}
+
+function removePendingIds(
+  current: Record<string, true>,
+  idsToLoad: string[],
+) {
+  let changed = false;
+  const nextMap = { ...current };
+
+  idsToLoad.forEach((id) => {
+    if (nextMap[id]) {
+      delete nextMap[id];
+      changed = true;
+    }
+  });
+
+  return changed ? nextMap : current;
+}
+
 export function useUsersDirectoryState(
   userIds: Array<string | null | undefined>,
 ): UsersDirectoryState {
+  const userIdsKey = buildUserIdsKey(normalizeUserIds(userIds));
   const uniqueUserIds = React.useMemo(
-    () => normalizeUserIds(userIds),
-    [userIds],
+    () => readUserIdsKey(userIdsKey),
+    [userIdsKey],
   );
   const [usersById, setUsersById] = React.useState<Record<string, User>>(() =>
     getCachedUsersById(uniqueUserIds),
@@ -85,15 +132,7 @@ export function useUsersDirectoryState(
     let cancelled = false;
 
     idsToLoad.forEach((id) => requestedIds.add(id));
-    setPendingMap((current) => {
-      const nextMap = { ...current };
-
-      idsToLoad.forEach((id) => {
-        nextMap[id] = true;
-      });
-
-      return nextMap;
-    });
+    setPendingMap((current) => addPendingIds(current, idsToLoad));
 
     void Promise.allSettled(
       idsToLoad.map(async (id) => ({
@@ -126,29 +165,13 @@ export function useUsersDirectoryState(
         }));
       }
 
-      setPendingMap((current) => {
-        const nextMap = { ...current };
-
-        idsToLoad.forEach((id) => {
-          delete nextMap[id];
-        });
-
-        return nextMap;
-      });
+      setPendingMap((current) => removePendingIds(current, idsToLoad));
     });
 
     return () => {
       cancelled = true;
       idsToLoad.forEach((id) => requestedIds.delete(id));
-      setPendingMap((current) => {
-        const nextMap = { ...current };
-
-        idsToLoad.forEach((id) => {
-          delete nextMap[id];
-        });
-
-        return nextMap;
-      });
+      setPendingMap((current) => removePendingIds(current, idsToLoad));
     };
   }, [uniqueUserIds, usersById]);
 

@@ -8,15 +8,20 @@ import type {
   MailTag,
 } from "@/types/mail";
 import { emitMailInboxBadgeRefresh } from "@/lib/mail/inbox-events";
+import { getUserFacingErrorMessage } from "@/lib/error-messages";
 
 async function json<T>(r: Response): Promise<T> {
   const text = await r.text();
   if (!r.ok) {
-    let msg = text;
+    let errorPayload: unknown = text;
     try {
-      msg = JSON.parse(text)?.message || msg;
+      errorPayload = JSON.parse(text);
     } catch {}
-    throw new Error(msg || `HTTP ${r.status}`);
+    throw new Error(
+      getUserFacingErrorMessage(errorPayload, "Не удалось выполнить запрос", {
+        status: r.status,
+      }),
+    );
   }
   return text ? (JSON.parse(text) as T) : ({} as T);
 }

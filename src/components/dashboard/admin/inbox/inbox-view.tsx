@@ -11,6 +11,7 @@ import InboxNoMessage from "@/components/dashboard/admin/inbox/inbox-no-message"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { AppBreadcrumb } from "@/components/ui/app-breadcrumb";
 
+import { getUserFacingErrorMessage } from "@/lib/error-messages";
 import { fmtDateTime } from "@/lib/func";
 import { MailAPI } from "@/lib/mail/api";
 import { fetchUserById } from "@/services/user";
@@ -78,9 +79,7 @@ export default function InboxView({
 
       toast.success("Список обновлён");
     } catch (e) {
-      toast.error(
-        e instanceof Error ? e.message : "Не удалось загрузить список",
-      );
+      toast.error(getUserFacingErrorMessage(e, "Не удалось загрузить список"));
     } finally {
       toast.dismiss(t);
       setLoadingList(false);
@@ -144,7 +143,7 @@ export default function InboxView({
 
       toast.success("Письмо открыто");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Не удалось открыть письмо");
+      toast.error(getUserFacingErrorMessage(e, "Не удалось открыть письмо"));
     } finally {
       toast.dismiss(t);
       setLoadingActive(false);
@@ -166,7 +165,7 @@ export default function InboxView({
         loading: "Архивирую...",
         success: "Письмо в архиве",
         error: (e) =>
-          e instanceof Error ? e.message : "Не удалось архивировать",
+          getUserFacingErrorMessage(e, "Не удалось архивировать"),
       },
     );
   };
@@ -185,7 +184,7 @@ export default function InboxView({
       {
         loading: "Удаляю...",
         success: "Письмо перемещено в корзину",
-        error: (e) => (e instanceof Error ? e.message : "Не удалось удалить"),
+        error: (e) => getUserFacingErrorMessage(e, "Не удалось удалить"),
       },
     );
   };
@@ -271,13 +270,11 @@ export default function InboxView({
             : "Отправляю ответ...",
           success: "Ответ отправлен",
           error: (e) =>
-            e instanceof Error ? e.message : "Не удалось отправить ответ",
+            getUserFacingErrorMessage(e, "Не удалось отправить ответ"),
         },
       );
     } catch (e: unknown) {
-      setReplyError(
-        e instanceof Error ? e.message : "Не удалось отправить ответ",
-      );
+      setReplyError(getUserFacingErrorMessage(e, "Не удалось отправить ответ"));
     } finally {
       setReplyBusy(false);
     }

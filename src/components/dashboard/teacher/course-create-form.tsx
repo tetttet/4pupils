@@ -6,6 +6,10 @@ import { toast } from "sonner";
 
 import { apiFetch } from "@/lib/api";
 import { apiFetchMultipart } from "@/lib/api-multipart";
+import {
+  getUserFacingErrorMessage,
+  toUserFacingErrorMessage,
+} from "@/lib/error-messages";
 import { ApiErr, ApiOk, Course } from "@/types/course";
 
 import { Button } from "@/components/ui/button";
@@ -803,8 +807,14 @@ export default function CourseCreateWizard({
 
         if (!res.ok) {
           const msg =
-            (json as ApiErr | null)?.error?.message ||
-            `Не удалось загрузить курс (HTTP ${res.status})`;
+            toUserFacingErrorMessage(
+              (json as ApiErr | null)?.error?.message,
+              "Не удалось загрузить курс",
+              {
+                code: (json as ApiErr | null)?.error?.code,
+                status: res.status,
+              },
+            );
           if (!cancelled) setErr(msg);
           return;
         }
@@ -827,11 +837,7 @@ export default function CourseCreateWizard({
         }
       } catch (e: unknown) {
         if (!cancelled) {
-          if (e instanceof Error) {
-            setErr(e.message);
-          } else {
-            setErr("Не удалось загрузить курс");
-          }
+          setErr(getUserFacingErrorMessage(e, "Не удалось загрузить курс"));
         }
       } finally {
         if (!cancelled) setBootstrapping(false);
@@ -1000,11 +1006,14 @@ export default function CourseCreateWizard({
 
       const json = (await readJsonSafe(res)) as ApiOk<Course> | ApiErr | null;
       if (!res.ok || !json || !("ok" in json) || json.ok === false) {
-        const msg =
-          (json as ApiErr | null)?.error?.message ||
-          `${
-            isEditMode ? "Ошибка обновления курса" : "Ошибка создания курса"
-          } (HTTP ${res.status})`;
+        const msg = toUserFacingErrorMessage(
+          (json as ApiErr | null)?.error?.message,
+          isEditMode ? "Не удалось обновить курс" : "Не удалось создать курс",
+          {
+            code: (json as ApiErr | null)?.error?.code,
+            status: res.status,
+          },
+        );
         setErr(msg);
         return;
       }
@@ -1042,16 +1051,12 @@ export default function CourseCreateWizard({
       setReviewNotes(null);
       setStepIndex(0);
     } catch (e: unknown) {
-      if (
-        e &&
-        typeof e === "object" &&
-        "message" in e &&
-        typeof (e as { message?: unknown }).message === "string"
-      ) {
-        setErr((e as { message: string }).message);
-      } else {
-        setErr(isEditMode ? "Не удалось обновить курс" : "Не удалось создать курс");
-      }
+      setErr(
+        getUserFacingErrorMessage(
+          e,
+          isEditMode ? "Не удалось обновить курс" : "Не удалось создать курс",
+        ),
+      );
     } finally {
       setLoading(false);
     }

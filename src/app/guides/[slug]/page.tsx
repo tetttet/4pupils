@@ -61,6 +61,32 @@ const mdxComponents = {
   li: (props: React.HTMLAttributes<HTMLLIElement>) => (
     <li className="mt-2" {...props} />
   ),
+  table: (props: React.TableHTMLAttributes<HTMLTableElement>) => (
+    <div className="mt-6 overflow-x-auto rounded-2xl border border-neutral-200 bg-white shadow-sm">
+      <table
+        className="min-w-[720px] w-full table-fixed border-collapse text-left text-sm text-neutral-800 [&_th:nth-child(1)]:w-[22%] [&_th:nth-child(2)]:w-[32%] [&_th:nth-child(3)]:w-[46%]"
+        {...props}
+      />
+    </div>
+  ),
+  thead: (props: React.HTMLAttributes<HTMLTableSectionElement>) => (
+    <thead className="bg-neutral-50 text-neutral-950" {...props} />
+  ),
+  tbody: (props: React.HTMLAttributes<HTMLTableSectionElement>) => (
+    <tbody className="divide-y divide-neutral-200" {...props} />
+  ),
+  tr: (props: React.HTMLAttributes<HTMLTableRowElement>) => (
+    <tr className="align-top" {...props} />
+  ),
+  th: (props: React.ThHTMLAttributes<HTMLTableCellElement>) => (
+    <th
+      className="border-b border-neutral-200 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-neutral-600"
+      {...props}
+    />
+  ),
+  td: (props: React.TdHTMLAttributes<HTMLTableCellElement>) => (
+    <td className="px-4 py-4 leading-6 text-neutral-800" {...props} />
+  ),
   a: (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
     <a className="underline underline-offset-4 hover:opacity-80" {...props} />
   ),

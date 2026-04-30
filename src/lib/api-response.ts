@@ -1,4 +1,5 @@
 import type { ApiErr, ApiOk } from "@/types/api";
+import { toUserFacingErrorMessage } from "@/lib/error-messages";
 
 type ApiJson<T> = ApiOk<T> | ApiErr | { message?: unknown } | null;
 
@@ -18,7 +19,7 @@ export function isApiErr(value: unknown): value is ApiErr {
 
   const maybeValue = value as {
     ok?: unknown;
-    error?: { message?: unknown };
+    error?: { code?: unknown; message?: unknown };
   };
 
   return maybeValue.ok === false;
@@ -38,21 +39,24 @@ export function getApiErrorMessage(
   status?: number,
 ) {
   if (isApiErr(json) && typeof json.error?.message === "string") {
-    return json.error.message;
+    return toUserFacingErrorMessage(json.error.message, fallback, {
+      code: typeof json.error.code === "string" ? json.error.code : undefined,
+      status,
+    });
   }
 
   if (json && typeof json === "object") {
     const message = (json as { message?: unknown }).message;
     if (typeof message === "string" && message.trim()) {
-      return message;
+      return toUserFacingErrorMessage(message, fallback, { status });
     }
   }
 
   if (typeof status === "number") {
-    return `${fallback} (HTTP ${status})`;
+    return toUserFacingErrorMessage(null, fallback, { status });
   }
 
-  return fallback;
+  return toUserFacingErrorMessage(null, fallback);
 }
 
 export async function readApiData<T>(res: Response, fallback: string) {

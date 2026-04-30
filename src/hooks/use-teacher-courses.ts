@@ -5,6 +5,10 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { apiFetch } from "@/lib/api";
+import {
+  getUserFacingErrorMessage,
+  toUserFacingErrorMessage,
+} from "@/lib/error-messages";
 import type { ApiErr, ApiOk, Course } from "@/types/course";
 
 type MutationAction = "submit" | "delete" | null;
@@ -23,7 +27,11 @@ type ErrorResponse =
   | { error?: { message?: string } }
   | null;
 
-function getErrorMessage(json: ErrorResponse, fallback: string) {
+function getErrorMessage(
+  json: ErrorResponse,
+  fallback: string,
+  status?: number,
+) {
   if (
     json &&
     typeof json === "object" &&
@@ -33,10 +41,18 @@ function getErrorMessage(json: ErrorResponse, fallback: string) {
     "message" in json.error &&
     typeof json.error.message === "string"
   ) {
-    return json.error.message;
+    const code =
+      "code" in json.error && typeof json.error.code === "string"
+        ? json.error.code
+        : undefined;
+
+    return toUserFacingErrorMessage(json.error.message, fallback, {
+      code,
+      status,
+    });
   }
 
-  return fallback;
+  return toUserFacingErrorMessage(null, fallback, { status });
 }
 
 export function useTeacherCourses() {
@@ -77,7 +93,7 @@ export function useTeacherCourses() {
         const json = (await readJsonSafe(res)) as ApiOk<Course[]> | ApiErr | null;
 
         if (!res.ok) {
-          setError(getErrorMessage(json, `Ошибка (HTTP ${res.status})`));
+          setError(getErrorMessage(json, "Не удалось загрузить курсы", res.status));
           if (!options.background) {
             setRows([]);
           }
@@ -97,8 +113,10 @@ export function useTeacherCourses() {
           }
         }
       } catch (err) {
-        const message =
-          err instanceof Error ? err.message : "Не удалось загрузить курсы";
+        const message = getUserFacingErrorMessage(
+          err,
+          "Не удалось загрузить курсы",
+        );
         setError(message);
 
         if (!options.background) {
@@ -149,7 +167,8 @@ export function useTeacherCourses() {
           const json = (await readJsonSafe(res)) as ErrorResponse;
           const message = getErrorMessage(
             json,
-            `Не удалось отправить (HTTP ${res.status})`,
+            "Не удалось отправить курс",
+            res.status,
           );
           setError(message);
           toast.error(message);
@@ -160,8 +179,10 @@ export function useTeacherCourses() {
         await load({ background: true });
         return true;
       } catch (err) {
-        const message =
-          err instanceof Error ? err.message : "Не удалось отправить курс";
+        const message = getUserFacingErrorMessage(
+          err,
+          "Не удалось отправить курс",
+        );
         setError(message);
         toast.error(message);
         return false;
@@ -188,7 +209,8 @@ export function useTeacherCourses() {
           const json = (await readJsonSafe(res)) as ErrorResponse;
           const message = getErrorMessage(
             json,
-            `Не удалось удалить (HTTP ${res.status})`,
+            "Не удалось удалить курс",
+            res.status,
           );
           setError(message);
           toast.error(message);
@@ -200,8 +222,10 @@ export function useTeacherCourses() {
         await load({ background: true });
         return true;
       } catch (err) {
-        const message =
-          err instanceof Error ? err.message : "Не удалось удалить курс";
+        const message = getUserFacingErrorMessage(
+          err,
+          "Не удалось удалить курс",
+        );
         setError(message);
         toast.error(message);
         return false;

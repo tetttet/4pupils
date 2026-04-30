@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { getUserFacingErrorMessage } from "@/lib/error-messages";
 import { http } from "@/lib/http";
 
 import { Button } from "@/components/ui/button";
@@ -127,7 +128,11 @@ async function fetchAllUsers(): Promise<Recipient[]> {
   const r = await http(`/api/users`, { method: "GET" });
   if (!r.ok) {
     const data = await r.json().catch(() => ({}));
-    throw new Error(data?.message || "Failed to load users");
+    throw new Error(
+      getUserFacingErrorMessage(data, "Не удалось загрузить получателей", {
+        status: r.status,
+      }),
+    );
   }
   const data = await r.json();
   return (data?.users ?? []) as Recipient[];
@@ -166,7 +171,10 @@ export default function InboxBroadcast() {
       const list = await fetchAllUsers();
       setUsers(list);
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "Failed to load users";
+      const msg = getUserFacingErrorMessage(
+        e,
+        "Не удалось загрузить получателей",
+      );
       toast.error(msg);
       setUsers([]);
     } finally {
@@ -219,7 +227,10 @@ export default function InboxBroadcast() {
       setSent(true);
       toast.success(`Отправлено: ${audienceLabel(audience)} (${targetIds.length})`);
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "Не удалось отправить рассылку";
+      const msg = getUserFacingErrorMessage(
+        e,
+        "Не удалось отправить рассылку",
+      );
       toast.error(msg);
     } finally {
       setBusy(false);

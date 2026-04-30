@@ -1,4 +1,5 @@
 import { http } from "@/lib/http";
+import { toUserFacingErrorMessage } from "@/lib/error-messages";
 import type { ApiErr, ApiOk, Course } from "@/types/course";
 
 type CourseResponse<T> = ApiOk<T> | ApiErr | null | Record<string, unknown>;
@@ -37,17 +38,22 @@ function isApiOk<T>(value: unknown): value is ApiOk<T> {
 
 function getErrorMessage(json: CourseResponse<unknown>, status: number) {
   if (isApiErr(json) && typeof json.error?.message === "string") {
-    return json.error.message;
+    return toUserFacingErrorMessage(json.error.message, "Не удалось загрузить курсы", {
+      code: typeof json.error.code === "string" ? json.error.code : undefined,
+      status,
+    });
   }
 
   if (json && typeof json === "object") {
     const message = (json as { message?: unknown }).message;
     if (typeof message === "string" && message.trim()) {
-      return message;
+      return toUserFacingErrorMessage(message, "Не удалось загрузить курсы", {
+        status,
+      });
     }
   }
 
-  return `Не удалось загрузить курсы (HTTP ${status})`;
+  return toUserFacingErrorMessage(null, "Не удалось загрузить курсы", { status });
 }
 
 async function readCourseResponse<T>(res: Response): Promise<T> {

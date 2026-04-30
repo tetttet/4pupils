@@ -15,6 +15,7 @@ import {
 import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
+import { getUserFacingErrorMessage } from "@/lib/error-messages";
 import { useTeacherCourseApplications } from "@/hooks/use-teacher-course-applications";
 import type {
   CourseApplication,
@@ -873,9 +874,7 @@ export default function TeacherCourseApplicationsWorkspace({
         return true;
       } catch (actionLoadError) {
         toast.error(
-          actionLoadError instanceof Error
-            ? actionLoadError.message
-            : "Не удалось обновить заявку",
+          getUserFacingErrorMessage(actionLoadError, "Не удалось обновить заявку"),
         );
         return false;
       }
