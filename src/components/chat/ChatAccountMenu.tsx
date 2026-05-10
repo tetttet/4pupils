@@ -139,10 +139,10 @@ export function ChatAccountMenu() {
     return (
       <div
         aria-label="Загрузка аккаунта"
-        className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[var(--border)] bg-[var(--control-hover)]"
+        className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[var(--surface)] text-[var(--muted)] backdrop-blur"
         role="status"
       >
-        <LoaderCircle className="h-4 w-4 animate-spin text-[var(--muted)]" />
+        <LoaderCircle className="h-4 w-4 animate-spin" />
       </div>
     );
   }
@@ -151,13 +151,13 @@ export function ChatAccountMenu() {
     return (
       <button
         aria-label="Войти в аккаунт"
-        className="flex h-10 shrink-0 items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--header-bg)] px-3 text-sm font-semibold text-[var(--text)] shadow-sm transition hover:bg-[var(--control-hover)] focus:outline-none focus:ring-4 focus:ring-[var(--focus-ring)]"
+        className="flex h-10 shrink-0 items-center gap-2 rounded-2xl bg-[var(--surface)] px-3 text-sm font-semibold text-[var(--text)] backdrop-blur transition-all duration-200 hover:-translate-y-0.5 hover:bg-[var(--control-hover)] hover:shadow-md focus:outline-none focus:ring-4 focus:ring-[var(--focus-ring)]"
         onClick={() =>
           router.push(buildAuthHref("/auth/sign-in", "/ai/homemade/atlas"))
         }
         type="button"
       >
-        <LogIn className="h-4 w-4" />
+        <LogIn className="h-4 w-4 text-[var(--muted)]" />
         <span className="hidden sm:inline">Войти</span>
       </button>
     );
@@ -169,18 +169,19 @@ export function ChatAccountMenu() {
         aria-expanded={isOpen}
         aria-haspopup="menu"
         aria-label="Открыть меню аккаунта"
-        className="flex h-10 shrink-0 items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--header-bg)] px-1.5 pr-2 text-[var(--text)] shadow-sm transition hover:bg-[var(--control-hover)] focus:outline-none focus:ring-4 focus:ring-[var(--focus-ring)]"
+        className="group flex h-10 shrink-0 items-center gap-1 rounded-2xl bg-[var(--surface)] px-1.5 pr-2 text-[var(--text)] backdrop-blur transition-all duration-200 hover:-translate-y-0.5 hover:bg-[var(--control-hover)] hover:shadow-md focus:outline-none focus:ring-4 focus:ring-[var(--focus-ring)]"
         onClick={() => setIsOpen((current) => !current)}
         type="button"
       >
-        <Avatar className="h-8 w-8 border border-[var(--border)]">
+        <Avatar className="h-8 w-8">
           <AvatarImage src={user.avatar_url ?? undefined} alt={fullName} />
           <AvatarFallback className="bg-[var(--accent)] text-xs font-semibold text-white">
             {getInitials(user)}
           </AvatarFallback>
         </Avatar>
+
         <ChevronDown
-          className={`h-4 w-4 text-[var(--muted)] transition-transform duration-200 ${
+          className={`h-4 w-4 text-[var(--muted)] transition-transform duration-200 group-hover:text-[var(--text)] ${
             isOpen ? "rotate-180 text-[var(--text)]" : ""
           }`}
         />
@@ -188,16 +189,17 @@ export function ChatAccountMenu() {
 
       {isOpen ? (
         <div
-          className="absolute right-0 top-[calc(100%+0.5rem)] z-50 w-72 max-w-[90vw] overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--header-bg)] p-2 text-[var(--text)] shadow-2xl shadow-black/15 backdrop-blur-xl"
+          className="absolute right-0 top-[calc(100%+0.65rem)] z-50 w-72 max-w-[90vw] overflow-hidden rounded-3xl bg-[var(--header-bg)] p-2 text-[var(--text)] shadow-2xl shadow-black/15"
           role="menu"
         >
-          <div className="flex items-center gap-3 rounded-xl bg-[var(--settings-row)] p-3">
-            <Avatar className="h-10 w-10 border border-[var(--border)]">
+          <div className="flex items-center gap-3 rounded-2xl bg-[var(--control-hover)] p-3">
+            <Avatar className="h-10 w-10">
               <AvatarImage src={user.avatar_url ?? undefined} alt={fullName} />
               <AvatarFallback className="bg-[var(--accent)] text-sm font-semibold text-white">
                 {getInitials(user)}
               </AvatarFallback>
             </Avatar>
+
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-[var(--text)]">
                 {fullName}
@@ -208,7 +210,7 @@ export function ChatAccountMenu() {
             </div>
           </div>
 
-          <div className="my-2 h-px bg-[var(--border)]" />
+          <div className="my-2 h-px bg-[var(--control-hover)]" />
 
           <div className="space-y-1">
             {menuItems.map((item) => {
@@ -216,7 +218,7 @@ export function ChatAccountMenu() {
 
               return (
                 <button
-                  className="flex h-10 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-medium text-[var(--text)] transition hover:bg-[var(--control-hover)] focus:outline-none focus:ring-4 focus:ring-[var(--focus-ring)]"
+                  className="flex h-10 w-full items-center gap-3 rounded-2xl px-3 text-left text-sm font-medium text-[var(--text)] transition-all duration-200 hover:bg-[var(--control-hover)] focus:outline-none focus:ring-4 focus:ring-[var(--focus-ring)]"
                   key={item.href}
                   onClick={() => navigateTo(item.href)}
                   role="menuitem"
@@ -229,10 +231,10 @@ export function ChatAccountMenu() {
             })}
           </div>
 
-          <div className="my-2 h-px bg-[var(--border)]" />
+          <div className="my-2 h-px bg-[var(--control-hover)]" />
 
           <button
-            className="flex h-10 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-medium text-[var(--danger)] transition hover:bg-[var(--danger-soft)] focus:outline-none focus:ring-4 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+            className="flex h-10 w-full items-center gap-3 rounded-2xl px-3 text-left text-sm font-medium text-[var(--danger)] transition-all duration-200 hover:bg-[var(--danger-soft)] focus:outline-none focus:ring-4 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
             disabled={isLoggingOut}
             onClick={() => void handleLogout()}
             role="menuitem"

@@ -110,14 +110,49 @@ export function MoonIcon() {
 
 export function SendIcon() {
   return (
-    <svg aria-hidden="true" className="h-5 w-5" fill="none" viewBox="0 0 24 24">
+    <svg
+      aria-hidden="true"
+      className="h-[1.18rem] w-[1.18rem]"
+      fill="none"
+      viewBox="0 0 24 24"
+    >
       <path
-        d="M12 19V6m0 0-5 5m5-5 5 5"
+        d="M3.298 10.902 19.9 3.663c.89-.388 1.771.494 1.39 1.385L14.05 21.66c-.373.85-1.588.824-1.924-.04l-2.29-5.897a1.5 1.5 0 0 0-.856-.856l-5.937-2.307c-.862-.335-.889-1.548-.045-1.916Z"
+        fill="currentColor"
+      />
+      <path
+        d="m9.78 14.22 9.08-9.08"
+        stroke="rgba(15,23,42,0.26)"
+        strokeLinecap="round"
+        strokeWidth="1.75"
+      />
+    </svg>
+  );
+}
+
+export function ArrowDownIcon() {
+  return (
+    <svg aria-hidden="true" className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24">
+      <path
+        d="M12 5v14m0 0-5-5m5 5 5-5"
         stroke="currentColor"
         strokeLinecap="round"
         strokeLinejoin="round"
         strokeWidth="2"
       />
+    </svg>
+  );
+}
+
+export function StopIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="h-[1.1rem] w-[1.1rem]"
+      fill="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <rect height="13.5" rx="3" width="13.5" x="5.25" y="5.25" />
     </svg>
   );
 }

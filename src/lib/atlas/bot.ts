@@ -1,3 +1,9 @@
+import { brand } from "@/lib/brand";
+import {
+  buildAtlasIntroAnswer,
+  createAtlasIntroPayload,
+  isAtlasIntroRequest,
+} from "./intro";
 import type {
   AtlasIntent,
   AtlasMemory,
@@ -18,10 +24,10 @@ type PlatformTopic = {
 };
 
 const defaultChips = [
+  "Что ты умеешь?",
   "Как создать аккаунт ученика?",
   "Как добавить новый курс?",
-  "Как посмотреть список учеников?",
-  "Как работает панель администратора?",
+  "Как найти нужный раздел платформы?",
 ];
 
 const platformTopics: PlatformTopic[] = [
@@ -343,16 +349,16 @@ function detectTopic(message: string) {
 
 function buildGeneralAnswer() {
   return [
-    "Я Atlas, встроенный помощник 4pupils.",
-    "Помогаю разобраться с аккаунтами, профилями, пользователями, курсами, уроками, расписанием, доступами, оплатой, сообщениями и админ-панелью.",
+    `Я Atlas, встроенный помощник ${brand.name}.`,
+    "Помогаю разобраться с аккаунтами, профилями, ролями, пользователями, курсами, уроками, сообщениями, настройками и навигацией по платформе.",
     "Напишите, что хотите сделать на платформе, и я разложу путь по шагам.",
   ].join("\n");
 }
 
 function buildOffTopicAnswer() {
   return [
-    "Я помогаю именно с использованием платформы 4pupils.",
-    "Могу подсказать, где создать аккаунт, добавить курс, найти ученика, изменить роль, настроить доступ, открыть уроки или разобраться с панелью администратора.",
+    `Я помогаю именно с использованием платформы ${brand.name}.`,
+    "Могу подсказать, где создать аккаунт, найти нужный раздел, открыть уроки, настроить доступ, разобраться с ролями или пройти нужный сценарий внутри платформы.",
     "Сформулируйте вопрос по работе сайта, и я дам короткие шаги.",
   ].join("\n");
 }
@@ -403,6 +409,38 @@ function createReply(
   previousMemory?: AtlasMemory,
   previousContext?: UserContext,
 ): BotReply {
+  const context = updateContext(previousContext, message);
+
+  if (isAtlasIntroRequest(message)) {
+    const answer = buildAtlasIntroAnswer(context);
+    const intro = createAtlasIntroPayload(context);
+    const memory: AtlasMemory = {
+      ...(previousMemory ?? {}),
+      lastIntent: "intro",
+      lastTopic: "Возможности Atlas",
+      lastUserMessage: message,
+      lastBotAnswer: answer,
+      lastSuggestedChips: [],
+      summary: "Пользователь запросил обзор возможностей Atlas.",
+    };
+
+    return {
+      answer,
+      engine: "local",
+      intent: "intro",
+      confidence: 0.98,
+      actions: [],
+      links: [],
+      chips: [],
+      sources: [brand.name, "Atlas"],
+      memory,
+      context,
+      handoff: false,
+      intro,
+      topic: "Возможности Atlas",
+    };
+  }
+
   const result = detectTopic(message);
   const answer =
     result.intent === "off_topic"
@@ -424,8 +462,14 @@ function createReply(
           href: result.topic.links[0]?.href ?? "/platform",
         },
       ]
-    : [{ type: "link" as const, label: "Открыть Atlas", href: "/ai/homemade/atlas" }];
-  const context = updateContext(previousContext, message, result.topic);
+    : [
+        {
+          type: "link" as const,
+          label: "Открыть Atlas",
+          href: "/ai/homemade/atlas",
+        },
+      ];
+  const nextContext = updateContext(context, message, result.topic);
   const memory = updateMemory(
     previousMemory,
     message,
@@ -445,10 +489,107 @@ function createReply(
     chips,
     sources: result.topic ? [result.topic.title] : ["Atlas"],
     memory,
-    context,
+    context: nextContext,
     handoff: result.intent === "support",
     topic: result.topic?.title,
   };
+}
+
+type ChatStreamEvent =
+  | {
+      text: string;
+      type: "delta";
+    }
+  | {
+      reply: BotReply;
+      type: "final";
+    };
+
+const streamEncoder = new TextEncoder();
+
+function splitReplyIntoChunks(answer: string) {
+  const parts = answer.split(/(\s+)/).filter(Boolean);
+  const targetLength =
+    answer.length > 540 ? 24 : answer.length > 260 ? 18 : 12;
+  const chunks: string[] = [];
+  let currentChunk = "";
+
+  for (const part of parts) {
+    const nextChunk = `${currentChunk}${part}`;
+
+    if (
+      currentChunk &&
+      (part.includes("\n") || nextChunk.length > targetLength)
+    ) {
+      chunks.push(currentChunk);
+      currentChunk = part;
+
+      if (part.includes("\n")) {
+        chunks.push(currentChunk);
+        currentChunk = "";
+      }
+
+      continue;
+    }
+
+    currentChunk = nextChunk;
+
+    if (part.includes("\n")) {
+      chunks.push(currentChunk);
+      currentChunk = "";
+    }
+  }
+
+  if (currentChunk) {
+    chunks.push(currentChunk);
+  }
+
+  return chunks;
+}
+
+function getChunkDelay(chunk: string) {
+  if (/\n/.test(chunk)) {
+    return 28;
+  }
+
+  if (/[.!?]\s*$/.test(chunk)) {
+    return 34;
+  }
+
+  if (chunk.length > 20) {
+    return 24;
+  }
+
+  if (chunk.length > 12) {
+    return 20;
+  }
+
+  return 16;
+}
+
+async function waitForNextChunk(ms: number, signal?: AbortSignal) {
+  if (ms <= 0 || signal?.aborted) {
+    return;
+  }
+
+  await new Promise<void>((resolve) => {
+    const handleAbort = () => {
+      clearTimeout(timeoutId);
+      signal?.removeEventListener("abort", handleAbort);
+      resolve();
+    };
+
+    const timeoutId = setTimeout(() => {
+      signal?.removeEventListener("abort", handleAbort);
+      resolve();
+    }, ms);
+
+    signal?.addEventListener("abort", handleAbort, { once: true });
+  });
+}
+
+function serializeChatStreamEvent(event: ChatStreamEvent) {
+  return streamEncoder.encode(`${JSON.stringify(event)}\n`);
 }
 
 export async function createBotReply(
@@ -463,8 +604,79 @@ export async function createBotResponse(
   userMessage: string,
   previousMemory?: AtlasMemory,
   previousContext?: UserContext,
+  signal?: AbortSignal,
 ) {
-  return Response.json(
-    await createBotReply(userMessage, previousMemory, previousContext),
+  const reply = await createBotReply(
+    userMessage,
+    previousMemory,
+    previousContext,
+  );
+  const answerChunks = splitReplyIntoChunks(reply.answer);
+
+  return new Response(
+    new ReadableStream({
+      start(controller) {
+        let isClosed = false;
+
+        const closeStream = () => {
+          if (isClosed) {
+            return;
+          }
+
+          isClosed = true;
+          controller.close();
+        };
+
+        const handleAbort = () => {
+          closeStream();
+        };
+
+        signal?.addEventListener("abort", handleAbort, { once: true });
+
+        void (async () => {
+          try {
+            for (const chunk of answerChunks) {
+              if (signal?.aborted || isClosed) {
+                return;
+              }
+
+              controller.enqueue(
+                serializeChatStreamEvent({
+                  text: chunk,
+                  type: "delta",
+                }),
+              );
+
+              await waitForNextChunk(getChunkDelay(chunk), signal);
+            }
+
+            if (signal?.aborted || isClosed) {
+              return;
+            }
+
+            controller.enqueue(
+              serializeChatStreamEvent({
+                reply,
+                type: "final",
+              }),
+            );
+          } catch (error) {
+            if (!isClosed && !signal?.aborted) {
+              isClosed = true;
+              controller.error(error);
+            }
+          } finally {
+            signal?.removeEventListener("abort", handleAbort);
+            closeStream();
+          }
+        })();
+      },
+    }),
+    {
+      headers: {
+        "Cache-Control": "no-cache, no-transform",
+        "Content-Type": "application/x-ndjson; charset=utf-8",
+      },
+    },
   );
 }

@@ -3,7 +3,6 @@
 import {
   type CSSProperties,
   type FormEvent,
-  type MouseEvent,
   type PointerEvent,
   type RefObject,
   useCallback,
@@ -11,9 +10,10 @@ import {
   useRef,
   useState,
 } from "react";
-import { SendIcon } from "./icons";
+import { motion, useReducedMotion } from "framer-motion";
+import { ArrowDownIcon, SendIcon, StopIcon } from "./icons";
+import { ChatSuggestions } from "./ChatSuggestions";
 
-const SPRING = "cubic-bezier(0.34, 1.56, 0.64, 1)";
 const SHEET_EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
 const EASE_OUT = "cubic-bezier(0.16, 1, 0.3, 1)";
 const SCROLL_TRIGGER_DELTA = 8;
@@ -24,10 +24,14 @@ type ChatComposerProps = {
   input: string;
   inputRef: RefObject<HTMLInputElement | null>;
   isDisabled: boolean;
+  isResponding: boolean;
   onChangeInput: (value: string) => void;
   onChipClick: (chip: string) => void;
+  onRequestScrollToBottom: () => void;
+  onStop: () => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   scrollRef: RefObject<HTMLDivElement | null>;
+  showScrollToBottom: boolean;
 };
 
 function clampProgress(value: number) {
@@ -40,16 +44,20 @@ export function ChatComposer({
   input,
   inputRef,
   isDisabled,
+  isResponding,
   onChangeInput,
   onChipClick,
+  onRequestScrollToBottom,
+  onStop,
   onSubmit,
   scrollRef,
+  showScrollToBottom,
 }: ChatComposerProps) {
+  const prefersReducedMotion = useReducedMotion();
   const [isComposerOpen, setIsComposerOpen] = useState(true);
   const [composerHeight, setComposerHeight] = useState<number | null>(null);
   const [dragProgress, setDragProgress] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [sending, setSending] = useState(false);
 
   const composerInnerRef = useRef<HTMLDivElement>(null);
   const dragStartYRef = useRef(0);
@@ -64,7 +72,6 @@ export function ChatComposer({
   const isComposerOpenRef = useRef(isComposerOpen);
   const lastScrollTopRef = useRef(0);
   const scrollFrameRef = useRef<number | null>(null);
-  const sendTimerRef = useRef<number | null>(null);
 
   const visibleProgress = dragProgress ?? (isComposerOpen ? 1 : 0);
   const measuredHeight = composerHeight ?? 0;
@@ -74,6 +81,30 @@ export function ChatComposer({
       : Math.max(0, measuredHeight * visibleProgress);
   const sheetOpacity = clampProgress(visibleProgress * 1.25);
   const isFullyCollapsed = visibleProgress < 0.04;
+  const hasMessage = Boolean(input.trim());
+  const canSubmit = hasMessage && !isDisabled && !isResponding;
+  const isActionEnabled = isResponding || canSubmit;
+  const actionLabel = isResponding
+    ? "Остановить генерацию ответа"
+    : "Отправить сообщение";
+  const actionButtonStyle = {
+    backgroundColor: isResponding
+      ? "color-mix(in srgb, var(--send-bg) 84%, black 16%)"
+      : canSubmit
+        ? "var(--send-bg)"
+        : "var(--send-disabled)",
+    boxShadow: isResponding
+      ? "0 14px 28px rgba(15,23,42,0.18)"
+      : canSubmit
+        ? "0 18px 34px rgba(15,23,42,0.2)"
+        : "0 10px 22px rgba(15,23,42,0.08)",
+    transition: prefersReducedMotion
+      ? "background-color 160ms ease-in-out, box-shadow 160ms ease-in-out, opacity 160ms ease-in-out"
+      : "background-color 220ms ease-in-out, box-shadow 220ms ease-in-out, opacity 180ms ease-in-out",
+  } satisfies CSSProperties;
+  const iconTransition = prefersReducedMotion
+    ? { duration: 0.18, ease: "easeInOut" as const }
+    : { type: "spring" as const, stiffness: 560, damping: 34, mass: 0.72 };
 
   const setComposerOpen = useCallback((nextOpen: boolean) => {
     ignoreScrollUntilRef.current = window.performance.now() + 220;
@@ -85,14 +116,6 @@ export function ChatComposer({
   useEffect(() => {
     isComposerOpenRef.current = isComposerOpen;
   }, [isComposerOpen]);
-
-  useEffect(() => {
-    return () => {
-      if (sendTimerRef.current !== null) {
-        window.clearTimeout(sendTimerRef.current);
-      }
-    };
-  }, []);
 
   useEffect(() => {
     const node = composerInnerRef.current;
@@ -281,17 +304,6 @@ export function ChatComposer({
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     setComposerOpen(true);
-    setSending(true);
-
-    if (sendTimerRef.current !== null) {
-      window.clearTimeout(sendTimerRef.current);
-    }
-
-    sendTimerRef.current = window.setTimeout(() => {
-      setSending(false);
-      sendTimerRef.current = null;
-    }, 600);
-
     onSubmit(event);
   };
 
@@ -299,38 +311,8 @@ export function ChatComposer({
     setComposerOpen(true);
 
     window.setTimeout(() => {
-      const scroller = scrollRef.current;
-
-      if (!scroller) {
-        return;
-      }
-
-      scroller.scrollTo({
-        top: scroller.scrollHeight,
-        behavior: "smooth",
-      });
+      onRequestScrollToBottom();
     }, 250);
-  };
-
-  const handleChipClick = (
-    chip: string,
-    event: MouseEvent<HTMLButtonElement>,
-  ) => {
-    const button = event.currentTarget;
-    const ripple = document.createElement("span");
-
-    ripple.className = "chip-ripple";
-    ripple.style.cssText = `
-      position:absolute;inset:0;border-radius:inherit;
-      background:var(--accent);opacity:0.18;
-      transform:scale(0);animation:chipRipple 0.4s ${EASE_OUT} forwards;
-    `;
-
-    button.style.position = "relative";
-    button.style.overflow = "hidden";
-    button.appendChild(ripple);
-    ripple.addEventListener("animationend", () => ripple.remove());
-    onChipClick(chip);
   };
 
   const sheetStyle: CSSProperties = {
@@ -377,25 +359,44 @@ export function ChatComposer({
           from { opacity: 0; transform: translateY(8px) scale(0.94); }
           to { opacity: 1; transform: translateY(0) scale(1); }
         }
-        @keyframes sendPop {
-          0% { transform: scale(1); }
-          40% { transform: scale(0.82); }
-          70% { transform: scale(1.1); }
-          100% { transform: scale(1); }
-        }
         @keyframes errorIn {
           from { opacity: 0; transform: translateY(-4px); }
           to { opacity: 1; transform: translateY(0); }
         }
         .chip-animated {
-          animation: chipIn 0.35s ${SPRING} both;
-        }
-        .send-pop {
-          animation: sendPop 0.5s ${SPRING} forwards !important;
+          animation: chipIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
         }
       `}</style>
 
       <div className="relative z-10 shrink-0">
+        <div
+          className={`pointer-events-none absolute inset-x-0 z-20 flex justify-center transition-[opacity,transform] duration-300 ${
+            showScrollToBottom
+              ? "translate-y-0 opacity-100"
+              : "translate-y-2 opacity-0"
+          }`}
+          style={{
+            bottom: isFullyCollapsed
+              ? "calc(max(env(safe-area-inset-bottom), 0.75rem) + 2.9rem)"
+              : "calc(100% + 0.75rem)",
+          }}
+        >
+          <button
+            aria-label="Прокрутить к последнему сообщению"
+            className="pointer-events-auto inline-flex h-11 w-11 items-center justify-center rounded-full border border-[var(--border)] text-[var(--text)] shadow-[0_16px_36px_rgba(15,23,42,0.16)] transition-[transform,box-shadow,border-color] duration-200 hover:-translate-y-0.5 hover:shadow-[0_20px_40px_rgba(15,23,42,0.2)] active:translate-y-0"
+            onClick={onRequestScrollToBottom}
+            style={{
+              backdropFilter: "blur(18px)",
+              background:
+                "color-mix(in srgb, var(--footer-bg) 76%, rgba(255,255,255,0.24))",
+            }}
+            tabIndex={showScrollToBottom ? 0 : -1}
+            type="button"
+          >
+            <ArrowDownIcon />
+          </button>
+        </div>
+
         <footer
           aria-hidden={isFullyCollapsed}
           className="relative shrink-0 border-t bg-[var(--footer-bg)] transition-colors duration-300"
@@ -429,80 +430,80 @@ export function ChatComposer({
               />
             </button>
 
-            {chips.length > 0 ? (
-              <div className="mb-3 flex gap-2 overflow-x-auto pb-1">
-                {chips.map((chip, index) => (
-                  <button
-                    className="chip-animated shrink-0 select-none rounded-full border border-[var(--chip-border)] bg-[var(--chip-bg)] px-3 py-2 text-xs font-medium text-[var(--chip-text)] shadow-sm transition-all hover:-translate-y-0.5 hover:border-[var(--accent)] hover:bg-[var(--chip-hover-bg)] hover:text-[var(--accent)] hover:shadow-md active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
-                    disabled={isDisabled}
-                    key={chip}
-                    onClick={(event) => handleChipClick(chip, event)}
-                    style={{ animationDelay: `${index * 35}ms` }}
-                    type="button"
-                  >
-                    {chip}
-                  </button>
-                ))}
-              </div>
-            ) : null}
+            <ChatSuggestions
+              chips={chips}
+              isDisabled={isDisabled}
+              onChipClick={onChipClick}
+            />
 
-            <form className="flex items-end gap-2" onSubmit={handleSubmit}>
+            <form className="flex items-end" onSubmit={handleSubmit}>
               <label className="sr-only" htmlFor="chat-input">
                 Спросите Atlas
               </label>
 
-              <input
-                autoComplete="off"
-                autoCorrect="on"
-                className="min-h-12 flex-1 rounded-2xl border border-[var(--input-border)] bg-[var(--input-bg)] px-4 py-3 text-base text-[var(--text)] outline-none placeholder:text-[var(--placeholder)] transition-[background-color,border-color,box-shadow] duration-200 focus:border-[var(--accent)] focus:bg-[var(--input-focus-bg)] focus:ring-4 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 sm:text-sm"
-                disabled={isDisabled}
-                enterKeyHint="send"
-                id="chat-input"
-                inputMode="text"
-                maxLength={1200}
-                onChange={(event) => onChangeInput(event.target.value)}
-                onFocus={handleInputFocus}
-                placeholder="Спросите Atlas о платформе 4pupils..."
-                ref={inputRef}
-                value={input}
-              />
+              <div className="relative flex-1">
+                <input
+                  autoComplete="off"
+                  autoCorrect="on"
+                  className="min-h-14 w-full rounded-[28px] border border-[var(--input-border)] bg-[var(--input-bg)] px-4 py-3 pr-16 text-base text-[var(--text)] shadow-[0_14px_36px_rgba(15,23,42,0.08)] outline-none transition-[background-color,border-color,box-shadow,opacity] duration-200 placeholder:text-[var(--placeholder)] focus:border-[var(--accent)] focus:bg-[var(--input-focus-bg)] focus:ring-4 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60 sm:text-sm"
+                  disabled={isDisabled}
+                  enterKeyHint={isResponding ? "done" : "send"}
+                  id="chat-input"
+                  inputMode="text"
+                  maxLength={1200}
+                  onChange={(event) => onChangeInput(event.target.value)}
+                  onFocus={handleInputFocus}
+                  placeholder="Спросите Atlas о платформе..."
+                  ref={inputRef}
+                  value={input}
+                />
 
-              <button
-                aria-label="Отправить"
-                className={`grid h-12 w-12 shrink-0 select-none place-items-center rounded-2xl bg-[var(--send-bg)] text-white focus:outline-none focus:ring-4 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed disabled:bg-[var(--send-disabled)]${
-                  sending ? " send-pop" : ""
-                }`}
-                disabled={isDisabled || !input.trim()}
-                onMouseEnter={(event) => {
-                  if (!isDisabled && input.trim()) {
-                    event.currentTarget.style.transform =
-                      "translateY(-2px) scale(1.06)";
+                <motion.button
+                  aria-label={actionLabel}
+                  className="absolute bottom-1.5 right-1.5 grid h-11 w-11 select-none place-items-center rounded-2xl text-white focus:outline-none focus:ring-4 focus:ring-[var(--focus-ring)] disabled:cursor-not-allowed"
+                  disabled={!isResponding && !canSubmit}
+                  onClick={isResponding ? onStop : undefined}
+                  style={actionButtonStyle}
+                  type={isResponding ? "button" : "submit"}
+                  whileHover={
+                    isActionEnabled
+                      ? {
+                          scale: isResponding ? 1.02 : 1.04,
+                          y: -1.5,
+                        }
+                      : undefined
                   }
-                }}
-                onMouseLeave={(event) => {
-                  event.currentTarget.style.transform = "";
-                }}
-                style={{
-                  boxShadow:
-                    !isDisabled && input.trim()
-                      ? "0 4px 14px rgba(0,0,0,0.18)"
-                      : "none",
-                  transition: sending
-                    ? "none"
-                    : "background 0.2s, box-shadow 0.2s, opacity 0.2s, transform 0.2s",
-                }}
-                type="submit"
-              >
-                <span
-                  style={{
-                    display: "flex",
-                    transform: sending ? "translateX(2px)" : "none",
-                    transition: `transform 0.3s ${SPRING}`,
-                  }}
+                  whileTap={isActionEnabled ? { scale: 0.95 } : undefined}
                 >
-                  <SendIcon />
-                </span>
-              </button>
+                  <span className="pointer-events-none relative flex h-6 w-6 items-center justify-center">
+                    <motion.span
+                      animate={{
+                        opacity: isResponding ? 0 : 1,
+                        rotate: isResponding ? -14 : 0,
+                        scale: isResponding ? 0.68 : 1,
+                        x: isResponding ? 3.5 : 0,
+                        y: isResponding ? -2.5 : 0,
+                      }}
+                      className="absolute inset-0 flex items-center justify-center"
+                      transition={iconTransition}
+                    >
+                      <SendIcon />
+                    </motion.span>
+
+                    <motion.span
+                      animate={{
+                        opacity: isResponding ? 1 : 0,
+                        rotate: isResponding ? 0 : 10,
+                        scale: isResponding ? 1 : 0.62,
+                      }}
+                      className="absolute inset-0 flex items-center justify-center"
+                      transition={iconTransition}
+                    >
+                      <StopIcon />
+                    </motion.span>
+                  </span>
+                </motion.button>
+              </div>
             </form>
 
             {activeError ? (

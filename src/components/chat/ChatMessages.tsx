@@ -8,16 +8,21 @@ import {
   type ReactNode,
   type RefObject,
 } from "react";
+import { motion } from "framer-motion";
 import Link from "next/link";
 import { productBrand } from "@/lib/atlas/brand";
+import { AtlasIntroResponse } from "./AtlasIntroResponse";
 import { welcomeBackdropSubtext, welcomeBackdropText } from "./chat-data";
 import type { ChatMessage } from "./chat-types";
 
 type ChatMessagesProps = {
+  bottomRef: RefObject<HTMLDivElement | null>;
+  contentRef: RefObject<HTMLDivElement | null>;
   isLoading: boolean;
   messages: ChatMessage[];
   onTypingComplete?: (messageId: string) => void;
   scrollRef: RefObject<HTMLDivElement | null>;
+  streamingMessageId?: string | null;
   typingMessageId?: string | null;
   welcomeSubtitle?: string;
   welcomeTitle?: string;
@@ -69,9 +74,10 @@ function splitTrailingPunctuation(value: string) {
 function parseMessageBlocks(content: string) {
   const blocks: MessageBlock[] = [];
   const paragraphLines: string[] = [];
-  let activeList:
-    | Extract<MessageBlock, { type: "ordered" | "unordered" }>
-    | null = null;
+  let activeList: Extract<
+    MessageBlock,
+    { type: "ordered" | "unordered" }
+  > | null = null;
 
   function flushParagraph() {
     if (!paragraphLines.length) {
@@ -293,6 +299,35 @@ function renderInlineMarkdownWithBreaks(
   return nodes;
 }
 
+function renderPlainTextWithBreaks(
+  content: string,
+  keyPrefix: string,
+  trailingNode?: ReactNode,
+) {
+  const nodes: ReactNode[] = [];
+  const lines = content.replace(/\r\n/g, "\n").split("\n");
+
+  lines.forEach((line, index) => {
+    if (index > 0) {
+      nodes.push(<br key={`${keyPrefix}-br-${index}`} />);
+    }
+
+    if (line) {
+      nodes.push(
+        <Fragment key={`${keyPrefix}-line-${index}`}>{line}</Fragment>,
+      );
+    }
+  });
+
+  if (trailingNode) {
+    nodes.push(
+      <Fragment key={`${keyPrefix}-trailing`}>{trailingNode}</Fragment>,
+    );
+  }
+
+  return nodes;
+}
+
 function renderMessageContent(content: string, trailingNode?: ReactNode) {
   const blocks = parseMessageBlocks(content);
 
@@ -341,6 +376,18 @@ function renderMessageContent(content: string, trailingNode?: ReactNode) {
   });
 }
 
+function renderPlainMessageContent(content: string, trailingNode?: ReactNode) {
+  if (!content) {
+    return trailingNode ? <span>{trailingNode}</span> : null;
+  }
+
+  return (
+    <p className="whitespace-pre-wrap">
+      {renderPlainTextWithBreaks(content, "plain-message", trailingNode)}
+    </p>
+  );
+}
+
 function usePrefersReducedMotion() {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
@@ -364,11 +411,20 @@ function usePrefersReducedMotion() {
   return prefersReducedMotion;
 }
 
+function getTypewriterDuration(textLength: number) {
+  const minimumDuration = 360;
+  const maximumDuration = 1480;
+
+  return Math.min(
+    maximumDuration,
+    Math.max(minimumDuration, textLength * 7),
+  );
+}
+
 type TypewriterTextProps = {
   isActive: boolean;
   messageId: string;
   onComplete: (messageId: string) => void;
-  onFrame: () => void;
   prefersReducedMotion: boolean;
   text: string;
 };
@@ -377,11 +433,12 @@ function TypewriterText({
   isActive,
   messageId,
   onComplete,
-  onFrame,
   prefersReducedMotion,
   text,
 }: TypewriterTextProps) {
-  const [visibleText, setVisibleText] = useState(() => (isActive ? "" : text));
+  const [visibleLength, setVisibleLength] = useState(() =>
+    isActive ? 0 : text.length,
+  );
 
   useEffect(() => {
     if (!isActive) {
@@ -393,23 +450,41 @@ function TypewriterText({
       return;
     }
 
-    let index = 0;
-    const step = text.length > 700 ? 7 : text.length > 320 ? 5 : 3;
-    const intervalId = window.setInterval(() => {
-      index = Math.min(text.length, index + step);
-      setVisibleText(text.slice(0, index));
-      onFrame();
+    const totalDuration = getTypewriterDuration(text.length);
+    const startAt = window.performance.now();
+    let frameId = 0;
+    let lastVisibleLength = 0;
 
-      if (index >= text.length) {
-        window.clearInterval(intervalId);
-        onComplete(messageId);
+    const tick = (timestamp: number) => {
+      const progress =
+        totalDuration <= 0
+          ? 1
+          : Math.min(1, (timestamp - startAt) / totalDuration);
+      const nextVisibleLength = Math.min(
+        text.length,
+        Math.max(1, Math.ceil(text.length * progress)),
+      );
+
+      if (nextVisibleLength !== lastVisibleLength) {
+        lastVisibleLength = nextVisibleLength;
+        setVisibleLength(nextVisibleLength);
       }
-    }, 16);
 
-    return () => window.clearInterval(intervalId);
-  }, [isActive, messageId, onComplete, onFrame, prefersReducedMotion, text]);
+      if (progress >= 1) {
+        onComplete(messageId);
+        return;
+      }
 
-  const renderedText = isActive && !prefersReducedMotion ? visibleText : text;
+      frameId = window.requestAnimationFrame(tick);
+    };
+
+    frameId = window.requestAnimationFrame(tick);
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [isActive, messageId, onComplete, prefersReducedMotion, text]);
+
+  const renderedText =
+    isActive && !prefersReducedMotion ? text.slice(0, visibleLength) : text;
   const caret =
     isActive && !prefersReducedMotion ? (
       <span
@@ -420,7 +495,35 @@ function TypewriterText({
 
   return (
     <div className="space-y-2 break-words">
-      {renderMessageContent(renderedText, caret)}
+      {isActive && !prefersReducedMotion
+        ? renderPlainMessageContent(renderedText, caret)
+        : renderMessageContent(renderedText, caret)}
+    </div>
+  );
+}
+
+type LiveMessageTextProps = {
+  isActive: boolean;
+  prefersReducedMotion: boolean;
+  text: string;
+};
+
+function LiveMessageText({
+  isActive,
+  prefersReducedMotion,
+  text,
+}: LiveMessageTextProps) {
+  const caret =
+    isActive && !prefersReducedMotion ? (
+      <span
+        aria-hidden="true"
+        className="chat-type-caret ml-0.5 inline-block"
+      />
+    ) : undefined;
+
+  return (
+    <div className="space-y-2 break-words">
+      {renderPlainMessageContent(text, caret)}
     </div>
   );
 }
@@ -448,10 +551,13 @@ function MessageLink({ children, className, href }: MessageLinkProps) {
 }
 
 export function ChatMessages({
+  bottomRef,
+  contentRef,
   isLoading,
   messages,
   onTypingComplete,
   scrollRef,
+  streamingMessageId,
   typingMessageId,
   welcomeSubtitle,
   welcomeTitle,
@@ -460,15 +566,6 @@ export function ChatMessages({
   const resolvedWelcomeSubtitle =
     welcomeSubtitle?.trim() || welcomeBackdropSubtext;
   const resolvedWelcomeTitle = welcomeTitle?.trim() || welcomeBackdropText;
-  const scrollToBottom = useCallback(() => {
-    const scrollContainer = scrollRef.current;
-
-    if (!scrollContainer) {
-      return;
-    }
-
-    scrollContainer.scrollTop = scrollContainer.scrollHeight;
-  }, [scrollRef]);
 
   const handleTypingComplete = useCallback(
     (messageId: string) => {
@@ -479,99 +576,166 @@ export function ChatMessages({
 
   return (
     <div
-      className="relative min-h-0 flex-1 space-y-4 overflow-y-auto bg-[var(--chat-bg)] px-4 py-5 transition-colors duration-300 sm:px-6"
+      className="relative min-h-0 flex-1 overflow-y-auto bg-[var(--chat-bg)] px-4 pb-5 pt-20 transition-colors duration-300 sm:px-6"
       ref={scrollRef}
     >
-      {messages.length === 0 ? (
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 grid select-none place-items-center px-6 text-center"
-        >
-          <div className="max-w-4xl space-y-2">
-            <p className="break-words text-3xl font-semibold leading-tight text-[var(--welcome-backdrop-text)] sm:text-5xl">
-              {resolvedWelcomeTitle}
-            </p>
-            <p className="break-words text-xl font-medium leading-tight text-[var(--welcome-backdrop-text)] sm:text-3xl">
-              {resolvedWelcomeSubtitle}
-            </p>
+      <div className="space-y-4" ref={contentRef}>
+        {messages.length === 0 ? (
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 grid select-none place-items-center px-6 text-center"
+          >
+            <div className="max-w-4xl space-y-2">
+              <p className="break-words text-3xl font-semibold leading-tight text-[var(--welcome-backdrop-text)] sm:text-5xl">
+                {resolvedWelcomeTitle}
+              </p>
+              <p className="break-words text-xl font-medium leading-tight text-[var(--welcome-backdrop-text)] sm:text-3xl">
+                {resolvedWelcomeSubtitle}
+              </p>
+            </div>
           </div>
-        </div>
-      ) : null}
+        ) : null}
 
-      {messages.map((message) => {
-        const isTyping =
-          message.role === "assistant" && message.id === typingMessageId;
+        {messages.map((message) => {
+          const isTyping =
+            message.role === "assistant" && message.id === typingMessageId;
+          const isStreaming =
+            message.role === "assistant" && message.id === streamingMessageId;
+          const hasSettledIntro = Boolean(message.reply?.intro) && !isStreaming;
+          const isAssistantContentLive =
+            message.role === "assistant" && !message.reply;
+          const isAssistantAnimationActive = isTyping || isStreaming;
 
-        return (
-          <article
-            className={`flex ${
-              message.role === "user" ? "justify-end" : "justify-start"
-            }`}
-            key={message.id}
+          return (
+            <motion.article
+              animate={
+                prefersReducedMotion
+                  ? undefined
+                  : { opacity: 1, scale: 1, y: 0 }
+              }
+              className={`flex ${
+                message.role === "user" ? "justify-end" : "justify-start"
+              }`}
+              initial={
+                prefersReducedMotion
+                  ? undefined
+                  : { opacity: 0, scale: 0.985, y: 18 }
+              }
+              key={message.id}
+              transition={
+                prefersReducedMotion
+                  ? undefined
+                  : { duration: 0.28, ease: [0.22, 1, 0.36, 1] }
+              }
+            >
+              <div
+                className={`rounded-[22px] px-4 py-3 text-sm leading-6 transition-colors duration-300 ${
+                  hasSettledIntro
+                    ? "w-full max-w-full sm:max-w-full"
+                    : "max-w-[88%] sm:max-w-[78%]"
+                } ${
+                  message.role === "user"
+                    ? "bg-[var(--user-bubble)] text-[var(--user-bubble-text)] shadow-[0_14px_34px_rgba(15,23,42,0.16)]"
+                    : "border border-transparent text-[var(--assistant-bubble-text)]"
+                }`}
+              >
+                {isAssistantContentLive ? (
+                  <LiveMessageText
+                    isActive={isStreaming}
+                    prefersReducedMotion={prefersReducedMotion}
+                    text={message.content}
+                  />
+                ) : (
+                  <TypewriterText
+                    isActive={isTyping}
+                    key={`${message.id}-${isTyping ? "typing" : "static"}`}
+                    messageId={message.id}
+                    onComplete={handleTypingComplete}
+                    prefersReducedMotion={prefersReducedMotion}
+                    text={message.content}
+                  />
+                )}
+
+                {!isAssistantAnimationActive && message.reply?.intro ? (
+                  <AtlasIntroResponse intro={message.reply.intro} />
+                ) : null}
+
+                {!isAssistantAnimationActive &&
+                !message.reply?.intro &&
+                message.reply?.links?.length ? (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {message.reply.links.map((link) => (
+                      <MessageLink
+                        className="select-none rounded-full bg-[var(--link-chip-bg)] px-3 py-1.5 text-xs font-medium text-[var(--link-chip-text)] transition duration-300 hover:bg-[var(--link-chip-hover)] active:scale-[0.98]"
+                        href={link.href}
+                        key={link.href}
+                      >
+                        {link.label}
+                      </MessageLink>
+                    ))}
+                  </div>
+                ) : null}
+
+                {!isAssistantAnimationActive &&
+                !message.reply?.intro &&
+                message.reply?.actions?.length ? (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {message.reply.actions.map((action) => (
+                      <MessageLink
+                        className="select-none rounded-full bg-[var(--action-bg)] px-3 py-1.5 text-xs font-semibold text-white transition duration-300 hover:bg-[var(--action-hover)] active:scale-[0.98]"
+                        href={action.href ?? productBrand.supportPath}
+                        key={`${action.label}-${action.href}`}
+                      >
+                        {action.label}
+                      </MessageLink>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            </motion.article>
+          );
+        })}
+
+        {isLoading ? (
+          <motion.div
+            animate={
+              prefersReducedMotion ? undefined : { opacity: 1, scale: 1, y: 0 }
+            }
+            className="flex justify-start"
+            initial={
+              prefersReducedMotion
+                ? undefined
+                : { opacity: 0, scale: 0.985, y: 14 }
+            }
+            transition={
+              prefersReducedMotion
+                ? undefined
+                : { duration: 0.24, ease: [0.22, 1, 0.36, 1] }
+            }
           >
             <div
-              className={`max-w-[88%] rounded-[22px] px-4 py-3 text-sm leading-6 transition-colors duration-300 sm:max-w-[78%] ${
-                message.role === "user"
-                  ? "bg-[var(--user-bubble)] text-[var(--user-bubble-text)]"
-                  : "text-[var(--assistant-bubble-text)]"
-              }`}
+              aria-label="Ассистент печатает ответ"
+              className="min-w-[12.5rem] rounded-[24px] border border-[var(--bubble-border)] bg-[var(--assistant-bubble)] px-4 py-3 text-sm text-[var(--muted)] shadow-[0_14px_36px_rgba(15,23,42,0.07)]"
+              role="status"
             >
-              <TypewriterText
-                isActive={isTyping}
-                messageId={message.id}
-                onComplete={handleTypingComplete}
-                onFrame={scrollToBottom}
-                prefersReducedMotion={prefersReducedMotion}
-                text={message.content}
-              />
-
-              {!isTyping && message.reply?.links?.length ? (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {message.reply.links.map((link) => (
-                    <MessageLink
-                      className="select-none rounded-full bg-[var(--link-chip-bg)] px-3 py-1.5 text-xs font-medium text-[var(--link-chip-text)] transition hover:bg-[var(--link-chip-hover)]"
-                      href={link.href}
-                      key={link.href}
-                    >
-                      {link.label}
-                    </MessageLink>
-                  ))}
-                </div>
-              ) : null}
-
-              {!isTyping && message.reply?.actions?.length ? (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {message.reply.actions.map((action) => (
-                    <MessageLink
-                      className="select-none rounded-full bg-[var(--action-bg)] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[var(--action-hover)]"
-                      href={action.href ?? productBrand.supportPath}
-                      key={`${action.label}-${action.href}`}
-                    >
-                      {action.label}
-                    </MessageLink>
-                  ))}
-                </div>
-              ) : null}
+              <span className="mb-2 block text-xs font-medium uppercase tracking-[0.16em] text-[var(--muted)]">
+                Atlas думает
+              </span>
+              <span aria-hidden="true" className="flex h-6 items-center gap-1.5">
+                <span className="chat-typing-dot block h-2 w-2 rounded-full bg-[var(--muted)]" />
+                <span className="chat-typing-dot block h-2 w-2 rounded-full bg-[var(--muted)]" />
+                <span className="chat-typing-dot block h-2 w-2 rounded-full bg-[var(--muted)]" />
+              </span>
+              <div aria-hidden="true" className="mt-3 space-y-2">
+                <div className="h-2.5 w-40 rounded-full bg-[var(--bubble-border)]/75" />
+                <div className="h-2.5 w-28 rounded-full bg-[var(--bubble-border)]/55" />
+              </div>
             </div>
-          </article>
-        );
-      })}
+          </motion.div>
+        ) : null}
 
-      {isLoading ? (
-        <div className="flex justify-start">
-          <div
-            aria-label="Ассистент печатает ответ"
-            className="rounded-[22px] border border-[var(--bubble-border)] bg-[var(--assistant-bubble)] px-4 py-3 text-sm text-[var(--muted)] shadow-sm"
-            role="status"
-          >
-            <span aria-hidden="true" className="flex h-6 items-center gap-1.5">
-              <span className="chat-typing-dot block h-2 w-2 rounded-full bg-[var(--muted)]" />
-              <span className="chat-typing-dot block h-2 w-2 rounded-full bg-[var(--muted)]" />
-              <span className="chat-typing-dot block h-2 w-2 rounded-full bg-[var(--muted)]" />
-            </span>
-          </div>
-        </div>
-      ) : null}
+        <div aria-hidden="true" ref={bottomRef} />
+      </div>
     </div>
   );
 }

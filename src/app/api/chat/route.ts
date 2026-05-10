@@ -24,6 +24,7 @@ export async function POST(request: Request) {
       message,
       body.memory,
       body.context,
+      request.signal,
     );
   } catch {
     return Response.json(

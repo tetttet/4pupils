@@ -1,6 +1,10 @@
 import Image from "next/image";
 import { productBrand } from "@/lib/atlas/brand";
-import type { ChatSession, ThemeMode } from "./chat-types";
+import type {
+  ChatSession,
+  ThemeMode,
+  ThemeTransitionOrigin,
+} from "./chat-types";
 import { PlusIcon, SettingsIcon, TrashIcon } from "./icons";
 import { ThemeSwitch } from "./ThemeSwitch";
 
@@ -16,7 +20,7 @@ type ChatSidebarProps = {
   onDeleteChat: (chatId: string) => void;
   onSelectChat: (chatId: string) => void;
   onToggleSettings: () => void;
-  onToggleTheme: () => void;
+  onToggleTheme: (origin: ThemeTransitionOrigin) => void;
   theme: ThemeMode;
 };
 

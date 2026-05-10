@@ -1,48 +1,65 @@
-import Image from "next/image";
 import { productBrand } from "@/lib/atlas/brand";
 import { ChatAccountMenu } from "./ChatAccountMenu";
-import { MenuIcon } from "./icons";
 
 type ChatHeaderProps = {
   activeTitle: string;
   onOpenSidebar: () => void;
 };
 
-export function ChatHeader({
-  activeTitle,
-  onOpenSidebar,
-}: ChatHeaderProps) {
+function FloatingMenuIcon() {
   return (
-    <header className="relative z-10 flex h-16 shrink-0 items-center justify-between border-b border-[var(--border)] bg-[var(--header-bg)] px-3 shadow-[0_1px_0_rgba(20,33,61,0.04)] backdrop-blur transition-colors duration-300 sm:px-5">
-      <div className="flex min-w-0 items-center gap-3">
+    <svg aria-hidden="true" className="h-5 w-5" fill="none" viewBox="0 0 24 24">
+      <path
+        d="M5 7.5H16.5"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeWidth="2"
+      />
+      <path
+        d="M7.5 12H19"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeWidth="2"
+      />
+      <path
+        d="M5 16.5H14"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeWidth="2"
+      />
+    </svg>
+  );
+}
+
+export function ChatHeader({ activeTitle, onOpenSidebar }: ChatHeaderProps) {
+  return (
+    <header className="pointer-events-none absolute left-0 right-0 top-0 z-20 flex h-16 shrink-0 items-center justify-between px-3 sm:px-5">
+      <div className="pointer-events-auto flex min-w-0 items-center gap-2 sm:gap-3">
         <button
           aria-label="Открыть список чатов"
-          className="grid h-10 w-10 shrink-0 place-items-center rounded-lg text-[var(--muted)] transition hover:bg-[var(--control-hover)] hover:text-[var(--text)] focus:outline-none focus:ring-4 focus:ring-[var(--focus-ring)]"
+          className="group grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[var(--surface)] text-[var(--muted)] backdrop-blur transition-all duration-200 hover:-translate-y-0.5 hover:bg-[var(--control-hover)] hover:text-[var(--text)] hover:shadow-md focus:outline-none focus:ring-4 focus:ring-[var(--focus-ring)]"
           onClick={onOpenSidebar}
           type="button"
         >
-          <MenuIcon />
+          <span className="transition-transform duration-200 group-hover:scale-110">
+            <FloatingMenuIcon />
+          </span>
         </button>
-        <div className="grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-full bg-white shadow-sm">
-          <Image
-            alt={productBrand.logoAlt}
-            className="h-15 w-15 -mt-3 object-contain"
-            height={32}
-            priority
-            src={productBrand.logoSrc}
-            width={32}
-          />
-        </div>
-        <div className="min-w-0">
-          <h1 className="truncate text-base font-semibold text-[var(--text)]">
+
+        <div className="min-w-0 rounded-2xl bg-[var(--surface)] px-4 py-2 backdrop-blur transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+          <h1 className="truncate text-sm font-semibold leading-5 text-[var(--text)] sm:text-base">
             {activeTitle}
           </h1>
-          <p className="truncate text-xs text-[var(--muted)]">
+
+          <p className="truncate text-xs leading-4 text-[var(--muted)]">
             {productBrand.assistantName}
           </p>
         </div>
       </div>
-      <ChatAccountMenu />
+
+      <div className="pointer-events-auto ml-3 shrink-0 rounded-2xl bg-[var(--surface)] p-1 backdrop-blur transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+        <ChatAccountMenu />
+      </div>
     </header>
   );
 }

@@ -2,10 +2,10 @@ import { productBrand } from "@/lib/atlas/brand";
 import type { ChatSession } from "./chat-types";
 
 export const starterChips = [
+  "Что ты умеешь?",
   "Как создать аккаунт ученика?",
-  "Как добавить преподавателя?",
-  "Как изменить расписание занятия?",
-  "Как выдать доступ пользователю?",
+  "Как найти нужный раздел платформы?",
+  "Как работает платформа для моей роли?",
 ];
 
 export const draftChatTitles = [
@@ -28,8 +28,8 @@ export const maxStoredMessages = 60;
 
 export const welcomeBackdropText = "Спросите Atlas";
 export const welcomeBackdropSubtext =
-  "Atlas поможет вам разобраться с платформой";
-export const legacyWelcomeContent = `Здравствуйте. Я ${productBrand.assistantName}. Помогу разобраться с аккаунтами, курсами, учениками, преподавателями, расписанием, доступами и настройками 4pupils.`;
+  "Atlas поможет быстро сориентироваться в платформе";
+export const legacyWelcomeContent = `Здравствуйте. Я ${productBrand.assistantName}. Помогу разобраться с аккаунтами, курсами, уроками, сообщениями, ролями, доступами и настройками платформы.`;
 
 export const initialChat: ChatSession = {
   id: "initial",

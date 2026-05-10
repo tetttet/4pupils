@@ -1,4 +1,3 @@
-
 import { StudentLessonsWorkspace } from "@/components/platform/student-lessons-workspace";
 import { getMyCourseApplications } from "@/lib/course-application-server";
 import { getMyEnrollments } from "@/lib/enrollment-server";

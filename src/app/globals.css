@@ -46,6 +46,11 @@
 
 :root {
   --radius: 0.625rem;
+  --atlas-theme-origin-x: 50vw;
+  --atlas-theme-origin-y: 50vh;
+  --atlas-theme-reveal-radius: 0px;
+  --atlas-theme-transition-duration: 680ms;
+  --atlas-theme-transition-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -124,6 +129,15 @@
 
 .--web-kit-text {
   font-size: 13px;
+}
+
+.atlas-page {
+  background: #f7f8f4;
+  transition: background-color 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html[data-atlas-theme="dark"] .atlas-page {
+  background: #0d0d0d;
 }
 
 @layer components {
@@ -268,6 +282,7 @@
 
 .chat-shell {
   color-scheme: light;
+  isolation: isolate;
   --app-bg: #f7f8f4;
   --text: #14213d;
   --muted: #66736d;
@@ -280,6 +295,7 @@
   --chat-bg: #f7f8f4;
   --header-bg: rgb(255 255 255 / 94%);
   --footer-bg: rgb(255 255 255 / 96%);
+  --surface: rgb(255 255 255 / 78%);
   --border: #e1e6df;
   --control-hover: #f0f3ef;
   --sidebar-bg: #f8f8f5;
@@ -319,11 +335,13 @@
   --welcome-backdrop-text: #dce2da;
 }
 
-.chat-shell[data-chat-theme="light"] {
+.chat-shell[data-chat-theme="light"],
+html[data-atlas-theme="light"] .chat-shell {
   color-scheme: light;
 }
 
-.chat-shell[data-chat-theme="dark"] {
+.chat-shell[data-chat-theme="dark"],
+html[data-atlas-theme="dark"] .chat-shell {
   color-scheme: dark;
   --app-bg: #0d0d0d;
   --text: #ececec;
@@ -337,6 +355,7 @@
   --chat-bg: #212121;
   --header-bg: rgb(33 33 33 / 94%);
   --footer-bg: rgb(33 33 33 / 96%);
+  --surface: rgb(33 33 33 / 76%);
   --border: #303030;
   --control-hover: #2f2f2f;
   --sidebar-bg: #171717;
@@ -374,6 +393,39 @@
   --send-disabled: #475a54;
   --scrollbar-thumb: #454545;
   --welcome-backdrop-text: #343434;
+}
+
+:root[data-atlas-theme-transition] .chat-shell,
+:root[data-atlas-theme-transition] .chat-shell *,
+:root[data-atlas-theme-transition] .chat-shell *::before,
+:root[data-atlas-theme-transition] .chat-shell *::after {
+  transition-delay: 0ms !important;
+  transition-duration: 0ms !important;
+}
+
+:root[data-atlas-theme-transition="running"]::view-transition-group(root) {
+  animation-duration: var(--atlas-theme-transition-duration);
+  animation-timing-function: var(--atlas-theme-transition-ease);
+}
+
+:root[data-atlas-theme-transition="running"]::view-transition-old(root),
+:root[data-atlas-theme-transition="running"]::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+:root[data-atlas-theme-transition="running"]::view-transition-old(root) {
+  z-index: 1;
+}
+
+:root[data-atlas-theme-transition="running"]::view-transition-new(root) {
+  z-index: 2;
+  will-change: clip-path;
+  clip-path: circle(
+    0px at var(--atlas-theme-origin-x) var(--atlas-theme-origin-y)
+  );
+  animation: atlas-theme-reveal var(--atlas-theme-transition-duration)
+    var(--atlas-theme-transition-ease) both;
 }
 
 .chat-shell ::selection {
@@ -462,7 +514,28 @@
   }
 }
 
+@keyframes atlas-theme-reveal {
+  0% {
+    clip-path: circle(
+      0px at var(--atlas-theme-origin-x) var(--atlas-theme-origin-y)
+    );
+  }
+
+  100% {
+    clip-path: circle(
+      var(--atlas-theme-reveal-radius) at var(--atlas-theme-origin-x)
+        var(--atlas-theme-origin-y)
+    );
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(root),
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
+
   .chat-shell *,
   .chat-shell *::before,
   .chat-shell *::after {

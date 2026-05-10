@@ -1,6 +1,14 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import {
+  FormEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { flushSync } from "react-dom";
 import { useAuth } from "@/context/auth-context";
 import type { BotReply } from "@/lib/atlas/types";
 import { ChatComposer } from "./ChatComposer";
@@ -8,6 +16,7 @@ import { ChatHeader } from "./ChatHeader";
 import { ChatMessages } from "./ChatMessages";
 import { ChatSidebar } from "./ChatSidebar";
 import { DeleteConfirmationDialog } from "./DeleteConfirmationDialog";
+import { useChatAutoScroll } from "./useChatAutoScroll";
 import {
   initialChat,
   maxStoredChats,
@@ -18,13 +27,33 @@ import {
   readChatHydrationState,
   writeChatHydrationState,
 } from "./chat-storage";
-import type { ChatSession, ThemeMode } from "./chat-types";
+import type {
+  ChatSession,
+  ThemeMode,
+  ThemeTransitionOrigin,
+} from "./chat-types";
 import {
   createEmptyChat,
   createId,
   getDeviceTheme,
   titleFromMessage,
 } from "./chat-utils";
+
+const THEME_TRANSITION_DURATION_MS = 680;
+const THEME_TRANSITION_EASE = "cubic-bezier(0.2, 0.8, 0.2, 1)";
+
+type ViewTransitionController = {
+  finished: Promise<void>;
+  ready: Promise<void>;
+  updateCallbackDone: Promise<void>;
+  skipTransition: () => void;
+};
+
+type DocumentWithViewTransition = Document & {
+  startViewTransition?: (
+    updateCallback: () => void | Promise<void>,
+  ) => ViewTransitionController;
+};
 
 type DeleteConfirmation =
   | {
@@ -77,16 +106,39 @@ function parseChatStreamEvent(line: string): ChatStreamEvent | null {
   return null;
 }
 
+function isAbortError(error: unknown) {
+  return (
+    (error instanceof DOMException && error.name === "AbortError") ||
+    (error instanceof Error && error.name === "AbortError")
+  );
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max);
+}
+
+function getThemeRevealRadius(origin: ThemeTransitionOrigin) {
+  const horizontalDistance = Math.max(origin.x, window.innerWidth - origin.x);
+  const verticalDistance = Math.max(origin.y, window.innerHeight - origin.y);
+
+  return Math.hypot(horizontalDistance, verticalDistance);
+}
+
 export function AtlasChat() {
   const { loading: isAuthLoading, user } = useAuth();
   const [chats, setChats] = useState<ChatSession[]>([initialChat]);
   const [activeChatId, setActiveChatId] = useState(initialChat.id);
   const [input, setInput] = useState("");
   const [loadingChatId, setLoadingChatId] = useState<string | null>(null);
-  const [typingMessageId, setTypingMessageId] = useState<string | null>(null);
-  const [error, setError] = useState<{ chatId: string; message: string } | null>(
+  const [streamingChatId, setStreamingChatId] = useState<string | null>(null);
+  const [streamingMessageId, setStreamingMessageId] = useState<string | null>(
     null,
   );
+  const [typingMessageId, setTypingMessageId] = useState<string | null>(null);
+  const [error, setError] = useState<{
+    chatId: string;
+    message: string;
+  } | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -94,8 +146,11 @@ export function AtlasChat() {
   const [hasThemeOverride, setHasThemeOverride] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] =
     useState<DeleteConfirmation | null>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const activeRequestRef = useRef<AbortController | null>(null);
+  const themeRef = useRef<ThemeMode>("light");
+  const plannedThemeRef = useRef<ThemeMode>("light");
+  const themeTransitionQueueRef = useRef<Promise<void>>(Promise.resolve());
 
   const activeChat = useMemo(() => {
     return (
@@ -104,11 +159,17 @@ export function AtlasChat() {
   }, [activeChatId, chats]);
 
   const orderedChats = useMemo(() => {
-    return [...chats].sort((first, second) => second.updatedAt - first.updatedAt);
+    return [...chats].sort(
+      (first, second) => second.updatedAt - first.updatedAt,
+    );
   }, [chats]);
 
   const isLoading = loadingChatId === activeChat.id;
-  const hasAnyLoadingChat = Boolean(loadingChatId);
+  const isStreaming = streamingChatId === activeChat.id;
+  const hasAnyLoadingChat = Boolean(loadingChatId || streamingChatId);
+  const hasTypingMessage = Boolean(typingMessageId);
+  const hasActiveResponse =
+    hasAnyLoadingChat || hasTypingMessage || activeRequestRef.current !== null;
   const activeError =
     error && error.chatId === activeChat.id ? error.message : "";
   const resolvedTheme = theme ?? "light";
@@ -141,6 +202,41 @@ export function AtlasChat() {
 
     return lastAssistant?.reply?.chips ?? starterChips;
   }, [activeChat.messages]);
+  const isTypingActive = useMemo(
+    () =>
+      Boolean(
+        typingMessageId &&
+          activeChat.messages.some((message) => message.id === typingMessageId),
+      ),
+    [activeChat.messages, typingMessageId],
+  );
+  const shouldShowSuggestions = useMemo(
+    () => !activeChat.messages.some((message) => message.role === "user"),
+    [activeChat.messages],
+  );
+  const isResponseActive = isLoading || isStreaming || isTypingActive;
+  const {
+    bottomRef,
+    contentRef,
+    enableFollowMode,
+    scrollRef,
+    scrollToBottom,
+    showScrollToBottom,
+  } = useChatAutoScroll({
+    activeChatId: activeChat.id,
+    isReady: !isBooting,
+    isStreaming: isResponseActive,
+  });
+
+  const followLatestMessage = useCallback(
+    (smooth: boolean) => {
+      enableFollowMode();
+      window.requestAnimationFrame(() => {
+        scrollToBottom({ smooth });
+      });
+    },
+    [enableFollowMode, scrollToBottom],
+  );
 
   function focusInputOnDesktop() {
     if (window.matchMedia("(pointer: fine)").matches) {
@@ -148,16 +244,168 @@ export function AtlasChat() {
     }
   }
 
+  const clearActiveRequest = useCallback((controller?: AbortController) => {
+    if (!controller || activeRequestRef.current === controller) {
+      activeRequestRef.current = null;
+    }
+  }, []);
+
   function closeSidebar() {
     setIsSidebarOpen(false);
     setIsSettingsOpen(false);
   }
 
-  function toggleTheme() {
+  const clearThemeTransitionContext = useCallback(() => {
+    const root = document.documentElement;
+
+    delete root.dataset.atlasThemeTransition;
+    root.style.removeProperty("--atlas-theme-origin-x");
+    root.style.removeProperty("--atlas-theme-origin-y");
+    root.style.removeProperty("--atlas-theme-reveal-radius");
+    root.style.removeProperty("--atlas-theme-transition-duration");
+    root.style.removeProperty("--atlas-theme-transition-ease");
+  }, []);
+
+  const syncThemeToDocument = useCallback((nextTheme: ThemeMode) => {
+    document.documentElement.dataset.atlasTheme = nextTheme;
+  }, []);
+
+  const commitTheme = useCallback(
+    (nextTheme: ThemeMode) => {
+      themeRef.current = nextTheme;
+      syncThemeToDocument(nextTheme);
+      setTheme(nextTheme);
+    },
+    [syncThemeToDocument],
+  );
+
+  const prefersReducedMotion = useCallback(() => {
+    return (
+      typeof window !== "undefined" &&
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    );
+  }, []);
+
+  const setThemeTransitionGeometry = useCallback(
+    (origin?: ThemeTransitionOrigin) => {
+      const root = document.documentElement;
+      const resolvedOrigin = origin ?? {
+        x: 48,
+        y: window.innerHeight - 56,
+      };
+      const x = clamp(resolvedOrigin.x, 0, window.innerWidth);
+      const y = clamp(resolvedOrigin.y, 0, window.innerHeight);
+      const radius = getThemeRevealRadius({ x, y }) + 24;
+
+      root.style.setProperty("--atlas-theme-origin-x", `${x}px`);
+      root.style.setProperty("--atlas-theme-origin-y", `${y}px`);
+      root.style.setProperty("--atlas-theme-reveal-radius", `${radius}px`);
+      root.style.setProperty(
+        "--atlas-theme-transition-duration",
+        `${THEME_TRANSITION_DURATION_MS}ms`,
+      );
+      root.style.setProperty(
+        "--atlas-theme-transition-ease",
+        THEME_TRANSITION_EASE,
+      );
+    },
+    [],
+  );
+
+  const applyTheme = useCallback(
+    async (
+      nextTheme: ThemeMode,
+      options?: {
+        animate?: boolean;
+        origin?: ThemeTransitionOrigin;
+      },
+    ) => {
+      const root = document.documentElement;
+      const supportsViewTransitions =
+        typeof document !== "undefined" &&
+        typeof (document as DocumentWithViewTransition).startViewTransition ===
+          "function";
+      const shouldAnimate =
+        Boolean(options?.animate) &&
+        supportsViewTransitions &&
+        !prefersReducedMotion();
+
+      root.dataset.atlasThemeTransition = shouldAnimate ? "running" : "instant";
+
+      if (!shouldAnimate) {
+        flushSync(() => {
+          commitTheme(nextTheme);
+        });
+
+        await new Promise<void>((resolve) => {
+          window.requestAnimationFrame(() => {
+            clearThemeTransitionContext();
+            resolve();
+          });
+        });
+        return;
+      }
+
+      setThemeTransitionGeometry(options?.origin);
+
+      try {
+        const transition = (document as DocumentWithViewTransition)
+          .startViewTransition?.(() => {
+            flushSync(() => {
+              commitTheme(nextTheme);
+            });
+          });
+
+        if (!transition) {
+          flushSync(() => {
+            commitTheme(nextTheme);
+          });
+          return;
+        }
+
+        await transition.finished;
+      } catch {
+        flushSync(() => {
+          commitTheme(nextTheme);
+        });
+      } finally {
+        clearThemeTransitionContext();
+      }
+    },
+    [
+      clearThemeTransitionContext,
+      commitTheme,
+      prefersReducedMotion,
+      setThemeTransitionGeometry,
+    ],
+  );
+
+  const enqueueThemeChange = useCallback(
+    (
+      nextTheme: ThemeMode,
+      options?: {
+        animate?: boolean;
+        origin?: ThemeTransitionOrigin;
+      },
+    ) => {
+      themeTransitionQueueRef.current = themeTransitionQueueRef.current
+        .catch(() => undefined)
+        .then(() => applyTheme(nextTheme, options));
+    },
+    [applyTheme],
+  );
+
+  function toggleTheme(origin: ThemeTransitionOrigin) {
     setHasThemeOverride(true);
-    setTheme((current) => {
-      const activeTheme = current ?? getDeviceTheme();
-      return activeTheme === "dark" ? "light" : "dark";
+
+    const nextTheme =
+      plannedThemeRef.current === "dark" ? "light" : "dark";
+    plannedThemeRef.current = nextTheme;
+
+    enqueueThemeChange(nextTheme, {
+      animate: true,
+      origin,
     });
   }
 
@@ -167,6 +415,7 @@ export function AtlasChat() {
     setActiveChatId(chat.id);
     setInput("");
     setError(null);
+    setStreamingMessageId(null);
     setTypingMessageId(null);
     setIsSidebarOpen(false);
   }
@@ -175,6 +424,7 @@ export function AtlasChat() {
     setActiveChatId(chatId);
     setInput("");
     setError(null);
+    setStreamingMessageId(null);
     setTypingMessageId(null);
     setIsSidebarOpen(false);
   }
@@ -194,6 +444,10 @@ export function AtlasChat() {
   }
 
   function deleteChat(chatId: string) {
+    if (loadingChatId === chatId || streamingChatId === chatId) {
+      activeRequestRef.current?.abort();
+    }
+
     const filtered = chats.filter((chat) => chat.id !== chatId);
     const nextChats = filtered.length ? filtered : [createEmptyChat(0)];
 
@@ -208,6 +462,11 @@ export function AtlasChat() {
 
     if (loadingChatId === chatId) {
       setLoadingChatId(null);
+    }
+
+    if (streamingChatId === chatId) {
+      setStreamingChatId(null);
+      setStreamingMessageId(null);
     }
 
     setTypingMessageId((current) => {
@@ -227,14 +486,34 @@ export function AtlasChat() {
   }
 
   function clearAllChats() {
+    activeRequestRef.current?.abort();
+
     const chat = createEmptyChat(0);
     setChats([chat]);
     setActiveChatId(chat.id);
     setInput("");
     setError(null);
     setLoadingChatId(null);
+    setStreamingChatId(null);
+    setStreamingMessageId(null);
     setTypingMessageId(null);
   }
+
+  const stopResponse = useCallback(() => {
+    const activeRequest = activeRequestRef.current;
+
+    if (activeRequest && !activeRequest.signal.aborted) {
+      activeRequest.abort();
+    }
+
+    if (typingMessageId) {
+      setTypingMessageId(null);
+    }
+
+    if (streamingMessageId) {
+      setStreamingMessageId(null);
+    }
+  }, [streamingMessageId, typingMessageId]);
 
   function cancelDeleteConfirmation() {
     setDeleteConfirmation(null);
@@ -255,13 +534,6 @@ export function AtlasChat() {
   }
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({
-      top: scrollRef.current.scrollHeight,
-      behavior: "smooth",
-    });
-  }, [activeChat.id, activeChat.messages.length, isLoading]);
-
-  useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
         closeSidebar();
@@ -273,17 +545,35 @@ export function AtlasChat() {
   }, []);
 
   useEffect(() => {
+    return () => {
+      activeRequestRef.current?.abort();
+      activeRequestRef.current = null;
+      clearThemeTransitionContext();
+    };
+  }, [clearThemeTransitionContext]);
+
+  useEffect(() => {
     let isMounted = true;
 
     const stored = readChatHydrationState();
-    const storedTheme = stored.theme;
+    const documentTheme = document.documentElement.dataset.atlasTheme;
+    const initialTheme =
+      stored.theme ??
+      (documentTheme === "light" || documentTheme === "dark"
+        ? documentTheme
+        : null);
 
     if (!isMounted) {
       return;
     }
 
-    setTheme(storedTheme ?? getDeviceTheme());
-    setHasThemeOverride(Boolean(storedTheme));
+    const nextTheme = initialTheme ?? getDeviceTheme();
+
+    themeRef.current = nextTheme;
+    plannedThemeRef.current = nextTheme;
+    syncThemeToDocument(nextTheme);
+    setTheme(nextTheme);
+    setHasThemeOverride(Boolean(stored.theme));
 
     if (stored.chats?.length) {
       setChats(stored.chats);
@@ -295,7 +585,7 @@ export function AtlasChat() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [syncThemeToDocument]);
 
   useEffect(() => {
     if (
@@ -308,13 +598,24 @@ export function AtlasChat() {
     }
 
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    const syncTheme = () => setTheme(getDeviceTheme());
+    const syncTheme = () => {
+      const nextTheme = getDeviceTheme();
+
+      if (nextTheme === plannedThemeRef.current) {
+        return;
+      }
+
+      plannedThemeRef.current = nextTheme;
+      enqueueThemeChange(nextTheme, { animate: false });
+    };
 
     syncTheme();
-    mediaQuery.addEventListener("change", syncTheme);
+    const onChange = () => syncTheme();
 
-    return () => mediaQuery.removeEventListener("change", syncTheme);
-  }, [hasThemeOverride, isHydrated]);
+    mediaQuery.addEventListener("change", onChange);
+
+    return () => mediaQuery.removeEventListener("change", onChange);
+  }, [enqueueThemeChange, hasThemeOverride, isHydrated]);
 
   useEffect(() => {
     if (!isHydrated) {
@@ -331,22 +632,35 @@ export function AtlasChat() {
   async function sendMessage(value: string) {
     const text = value.trim();
 
-    if (!text || hasAnyLoadingChat) {
+    if (
+      !text ||
+      loadingChatId ||
+      streamingChatId ||
+      typingMessageId ||
+      activeRequestRef.current
+    ) {
       return;
     }
 
+    const abortController = new AbortController();
     const chatId = activeChat.id;
     const memorySnapshot = activeChat.memory;
-    const contextSnapshot = activeChat.context;
+    const contextSnapshot = {
+      ...activeChat.context,
+      ...(user?.role ? { role: user.role } : {}),
+    };
+    let pendingStreamingMessageId: string | null = null;
     const userMessage = {
       id: createId(),
       role: "user" as const,
       content: text,
     };
 
+    activeRequestRef.current = abortController;
     setInput("");
     setError(null);
     setLoadingChatId(chatId);
+    followLatestMessage(true);
     setChats((current) =>
       current.map((chat) => {
         if (chat.id !== chatId) {
@@ -377,6 +691,7 @@ export function AtlasChat() {
           memory: memorySnapshot,
           context: contextSnapshot,
         }),
+        signal: abortController.signal,
       });
 
       if (!response.ok) {
@@ -391,6 +706,7 @@ export function AtlasChat() {
         }
 
         const assistantMessageId = createId();
+        pendingStreamingMessageId = assistantMessageId;
         const reader = body.getReader();
         const decoder = new TextDecoder();
         let buffer = "";
@@ -398,6 +714,8 @@ export function AtlasChat() {
 
         setTypingMessageId(null);
         setLoadingChatId(null);
+        setStreamingChatId(chatId);
+        setStreamingMessageId(assistantMessageId);
         setChats((current) =>
           current.map((chat) =>
             chat.id === chatId
@@ -446,6 +764,9 @@ export function AtlasChat() {
                   }
                 : chat,
             ),
+          );
+          setStreamingMessageId((current) =>
+            current === assistantMessageId ? null : current,
           );
         }
 
@@ -515,6 +836,10 @@ export function AtlasChat() {
         }
 
         if (!hasFinalReply) {
+          if (abortController.signal.aborted) {
+            return;
+          }
+
           throw new Error("Streaming response ended without final reply");
         }
 
@@ -549,13 +874,22 @@ export function AtlasChat() {
             : chat,
         ),
       );
-    } catch {
+    } catch (error) {
+      if (isAbortError(error) || abortController.signal.aborted) {
+        return;
+      }
+
       setError({
         chatId,
         message: "Не получилось получить ответ. Попробуйте еще раз.",
       });
     } finally {
+      clearActiveRequest(abortController);
       setLoadingChatId(null);
+      setStreamingChatId(null);
+      setStreamingMessageId((current) =>
+        current === pendingStreamingMessageId ? null : current,
+      );
       focusInputOnDesktop();
     }
   }
@@ -613,6 +947,8 @@ export function AtlasChat() {
         />
 
         <ChatMessages
+          bottomRef={bottomRef}
+          contentRef={contentRef}
           isLoading={isLoading}
           messages={activeChat.messages}
           onTypingComplete={(messageId) =>
@@ -621,6 +957,7 @@ export function AtlasChat() {
             )
           }
           scrollRef={scrollRef}
+          streamingMessageId={streamingMessageId}
           typingMessageId={typingMessageId}
           welcomeSubtitle={welcomeSubtitle}
           welcomeTitle={welcomeTitle}
@@ -628,14 +965,18 @@ export function AtlasChat() {
 
         <ChatComposer
           activeError={activeError}
-          chips={chips}
+          chips={shouldShowSuggestions ? chips : []}
           input={input}
           inputRef={inputRef}
-          isDisabled={hasAnyLoadingChat}
+          isDisabled={hasActiveResponse}
+          isResponding={hasActiveResponse}
           onChangeInput={setInput}
           onChipClick={(chip) => void sendMessage(chip)}
+          onRequestScrollToBottom={() => followLatestMessage(true)}
+          onStop={stopResponse}
           onSubmit={onSubmit}
           scrollRef={scrollRef}
+          showScrollToBottom={showScrollToBottom}
         />
       </div>
 

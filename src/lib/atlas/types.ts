@@ -1,4 +1,5 @@
 export type AtlasIntent =
+  | "intro"
   | "account"
   | "profile"
   | "students"
@@ -19,6 +20,41 @@ export type AtlasIntent =
 export type LinkTarget = {
   label: string;
   href: string;
+};
+
+export type AtlasCardVisual =
+  | "sparkles"
+  | "compass"
+  | "layers"
+  | "shield"
+  | "book"
+  | "messages"
+  | "dashboard"
+  | "users"
+  | "courses"
+  | "settings";
+
+export type AtlasFeatureCard = {
+  title: string;
+  description: string;
+  actionLabel: string;
+  href?: string;
+  visual: AtlasCardVisual;
+};
+
+export type AtlasDeepLinkCard = {
+  title: string;
+  description: string;
+  href: string;
+  actionLabel?: string;
+  visual: AtlasCardVisual;
+};
+
+export type AtlasIntroPayload = {
+  featureCards: AtlasFeatureCard[];
+  featureTitle?: string;
+  deepLinks: AtlasDeepLinkCard[];
+  deepLinksTitle?: string;
 };
 
 export type AtlasMemory = {
@@ -58,6 +94,7 @@ export type BotReply = {
   memory: AtlasMemory;
   context: UserContext;
   handoff: boolean;
+  intro?: AtlasIntroPayload;
   topic?: string;
 };
 

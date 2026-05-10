@@ -23,6 +23,11 @@ export type ChatSession = {
 
 export type ThemeMode = "light" | "dark";
 
+export type ThemeTransitionOrigin = {
+  x: number;
+  y: number;
+};
+
 export type StoredChatState = {
   messages: ChatMessage[];
   memory: AtlasMemory;
