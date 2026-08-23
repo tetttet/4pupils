@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { BACKEND_URL } from "@/lib/backend-url.server";
 import { forwardSetCookie } from "@/lib/forward-set-cookie";
+import { applyPrivateNoStore } from "@/lib/private-response";
 
 function buildHeaders(req: Request, hasBody: boolean) {
   const headers = new Headers();
@@ -51,7 +52,7 @@ export async function proxyBackendRequest(
     headers: buildHeaders(req, hasBody),
     body: init.body,
     cache: "no-store",
-    signal: req.signal,
+    signal: AbortSignal.any([req.signal, AbortSignal.timeout(15_000)]),
   });
 
   const text = await response.text();
@@ -63,7 +64,7 @@ export async function proxyBackendRequest(
   });
 
   forwardSetCookie(response, res);
-  return res;
+  return applyPrivateNoStore(res);
 }
 
 async function readRequestBody(req: Request) {

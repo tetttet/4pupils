@@ -161,7 +161,16 @@ function CoursesPageFallback() {
 
 function CoursesPageContent() {
   const searchParams = useSearchParams();
-  const { courses, loading, error, refresh } = useApprovedCourses();
+  const {
+    courses,
+    loading,
+    error,
+    refresh,
+    hasMore,
+    loadMore,
+    loadMoreError,
+    loadingMore,
+  } = useApprovedCourses();
   const [selectedCategory, setSelectedCategory] =
     React.useState(ALL_COURSES_LABEL);
   const [selectedLevels, setSelectedLevels] = React.useState<string[]>([]);
@@ -514,6 +523,21 @@ function CoursesPageContent() {
                   </p>
                 </div>
               )}
+              {!loading && !error && hasMore ? (
+                <div className="col-span-full flex flex-col items-center gap-2 py-2">
+                  <button
+                    type="button"
+                    onClick={() => void loadMore()}
+                    disabled={loadingMore}
+                    className="rounded-full border border-[#D7DDF8] bg-white px-6 py-3 text-[14px] font-medium text-[#4C63B8] transition hover:border-[#B8C2EF] hover:bg-[#F7F8FF] disabled:cursor-wait disabled:opacity-60"
+                  >
+                    {loadingMore ? "Загружаем..." : "Показать ещё курсы"}
+                  </button>
+                  {loadMoreError ? (
+                    <p className="text-sm text-red-600">{loadMoreError}</p>
+                  ) : null}
+                </div>
+              ) : null}
               <div className="col-span-full flex flex-col items-start justify-between gap-5 rounded-[26px] border border-white bg-white px-5 py-5 shadow-[0_10px_30px_rgba(35,48,103,0.045)] sm:flex-row sm:items-center sm:px-7">
                 <p className="max-w-[68ch] text-[13px] leading-6 text-[#68719B] sm:text-[14px]">
                   Не нашли подходящий курс? Расскажите нам, какое направление

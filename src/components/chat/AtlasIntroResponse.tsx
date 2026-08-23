@@ -2,10 +2,15 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import type { AtlasDeepLinkCard, AtlasIntroPayload } from "@/lib/atlas/types";
-import { AtlasBottomSheet } from "./AtlasBottomSheet";
 import { AtlasDeepLinkCard as AtlasDeepLinkCardView } from "./AtlasDeepLinkCard";
 import { AtlasFeatureCard } from "./AtlasFeatureCard";
+
+const AtlasBottomSheet = dynamic(
+  () => import("./AtlasBottomSheet").then((module) => module.AtlasBottomSheet),
+  { ssr: false },
+);
 
 type AtlasIntroResponseProps = {
   intro: AtlasIntroPayload;

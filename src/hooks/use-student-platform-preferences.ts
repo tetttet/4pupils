@@ -188,7 +188,23 @@ function subscribeToStudentPlatformPreferences(
   };
 }
 
-export function useStudentPlatformPreferences() {
+type StudentPlatformPreferencesContextValue = {
+  preferences: StudentPlatformPreferences;
+  hydrated: boolean;
+  setPreference: <K extends keyof StudentPlatformPreferences>(
+    key: K,
+    value: StudentPlatformPreferences[K],
+  ) => StudentPlatformPreferences;
+  patchPreferences: (
+    patch: Partial<StudentPlatformPreferences>,
+  ) => StudentPlatformPreferences;
+  resetPreferences: () => StudentPlatformPreferences;
+};
+
+const StudentPlatformPreferencesContext =
+  React.createContext<StudentPlatformPreferencesContextValue | null>(null);
+
+function useStudentPlatformPreferencesState(): StudentPlatformPreferencesContextValue {
   const [preferences, setPreferences] = React.useState(
     defaultStudentPlatformPreferences,
   );
@@ -245,4 +261,30 @@ export function useStudentPlatformPreferences() {
     patchPreferences,
     resetPreferences,
   };
+}
+
+export function StudentPlatformPreferencesProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const value = useStudentPlatformPreferencesState();
+
+  return React.createElement(
+    StudentPlatformPreferencesContext.Provider,
+    { value },
+    children,
+  );
+}
+
+export function useStudentPlatformPreferences() {
+  const context = React.useContext(StudentPlatformPreferencesContext);
+
+  if (!context) {
+    throw new Error(
+      "useStudentPlatformPreferences must be used inside StudentPlatformPreferencesProvider",
+    );
+  }
+
+  return context;
 }

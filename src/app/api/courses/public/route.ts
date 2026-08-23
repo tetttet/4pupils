@@ -1,20 +1,14 @@
 import { NextResponse } from "next/server";
 import { BACKEND_URL } from "@/lib/backend-url.server";
-import { forwardSetCookie } from "@/lib/forward-set-cookie";
 
 export async function GET(req: Request) {
-  const cookie = req.headers.get("cookie") || "";
+  const search = new URL(req.url).search;
 
-  const r = await fetch(`${BACKEND_URL}/api/courses/public`, {
+  const r = await fetch(`${BACKEND_URL}/api/courses/public${search}`, {
     method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      cookie,
-      "user-agent": req.headers.get("user-agent") || "",
-      "x-forwarded-for": req.headers.get("x-forwarded-for") || "",
-    },
-    cache: "no-store",
-    signal: req.signal,
+    headers: { Accept: "application/json" },
+    next: { revalidate: 60 },
+    signal: AbortSignal.any([req.signal, AbortSignal.timeout(10_000)]),
   });
 
   const text = await r.text();
@@ -22,9 +16,14 @@ export async function GET(req: Request) {
     status: r.status,
     headers: {
       "Content-Type": r.headers.get("content-type") ?? "application/json",
+      "Cache-Control":
+        r.headers.get("cache-control") ??
+        "public, max-age=0, s-maxage=60, stale-while-revalidate=300",
+      ...(r.headers.get("server-timing")
+        ? { "Server-Timing": r.headers.get("server-timing")! }
+        : {}),
     },
   });
 
-  forwardSetCookie(r, res);
   return res;
 }

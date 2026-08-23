@@ -55,6 +55,7 @@ export function GuidesSidebar({ categories, activeCategory, popular }: Props) {
             <Link
               key={g.slug}
               href={`/guides/${g.slug}`}
+              prefetch={false}
               className="block py-4 text-sm font-medium text-neutral-700 hover:text-neutral-900"
             >
               {g.frontmatter.title}

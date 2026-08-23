@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { backendFetch } from "@/lib/backend";
+import { applyPrivateNoStore } from "@/lib/private-response";
 
 export async function POST(req: Request) {
   const bodyText = await req.text();
@@ -11,5 +12,10 @@ export async function POST(req: Request) {
   });
 
   const text = await r.text();
-  return new NextResponse(text, { status: r.status, headers: { "Content-Type": "application/json" } });
+  return applyPrivateNoStore(
+    new NextResponse(text, {
+      status: r.status,
+      headers: { "Content-Type": "application/json" },
+    }),
+  );
 }

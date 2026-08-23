@@ -7,7 +7,6 @@ import {
   ArrowLeftIcon,
   ArrowRightIcon,
   FileTextIcon,
-  MailIcon,
 } from "lucide-react";
 import {
   Breadcrumb,

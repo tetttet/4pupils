@@ -210,7 +210,6 @@ export default function LearningFitWizard() {
       if (!hasCompleteLearningFitAnswers(answers)) return;
 
       const payload = createLearningFitSubmissionPayload(answers);
-      console.log("[learning-fit] submission", payload);
 
       try {
         window.sessionStorage.setItem(

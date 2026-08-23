@@ -95,6 +95,7 @@ const HeaderGuides = ({ links }: HeaderGuidesProps) => {
                   )}
                   href={item.href}
                   key={item.href}
+                  prefetch={false}
                   title={item.title ?? item.label}
                 >
                   <span className="block max-w-full truncate">{item.label}</span>

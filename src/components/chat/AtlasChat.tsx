@@ -9,13 +9,13 @@ import {
   useState,
 } from "react";
 import { flushSync } from "react-dom";
+import dynamic from "next/dynamic";
 import { useAuth } from "@/context/auth-context";
 import type { BotReply } from "@/lib/atlas/types";
 import { ChatComposer } from "./ChatComposer";
 import { ChatHeader } from "./ChatHeader";
 import { ChatMessages } from "./ChatMessages";
 import { ChatSidebar } from "./ChatSidebar";
-import { DeleteConfirmationDialog } from "./DeleteConfirmationDialog";
 import { useChatAutoScroll } from "./useChatAutoScroll";
 import {
   initialChat,
@@ -38,6 +38,14 @@ import {
   getDeviceTheme,
   titleFromMessage,
 } from "./chat-utils";
+
+const DeleteConfirmationDialog = dynamic(
+  () =>
+    import("./DeleteConfirmationDialog").then(
+      (module) => module.DeleteConfirmationDialog,
+    ),
+  { ssr: false },
+);
 
 const THEME_TRANSITION_DURATION_MS = 680;
 const THEME_TRANSITION_EASE = "cubic-bezier(0.2, 0.8, 0.2, 1)";
@@ -125,7 +133,7 @@ function getThemeRevealRadius(origin: ThemeTransitionOrigin) {
 }
 
 export function AtlasChat() {
-  const { loading: isAuthLoading, user } = useAuth();
+  const { user } = useAuth();
   const [chats, setChats] = useState<ChatSession[]>([initialChat]);
   const [activeChatId, setActiveChatId] = useState(initialChat.id);
   const [input, setInput] = useState("");
@@ -173,7 +181,7 @@ export function AtlasChat() {
   const activeError =
     error && error.chatId === activeChat.id ? error.message : "";
   const resolvedTheme = theme ?? "light";
-  const isBooting = isAuthLoading || !isHydrated;
+  const isBooting = !isHydrated;
   const welcomeName =
     user?.first_name?.trim() ||
     [user?.first_name, user?.last_name].filter(Boolean).join(" ").trim();
@@ -654,6 +662,7 @@ export function AtlasChat() {
       ...(user?.role ? { role: user.role } : {}),
     };
     let pendingStreamingMessageId: string | null = null;
+    let cancelPendingStreamUpdate: (() => void) | null = null;
     const userMessage = {
       id: createId(),
       role: "user" as const,
@@ -716,6 +725,8 @@ export function AtlasChat() {
         const decoder = new TextDecoder();
         let buffer = "";
         let hasFinalReply = false;
+        let pendingStreamDelta = "";
+        let streamFlushTimer: number | null = null;
 
         setTypingMessageId(null);
         setLoadingChatId(null);
@@ -742,9 +753,10 @@ export function AtlasChat() {
 
         function applyStreamReply(reply: BotReply) {
           hasFinalReply = true;
-
-          if (reply.engine === "openrouter") {
-            console.log("Atlas получил ответ через OpenRouter");
+          pendingStreamDelta = "";
+          if (streamFlushTimer !== null) {
+            window.clearTimeout(streamFlushTimer);
+            streamFlushTimer = null;
           }
 
           setChats((current) =>
@@ -775,7 +787,15 @@ export function AtlasChat() {
           );
         }
 
-        function applyStreamDelta(textDelta: string) {
+        function flushStreamDelta() {
+          const textDelta = pendingStreamDelta;
+          pendingStreamDelta = "";
+          streamFlushTimer = null;
+
+          if (!textDelta) {
+            return;
+          }
+
           setChats((current) =>
             current.map((chat) =>
               chat.id === chatId
@@ -795,6 +815,22 @@ export function AtlasChat() {
             ),
           );
         }
+
+        function applyStreamDelta(textDelta: string) {
+          pendingStreamDelta += textDelta;
+
+          if (streamFlushTimer === null) {
+            streamFlushTimer = window.setTimeout(flushStreamDelta, 50);
+          }
+        }
+
+        cancelPendingStreamUpdate = () => {
+          pendingStreamDelta = "";
+          if (streamFlushTimer !== null) {
+            window.clearTimeout(streamFlushTimer);
+            streamFlushTimer = null;
+          }
+        };
 
         while (true) {
           const { done, value: chunk } = await reader.read();
@@ -852,10 +888,6 @@ export function AtlasChat() {
       }
 
       const reply = (await response.json()) as BotReply;
-      if (reply.engine === "openrouter") {
-        console.log("Atlas получил ответ через OpenRouter");
-      }
-
       const assistantMessage = {
         id: createId(),
         role: "assistant" as const,
@@ -889,6 +921,7 @@ export function AtlasChat() {
         message: "Не получилось получить ответ. Попробуйте еще раз.",
       });
     } finally {
+      cancelPendingStreamUpdate?.();
       clearActiveRequest(abortController);
       setLoadingChatId(null);
       setStreamingChatId(null);

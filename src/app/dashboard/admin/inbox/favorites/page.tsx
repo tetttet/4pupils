@@ -105,8 +105,6 @@ export default function Inbox() {
     [mails],
   );
 
-  console.log(mails)
-
   const openMail = async (id: string) => {
     setActiveId(id);
     setLoadingActive(true);

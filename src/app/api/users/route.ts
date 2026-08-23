@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { BACKEND_URL } from "@/lib/backend-url.server";
 import { forwardSetCookie } from "@/lib/forward-set-cookie";
+import { applyPrivateNoStore } from "@/lib/private-response";
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
@@ -17,7 +18,7 @@ export async function GET(req: Request) {
       "x-forwarded-for": req.headers.get("x-forwarded-for") || "",
     },
     cache: "no-store",
-    signal: req.signal,
+    signal: AbortSignal.any([req.signal, AbortSignal.timeout(10_000)]),
   });
 
   // users endpoints set cookies обычно не должны, но пусть будет совместимо
@@ -30,5 +31,5 @@ export async function GET(req: Request) {
   });
 
   forwardSetCookie(r, res);
-  return res;
+  return applyPrivateNoStore(res);
 }

@@ -20,6 +20,7 @@ type HeroVideoProps = {
   description?: string;
   note?: string;
   videos?: string[];
+  previewVideo?: string;
   poster?: string;
 };
 
@@ -190,9 +191,11 @@ export default function HeroVideo({
 преподавании.`,
   note = "Современная платформа для преподавателей, курсов и растущего образовательного сообщества.",
   videos = ["/videos/promo.mp4"],
+  previewVideo = "/videos/promo-preview.mp4",
   poster = "/images/hero-poster.jpg",
 }: HeroVideoProps) {
   const router = useRouter();
+  const reduceMotion = useReducedMotion();
   const src = React.useMemo(() => pickRandom(videos), [videos]);
   const [videoWindowMode, setVideoWindowMode] =
     React.useState<VideoWindowMode>("closed");
@@ -318,16 +321,16 @@ export default function HeroVideo({
 
               <div className="relative overflow-hidden rounded-[20px] bg-[#202858] sm:rounded-[24px] lg:flex-1">
                 <video
-                  key={src}
+                  key={previewVideo}
                   className="block aspect-video w-full object-cover transition-transform duration-700 group-hover:scale-[1.015] lg:h-full lg:aspect-auto"
-                  autoPlay
+                  autoPlay={!reduceMotion}
                   muted
                   loop
                   playsInline
                   preload="metadata"
                   poster={poster}
                 >
-                  <source src={src} type="video/mp4" />
+                  <source src={previewVideo} type="video/mp4" />
                 </video>
 
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#202858]/55 via-transparent to-transparent" />
@@ -350,7 +353,7 @@ export default function HeroVideo({
               </div>
 
               <p className="px-2 pb-2 pt-4 text-[12px] leading-[1.6] text-[#7A82A8] sm:px-3 sm:text-[13px]">
-                БыстПознакомьтесь с платформой поближе — как она работает, что
+                Познакомьтесь с платформой поближе — как она работает, что
                 предлагает и как будет поддерживать вас на каждом этапе обучения.
               </p>
             </div>

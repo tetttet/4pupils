@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowUpRight } from "lucide-react";
 
 type Props = {
@@ -8,6 +9,7 @@ type Props = {
   date?: string;
   description?: string;
   home?: boolean;
+  priority?: boolean;
 };
 
 export function GuideCard({
@@ -17,21 +19,23 @@ export function GuideCard({
   date,
   description,
   home = false,
+  priority = false,
 }: Props) {
   if (home) {
     return (
       <Link
         href={href}
+        prefetch={false}
         className="group grid h-full overflow-hidden rounded-[30px] border border-white bg-white p-3 shadow-[0_12px_34px_rgba(35,48,103,0.055)] outline-none transition duration-500 hover:-translate-y-1 hover:shadow-[0_22px_48px_rgba(35,48,103,0.11)] focus-visible:ring-2 focus-visible:ring-[#5D75CB] focus-visible:ring-offset-2 md:grid-cols-[1.2fr_0.8fr]"
       >
         <div className="overflow-hidden rounded-[24px] bg-[#ECEFFF]">
           <div className="relative aspect-[16/10] h-full min-h-[260px] w-full md:min-h-[340px]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src={cover ?? "/images/guides/guide-1.jpg"}
               alt={title}
+              fill
               className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.035]"
-              loading="lazy"
+              sizes="(max-width: 767px) 100vw, 58vw"
             />
           </div>
         </div>
@@ -66,16 +70,18 @@ export function GuideCard({
   return (
     <Link
       href={href}
+      prefetch={false}
       className="group block rounded-2xl focus:outline-none focus:ring-2 focus:ring-black/20"
     >
       <div className="overflow-hidden rounded-2xl bg-neutral-100">
         <div className="relative aspect-video w-full">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src={cover ?? "/images/guides/guide-1.jpg"}
             alt={title}
+            fill
             className="h-full w-full object-cover transition-transform duration-333 group-hover:scale-[1.05]"
-            loading="lazy"
+            priority={priority}
+            sizes="(max-width: 767px) 100vw, (max-width: 1023px) 50vw, 33vw"
           />
         </div>
       </div>

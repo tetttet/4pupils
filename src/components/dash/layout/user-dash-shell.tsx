@@ -4,12 +4,23 @@ import * as React from "react";
 import { usePathname } from "next/navigation";
 
 import { StudentInboxProvider } from "@/context/student-inbox-context";
-import { useStudentPlatformPreferences } from "@/hooks/use-student-platform-preferences";
+import {
+  StudentPlatformPreferencesProvider,
+  useStudentPlatformPreferences,
+} from "@/hooks/use-student-platform-preferences";
 
 import UserDashHeader from "./user-dash-header";
 import UserSidebar from "./user-sidebar";
 
 export function UserDashShell({ children }: { children: React.ReactNode }) {
+  return (
+    <StudentPlatformPreferencesProvider>
+      <UserDashShellContent>{children}</UserDashShellContent>
+    </StudentPlatformPreferencesProvider>
+  );
+}
+
+function UserDashShellContent({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = React.useState(false);
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const { preferences, hydrated, setPreference } =

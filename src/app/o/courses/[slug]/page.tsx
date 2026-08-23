@@ -2,11 +2,9 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import PublicCourseLanding from "@/components/courses/public-course-page";
 import { brand } from "@/lib/brand";
-import {
-  getAppBaseUrl,
-  getCourseSeoDescription,
-  getPublicCourse,
-} from "@/lib/public-course";
+import { getAppBaseUrl } from "@/lib/app-base-url.server";
+import { getPublicCourse } from "@/lib/public-course.server";
+import { getCourseSeoDescription } from "@/lib/public-course";
 
 type PageProps = {
   params: Promise<{ slug: string }>;

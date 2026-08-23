@@ -337,7 +337,7 @@ const QuickLinks = React.memo(function QuickLinks() {
 });
 
 export function StudentProfilePageContent() {
-  const { user, refreshMe } = useAuth();
+  const { user, updateCurrentUser } = useAuth();
 
   const baseline = React.useMemo(() => toFormState(user), [user]);
   const normalizedBaseline = React.useMemo(
@@ -451,7 +451,7 @@ export function StudentProfilePageContent() {
       setFeedback(null);
 
       try {
-        const response = await http(`/api/users/${user.id}`, {
+        const response = await http("/api/users/me", {
           method: "PATCH",
           body: JSON.stringify({
             first_name,
@@ -472,10 +472,10 @@ export function StudentProfilePageContent() {
 
         const data = await response.json().catch(() => ({}));
         const updatedUser = (data?.user ?? null) as User | null;
-        const refreshedUser = (await refreshMe()) ?? updatedUser;
 
-        if (refreshedUser) {
-          setForm(toFormState(refreshedUser));
+        if (updatedUser) {
+          updateCurrentUser(updatedUser);
+          setForm(toFormState(updatedUser));
         }
 
         setLastSavedAt(buildLastSavedLabel(new Date()));
@@ -496,7 +496,7 @@ export function StudentProfilePageContent() {
         setIsSaving(false);
       }
     },
-    [normalizedForm, refreshMe, user?.id],
+    [normalizedForm, updateCurrentUser, user?.id],
   );
 
   if (!user) {

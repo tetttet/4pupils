@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image, { type ImageProps } from "next/image";
 import React from "react";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import remarkGfm from "remark-gfm";
@@ -99,7 +100,47 @@ const mdxComponents = {
       {...props}
     />
   ),
+  img: ({ alt = "", src }: React.ImgHTMLAttributes<HTMLImageElement>) => {
+    if (typeof src !== "string" || !src) {
+      return null;
+    }
+
+    const dimensions = getGuideImageDimensions(src);
+
+    return (
+      <Image
+        alt={alt}
+        className="mt-6 h-auto w-full rounded-xl"
+        height={dimensions.height}
+        loading="lazy"
+        sizes="(max-width: 1024px) 100vw, 768px"
+        src={src as ImageProps["src"]}
+        width={dimensions.width}
+      />
+    );
+  },
 };
+
+const GUIDE_IMAGE_DIMENSIONS: Record<
+  string,
+  { width: number; height: number }
+> = {
+  "/images/docs/screen1.png": { width: 3456, height: 1998 },
+  "/images/docs/screen2.png": { width: 3456, height: 2008 },
+  "/images/docs/screen3.png": { width: 3456, height: 2000 },
+  "/images/docs/screen4.png": { width: 2822, height: 1912 },
+  "/images/docs/screen5.png": { width: 3456, height: 2002 },
+  "/images/docs/screen6.png": { width: 3456, height: 2000 },
+  "/images/docs/screen7.png": { width: 3456, height: 2002 },
+  "/images/docs/screen8.png": { width: 3456, height: 1910 },
+  "/images/docs/screen9.png": { width: 3456, height: 2004 },
+  "/images/docs/screen10.png": { width: 3456, height: 1254 },
+  "/images/docs/screen11.png": { width: 3456, height: 2002 },
+};
+
+function getGuideImageDimensions(src: string) {
+  return GUIDE_IMAGE_DIMENSIONS[src] ?? { width: 1600, height: 900 };
+}
 
 function MetaRow({
   author,
@@ -135,6 +176,9 @@ export default async function GuidePage({ params }: Props) {
   const popular = getPopularGuides(4);
 
   const activeCategory = guide.frontmatter.category;
+  const coverDimensions = guide.frontmatter.cover
+    ? getGuideImageDimensions(guide.frontmatter.cover)
+    : null;
 
   return (
     <main className="mx-auto max-w-7xl px-6 py-10">
@@ -190,11 +234,14 @@ export default async function GuidePage({ params }: Props) {
 
           {/* Hero image */}
           {guide.frontmatter.cover ? (
-            <div className="mt-10 overflow-hidden rounded-2xl bg-neutral-100">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+            <div className="relative mt-10 overflow-hidden rounded-2xl bg-neutral-100">
+              <Image
                 src={guide.frontmatter.cover}
                 alt={guide.frontmatter.title}
+                width={coverDimensions?.width ?? 1600}
+                height={coverDimensions?.height ?? 900}
+                priority
+                sizes="(max-width: 1024px) 100vw, 896px"
                 className="h-auto w-full object-cover"
               />
             </div>

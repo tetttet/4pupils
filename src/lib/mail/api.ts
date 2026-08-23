@@ -11,7 +11,6 @@ import { emitMailInboxBadgeRefresh } from "@/lib/mail/inbox-events";
 import { getUserFacingErrorMessage } from "@/lib/error-messages";
 import { clientFetch } from "@/lib/client-fetch";
 
-const UNREAD_COUNT_LIMIT = 100;
 const UNREAD_COUNT_TTL_MS = 10_000;
 
 let unreadCountCache: { value: number; expiresAt: number } | null = null;
@@ -84,10 +83,10 @@ export const MailAPI = {
       const unreadItems = await MailAPI.list({
         folder: "inbox",
         unread: true,
-        limit: UNREAD_COUNT_LIMIT,
+        limit: 1,
         offset: 0,
       });
-      const value = unreadItems.length;
+      const value = unreadItems[0]?.unread_count ?? unreadItems.length;
 
       if (requestVersion === unreadCountVersion) {
         unreadCountCache = {

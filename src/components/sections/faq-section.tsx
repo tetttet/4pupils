@@ -19,7 +19,7 @@ export function FaqsSection() {
               Часто задаваемые вопросы
             </h2>
             <p className="mt-6 max-w-[40ch] text-[13px] leading-6 text-[#68719B] sm:text-[14px]">
-              Быстрые ответы на часто задаваемые вопросы об Efferd. Откройте
+              Быстрые ответы на часто задаваемые вопросы о 4P Education. Откройте
               любой вопрос, чтобы узнать больше.
             </p>
             <p className="mt-auto pt-8 text-[13px] leading-6 text-[#68719B] sm:text-[14px]">

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { BACKEND_URL } from "@/lib/backend-url.server";
 import { forwardSetCookie } from "@/lib/forward-set-cookie";
+import { applyPrivateNoStore } from "@/lib/private-response";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -25,6 +26,7 @@ export async function GET(req: Request, ctx: Ctx) {
     method: "GET",
     headers: commonHeaders(req),
     cache: "no-store",
+    signal: AbortSignal.any([req.signal, AbortSignal.timeout(10_000)]),
   });
 
   const text = await r.text();
@@ -36,7 +38,7 @@ export async function GET(req: Request, ctx: Ctx) {
   });
 
   forwardSetCookie(r, res);
-  return res;
+  return applyPrivateNoStore(res);
 }
 
 export async function PATCH(req: Request, ctx: Ctx) {
@@ -48,6 +50,7 @@ export async function PATCH(req: Request, ctx: Ctx) {
     headers: commonHeaders(req),
     body: bodyText,
     cache: "no-store",
+    signal: AbortSignal.any([req.signal, AbortSignal.timeout(10_000)]),
   });
 
   const text = await r.text();
@@ -59,7 +62,7 @@ export async function PATCH(req: Request, ctx: Ctx) {
   });
 
   forwardSetCookie(r, res);
-  return res;
+  return applyPrivateNoStore(res);
 }
 
 export async function DELETE(req: Request, ctx: Ctx) {
@@ -69,6 +72,7 @@ export async function DELETE(req: Request, ctx: Ctx) {
     method: "DELETE",
     headers: commonHeaders(req),
     cache: "no-store",
+    signal: AbortSignal.any([req.signal, AbortSignal.timeout(10_000)]),
   });
 
   const text = await r.text();
@@ -80,5 +84,5 @@ export async function DELETE(req: Request, ctx: Ctx) {
   });
 
   forwardSetCookie(r, res);
-  return res;
+  return applyPrivateNoStore(res);
 }

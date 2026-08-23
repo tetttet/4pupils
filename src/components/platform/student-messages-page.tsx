@@ -19,7 +19,6 @@ import {
 } from "@/context/student-inbox-context";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useStudentPlatformPreferences } from "@/hooks/use-student-platform-preferences";
-import { useUsersDirectoryState } from "@/hooks/use-users-directory";
 import { getUserFacingErrorMessage } from "@/lib/error-messages";
 import { MailAPI } from "@/lib/mail/api";
 import {
@@ -29,8 +28,7 @@ import {
   initials,
 } from "@/lib/func";
 import { cn } from "@/lib/utils";
-import type { MailDetail, MailListItem } from "@/types/mail";
-import type { User } from "@/types/user";
+import type { MailDetail, MailListItem, MailSender } from "@/types/mail";
 
 const mailDetailCache = new Map<string, MailDetail>();
 const mailDetailRequestCache = new Map<string, Promise<MailDetail>>();
@@ -284,31 +282,11 @@ export function StudentMessagesPageContent() {
     });
   }, [items, selectedId]);
 
-  const senderIds = React.useMemo(() => {
-    const ids = items.map((item) => item.sender_id);
-
-    if (activeMail?.sender_id) {
-      ids.push(activeMail.sender_id);
-    }
-
-    return ids;
-  }, [activeMail, items]);
-  const { usersById: senderDirectory, isPending: isSenderPending } =
-    useUsersDirectoryState(senderIds);
   const selectedListItem = React.useMemo(
     () => items.find((item) => item.mail_id === selectedId) ?? null,
     [items, selectedId],
   );
-  const selectedSender = activeMail
-    ? senderDirectory[activeMail.sender_id]
-    : selectedListItem
-      ? senderDirectory[selectedListItem.sender_id]
-      : null;
-  const selectedSenderLoading = activeMail
-    ? isSenderPending(activeMail.sender_id)
-    : selectedListItem
-      ? isSenderPending(selectedListItem.sender_id)
-      : false;
+  const selectedSender = selectedListItem?.sender ?? null;
   const detailMatchesSelection = activeMail?.id === selectedId;
   const showDetailLoadingOverlay =
     detailLoading && Boolean(activeMail) && !detailMatchesSelection;
@@ -387,8 +365,8 @@ export function StudentMessagesPageContent() {
                     key={item.mail_id}
                     item={item}
                     active={item.mail_id === activeListItemId}
-                    sender={senderDirectory[item.sender_id]}
-                    senderLoading={isSenderPending(item.sender_id)}
+                    sender={item.sender}
+                    senderLoading={false}
                     compact={compactMessagePreview}
                     onSelect={handleSelect}
                   />
@@ -421,7 +399,7 @@ export function StudentMessagesPageContent() {
           detailLoading={detailLoading}
           showDetailLoadingOverlay={showDetailLoadingOverlay}
           sender={selectedSender}
-          senderLoading={selectedSenderLoading}
+          senderLoading={false}
         />
       </div>
 
@@ -435,7 +413,7 @@ export function StudentMessagesPageContent() {
           detailLoading={detailLoading}
           showDetailLoadingOverlay={showDetailLoadingOverlay}
           sender={selectedSender}
-          senderLoading={selectedSenderLoading}
+          senderLoading={false}
           title={mobileDetailTitle}
           onBack={handleCloseMobileDetail}
         />
@@ -464,7 +442,7 @@ function MessageDetailPane({
   activeMail: MailDetail | null;
   detailLoading: boolean;
   showDetailLoadingOverlay: boolean;
-  sender?: User | null;
+  sender?: MailSender | null;
   senderLoading: boolean;
   mode?: "desktop" | "mobile";
   className?: string;
@@ -585,7 +563,7 @@ function MessageListItem({
 }: {
   item: MailListItem;
   active: boolean;
-  sender?: User | null;
+  sender?: MailSender | null;
   senderLoading: boolean;
   compact: boolean;
   onSelect: (id: string) => void;
@@ -717,7 +695,7 @@ function MessageDetailView({
   senderLoading,
 }: {
   mail: MailDetail;
-  sender?: User | null;
+  sender?: MailSender | null;
   senderLoading: boolean;
 }) {
   const senderName = getSenderName(sender, senderLoading);
@@ -899,7 +877,7 @@ function MessageDetailLoadingOverlay() {
   );
 }
 
-function getSenderName(user?: User | null, loading = false) {
+function getSenderName(user?: MailSender | null, loading = false) {
   const fullName = [user?.first_name, user?.last_name]
     .filter(Boolean)
     .join(" ");
@@ -919,7 +897,7 @@ function getSenderName(user?: User | null, loading = false) {
   return "Неизвестный отправитель";
 }
 
-function getUserRoleLabel(role?: User["role"] | null) {
+function getUserRoleLabel(role?: MailSender["role"] | null) {
   if (role === "teacher") {
     return "Преподаватель";
   }

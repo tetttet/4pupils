@@ -3,7 +3,7 @@ import CourseApplicationFormPage from "@/components/courses/course-application-f
 import { buildAuthHref } from "@/lib/auth-redirect";
 import { getMyCourseApplications } from "@/lib/course-application-server";
 import { getMe } from "@/lib/me";
-import { getPublicCourse } from "@/lib/public-course";
+import { getPublicCourse } from "@/lib/public-course.server";
 
 type PageProps = {
   params: Promise<{ slug: string }>;

@@ -54,6 +54,7 @@ type AuthContextValue = {
   user: User | null;
   loading: boolean;
   refreshMe: () => Promise<User | null>;
+  updateCurrentUser: (user: User) => void;
   login: (payload: LoginPayload) => Promise<LoginResult>;
   register: (payload: RegisterPayload) => Promise<RegisterResult>;
   logout: () => Promise<void>;
@@ -61,9 +62,16 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+export function AuthProvider({
+  children,
+  initialUser,
+}: {
+  children: React.ReactNode;
+  initialUser?: User | null;
+}) {
+  const hasInitialSession = initialUser !== undefined;
+  const [user, setUser] = useState<User | null>(initialUser ?? null);
+  const [loading, setLoading] = useState(!hasInitialSession);
   const refreshMeRequestRef = useRef<Promise<User | null> | null>(null);
 
   const refreshMe = useCallback((): Promise<User | null> => {
@@ -95,6 +103,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     refreshMeRequestRef.current = request;
     return request;
+  }, []);
+
+  const updateCurrentUser = useCallback((nextUser: User) => {
+    setUser(nextUser);
   }, []);
 
   const login = useCallback(
@@ -206,6 +218,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
+    if (hasInitialSession) {
+      return;
+    }
+
     let mounted = true;
 
     (async () => {
@@ -221,18 +237,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       mounted = false;
     };
-  }, [refreshMe]);
+  }, [hasInitialSession, refreshMe]);
 
   const value = useMemo<AuthContextValue>(
     () => ({
       user,
       loading,
       refreshMe,
+      updateCurrentUser,
       login,
       register,
       logout,
     }),
-    [user, loading, refreshMe, login, register, logout],
+    [user, loading, refreshMe, updateCurrentUser, login, register, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

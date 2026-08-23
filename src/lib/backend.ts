@@ -9,6 +9,11 @@ export async function backendFetch(path: string, init: RequestInit = {}) {
     .map((c) => `${c.name}=${c.value}`)
     .join("; ");
 
+  const timeoutSignal = AbortSignal.timeout(15_000);
+  const signal = init.signal
+    ? AbortSignal.any([init.signal, timeoutSignal])
+    : timeoutSignal;
+
   const res = await fetch(`${BACKEND_URL}${path}`, {
     ...init,
     headers: {
@@ -16,6 +21,7 @@ export async function backendFetch(path: string, init: RequestInit = {}) {
       Cookie: cookieHeader,
     },
     cache: "no-store",
+    signal,
   });
 
   // если бэкенд шлет set-cookie — в app router это обычно делается через forwardSetCookie,

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { BACKEND_URL } from "@/lib/backend-url.server";
+import { applyPrivateNoStore } from "@/lib/private-response";
 
 export async function GET(req: Request) {
   const cookie = req.headers.get("cookie") || "";
@@ -8,9 +9,9 @@ export async function GET(req: Request) {
     method: "GET",
     headers: { cookie },
     cache: "no-store",
-    signal: req.signal,
+    signal: AbortSignal.any([req.signal, AbortSignal.timeout(10_000)]),
   });
 
   const data = await r.json().catch(() => ({}));
-  return NextResponse.json(data, { status: r.status });
+  return applyPrivateNoStore(NextResponse.json(data, { status: r.status }));
 }

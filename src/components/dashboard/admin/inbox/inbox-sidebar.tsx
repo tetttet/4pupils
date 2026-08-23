@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,8 +16,6 @@ import {
 import type { MailListItem } from "@/types/mail";
 import Tags from "@/components/ui/tags";
 import DateShow from "@/components/ui/date-show";
-import { User } from "@/types/user";
-import { fetchUserById } from "@/services/user";
 import FancyAvatar from "@/components/ui/fancy-avatar";
 
 const MailItem = ({
@@ -32,30 +29,8 @@ const MailItem = ({
   collapsed: boolean;
   openMail: (id: string) => void;
 }) => {
-  const [sender, setSender] = React.useState<User | null>(null);
-
-  React.useEffect(() => {
-    let isMounted = true;
-
-    fetchUserById(m.sender_id)
-      .then((user) => {
-        if (isMounted) {
-          setSender(user);
-        }
-      })
-      .catch(() => {
-        if (isMounted) {
-          setSender(null);
-        }
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [m.sender_id]);
-
-  const name = sender
-    ? `${sender.first_name} ${sender.last_name}`.trim()
+  const name = m.sender
+    ? `${m.sender.first_name} ${m.sender.last_name}`.trim()
     : "Неизвестный отправитель";
 
   return (

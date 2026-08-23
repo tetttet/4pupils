@@ -4,16 +4,22 @@ import type { ApiErr, ApiOk } from "@/types/api";
 import type { Enrollment } from "@/types/enrollment";
 
 export async function getMyEnrollments() {
-  const response = await backendFetch("/api/enrollments/my");
-  if (!response.ok) {
+  try {
+    const response = await backendFetch("/api/enrollments/my");
+    if (!response.ok) {
+      return [];
+    }
+
+    const json = await readJsonSafe<ApiOk<Enrollment[]> | ApiErr | null>(
+      response,
+    );
+
+    if (!isApiOk<Enrollment[]>(json)) {
+      return [];
+    }
+
+    return json.data;
+  } catch {
     return [];
   }
-
-  const json = await readJsonSafe<ApiOk<Enrollment[]> | ApiErr | null>(response);
-
-  if (!isApiOk<Enrollment[]>(json)) {
-    return [];
-  }
-
-  return json.data;
 }

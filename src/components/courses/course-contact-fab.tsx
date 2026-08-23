@@ -101,17 +101,6 @@ export default function CourseContactFab() {
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
-    const payload = {
-      name: formState.name.trim(),
-      email: formState.email.trim(),
-      phone: formState.phone.trim(),
-      studyPlan: formState.studyPlan,
-      consent: formState.consent,
-      sentAt: new Date().toISOString(),
-    };
-
-    console.log("course-contact-request", payload);
     closePanel();
     setFormState(INITIAL_FORM_STATE);
   };

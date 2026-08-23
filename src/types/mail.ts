@@ -12,6 +12,15 @@ export type MailFolder =
 
 export type MailType = "user" | "system" | "notification";
 
+export type MailSender = {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  avatar_url: string | null;
+  role: "student" | "teacher" | "admin";
+};
+
 export type MailListItem = {
   mail_id: string;
   folder: MailFolder;
@@ -27,6 +36,8 @@ export type MailListItem = {
   type: MailType;
   thread_id: string | null;
   created_at: string;
+  sender?: MailSender | null;
+  unread_count?: number;
 };
 
 export type MailAttachment = {

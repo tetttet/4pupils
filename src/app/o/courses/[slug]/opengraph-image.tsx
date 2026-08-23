@@ -3,11 +3,11 @@ import { brand } from "@/lib/brand";
 import {
   getCoursePriceLabel,
   getCourseSeoDescription,
-  getPublicCourse,
   isCourseFree,
   normalizeCourseLabel,
   trimText,
 } from "@/lib/public-course";
+import { getPublicCourse } from "@/lib/public-course.server";
 
 export const runtime = "edge";
 export const size = {

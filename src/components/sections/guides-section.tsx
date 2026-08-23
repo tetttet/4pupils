@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import type { GuideListItem } from "@/lib/guides";
 import { brand } from "@/lib/brand";
@@ -108,7 +106,7 @@ export function GuidesSection({
 
           {/* Cards grid */}
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {items.map((g) => (
+            {items.map((g, index) => (
               <div
                 key={g.slug}
                 className="group relative rounded-3xl transition-transform duration-200 hover:-translate-y-0.5"
@@ -120,6 +118,7 @@ export function GuidesSection({
                     cover={g.frontmatter.cover}
                     date={g.frontmatter.date}
                     description={g.frontmatter.description}
+                    priority={index === 0}
                   />
                 </div>
               </div>

@@ -13,7 +13,7 @@ import {
   Settings2,
   UserRound,
 } from "lucide-react";
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import { usePathname, useRouter } from "next/navigation";
 
 import { getStudentPlatformItem } from "@/components/platform/student-platform-config";
@@ -38,32 +38,14 @@ import {
   formatInboxUnreadCount,
   useStudentInbox,
 } from "@/context/student-inbox-context";
-import { useApprovedCourses } from "@/hooks/use-approved-courses";
-import { useUsersDirectory } from "@/hooks/use-users-directory";
-import type { MailType } from "@/types/mail";
-import type { Course } from "@/types/course";
-import type { User } from "@/types/user";
+import { useCourseSearch } from "@/hooks/use-course-search";
+import type { MailSender, MailType } from "@/types/mail";
 import { brand } from "@/lib/brand";
-import {
-  getCourseCategoryLabel,
-  getCourseLevelLabel,
-  initials,
-  normalizeText,
-} from "@/lib/func";
+import { initials } from "@/lib/func";
 import { cn } from "@/lib/utils";
 
 type UserDashHeaderProps = {
   onOpenMobileMenu: () => void;
-};
-
-type HeaderCourseSearchItem = {
-  courseId: string;
-  title: string;
-  titleText: string;
-  href: string;
-  meta: string;
-  description: string;
-  searchText: string;
 };
 
 function CandleIcon(props: React.ComponentProps<"svg">) {
@@ -119,6 +101,8 @@ function CandleIcon(props: React.ComponentProps<"svg">) {
 }
 
 function GameFireChip() {
+  const reduceMotion = useReducedMotion();
+
   return (
     <motion.div
       whileHover={{ y: -1 }}
@@ -129,7 +113,7 @@ function GameFireChip() {
         <motion.div
           aria-hidden
           className="absolute -right-6 top-1/2 h-20 w-20 -translate-y-1/2 rounded-full bg-orange-300/25 blur-2xl"
-          animate={{
+          animate={reduceMotion ? undefined : {
             opacity: [0.25, 0.55, 0.25],
             scale: [0.9, 1.12, 0.9],
           }}
@@ -144,7 +128,7 @@ function GameFireChip() {
           <motion.span
             aria-hidden
             className="absolute h-11 w-11 rounded-full bg-orange-400/20 blur-md"
-            animate={{
+            animate={reduceMotion ? undefined : {
               opacity: [0.3, 0.6, 0.3],
               scale: [0.92, 1.12, 0.92],
             }}
@@ -158,7 +142,7 @@ function GameFireChip() {
           <motion.span
             aria-hidden
             className="absolute bottom-0.5 h-7 w-7 rounded-[58%_58%_46%_46%/58%_58%_78%_78%] bg-linear-to-b from-yellow-200 via-orange-400 to-orange-600 blur-[0.5px]"
-            animate={{
+            animate={reduceMotion ? undefined : {
               scale: [0.96, 1.08, 0.98, 1.04, 0.96],
               rotate: [-5, 2, -3, 4, -5],
               y: [1, -2, 0, -1, 1],
@@ -173,7 +157,7 @@ function GameFireChip() {
           <motion.span
             aria-hidden
             className="absolute bottom-2 h-3.5 w-3.5 rounded-[58%_58%_44%_44%/58%_58%_76%_76%] bg-linear-to-b from-white via-amber-100 to-yellow-200"
-            animate={{
+            animate={reduceMotion ? undefined : {
               opacity: [0.7, 1, 0.8, 1, 0.7],
               scale: [0.9, 1.08, 0.95, 1.04, 0.9],
               y: [0, -1.5, 0, -1, 0],
@@ -188,7 +172,7 @@ function GameFireChip() {
           <motion.span
             aria-hidden
             className="absolute left-1 top-1 h-1.5 w-1.5 rounded-full bg-amber-300"
-            animate={{
+            animate={reduceMotion ? undefined : {
               y: [4, -8, 4],
               x: [0, -2, 0],
               opacity: [0, 0.95, 0],
@@ -205,7 +189,7 @@ function GameFireChip() {
           <motion.span
             aria-hidden
             className="absolute right-0.5 top-2 h-1 w-1 rounded-full bg-orange-400"
-            animate={{
+            animate={reduceMotion ? undefined : {
               y: [3, -7, 3],
               x: [0, 2, 0],
               opacity: [0, 0.9, 0],
@@ -251,35 +235,6 @@ function buildCatalogHref(query: string) {
   return `/courses?${searchParams.toString()}`;
 }
 
-function buildHeaderCourseSearchItem(course: Course): HeaderCourseSearchItem {
-  const category = getCourseCategoryLabel(course);
-  const level = getCourseLevelLabel(course.level);
-  const description =
-    course.short_description?.trim() || course.description?.trim() || "";
-
-  return {
-    courseId: course.course_id,
-    title: course.title,
-    titleText: normalizeText(course.title),
-    href: `/o/courses/${course.slug}`,
-    meta: [category, level !== "Любой уровень" ? level : null]
-      .filter(Boolean)
-      .join(" • "),
-    description,
-    searchText: normalizeText(
-      [
-        course.title,
-        description,
-        course.category,
-        course.level,
-        course.language,
-        ...(course.tags ?? []),
-        ...(course.outcomes ?? []),
-      ].join(" "),
-    ),
-  };
-}
-
 export default function UserDashHeader({
   onOpenMobileMenu,
 }: UserDashHeaderProps) {
@@ -291,6 +246,7 @@ export default function UserDashHeader({
 
   const pathname = usePathname();
   const router = useRouter();
+  const reduceMotion = useReducedMotion();
   const { user, logout } = useAuth();
   const {
     items: inboxItems,
@@ -301,54 +257,16 @@ export default function UserDashHeader({
     refresh: refreshInbox,
   } = useStudentInbox();
   const {
-    courses,
+    items: matchedCourses,
     loading: coursesLoading,
     error: coursesError,
-  } = useApprovedCourses();
-  const deferredCourseQuery = React.useDeferredValue(courseQuery);
+  } = useCourseSearch(courseQuery, courseSearchOpen);
+  const hasSearchQuery = courseQuery.trim().length >= 2;
 
   const activeItem = React.useMemo(
     () => getStudentPlatformItem(pathname),
     [pathname],
   );
-  const searchableCourses = React.useMemo(
-    () =>
-      [...courses]
-        .sort((left, right) => left.title.localeCompare(right.title, "ru"))
-        .map(buildHeaderCourseSearchItem),
-    [courses],
-  );
-  const normalizedCourseQuery = React.useMemo(
-    () => normalizeText(deferredCourseQuery),
-    [deferredCourseQuery],
-  );
-  const matchedCourses = React.useMemo(() => {
-    if (!normalizedCourseQuery) {
-      return searchableCourses.slice(0, 6);
-    }
-
-    return searchableCourses
-      .map((item) => ({
-        item,
-        startsWithMatch: item.titleText.startsWith(normalizedCourseQuery),
-        titleMatch: item.titleText.includes(normalizedCourseQuery),
-        generalMatch: item.searchText.includes(normalizedCourseQuery),
-      }))
-      .filter(({ titleMatch, generalMatch }) => titleMatch || generalMatch)
-      .sort((left, right) => {
-        if (left.startsWithMatch !== right.startsWithMatch) {
-          return Number(right.startsWithMatch) - Number(left.startsWithMatch);
-        }
-
-        if (left.titleMatch !== right.titleMatch) {
-          return Number(right.titleMatch) - Number(left.titleMatch);
-        }
-
-        return left.item.title.localeCompare(right.item.title, "ru");
-      })
-      .slice(0, 6)
-      .map(({ item }) => item);
-  }, [normalizedCourseQuery, searchableCourses]);
   const catalogHref = React.useMemo(
     () => buildCatalogHref(courseQuery),
     [courseQuery],
@@ -369,10 +287,6 @@ export default function UserDashHeader({
         .slice(0, 5),
     [inboxItems],
   );
-  const notificationUsers = useUsersDirectory(
-    notificationItems.map((item) => item.sender_id),
-  );
-
   const fullName =
     [user?.first_name, user?.last_name].filter(Boolean).join(" ") || "Ученик";
 
@@ -453,40 +367,20 @@ export default function UserDashHeader({
 
   return (
     <header className="sticky top-3 z-30 overflow-hidden rounded-[26px] border border-white/80 bg-white/95 shadow-[0_20px_60px_-38px_rgba(15,23,42,0.35)] backdrop-blur-xl lg:top-5 lg:rounded-[32px]">
-      <motion.div
+      <div
         aria-hidden
         className="absolute -right-10 top-3 h-28 w-28 rounded-full bg-sky-200/55 blur-3xl"
-        animate={{
-          x: [0, 10, 0],
-          y: [0, -8, 0],
-          opacity: [0.5, 0.8, 0.5],
-        }}
-        transition={{
-          duration: 5.5,
-          repeat: Number.POSITIVE_INFINITY,
-          ease: "easeInOut",
-        }}
       />
 
-      <motion.div
+      <div
         aria-hidden
         className="absolute left-10 top-8 h-20 w-20 rounded-full bg-amber-200/45 blur-3xl"
-        animate={{
-          x: [0, -8, 0],
-          y: [0, 8, 0],
-          opacity: [0.35, 0.65, 0.35],
-        }}
-        transition={{
-          duration: 6.2,
-          repeat: Number.POSITIVE_INFINITY,
-          ease: "easeInOut",
-        }}
       />
 
       <div className="mx-auto flex w-full max-w-400 flex-col gap-3 px-3 py-3 sm:px-6 sm:py-4 lg:gap-4 lg:px-8 lg:py-4">
         <motion.div
           key={activeItem.href}
-          initial={{ opacity: 0, y: 12 }}
+          initial={reduceMotion ? false : { opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, ease: "easeOut" }}
           className="relative flex flex-wrap items-center gap-2.5 lg:flex-nowrap lg:items-center lg:justify-between lg:gap-3"
@@ -554,15 +448,20 @@ export default function UserDashHeader({
                       Каталог курсов
                     </div>
                     <div className="mt-1 truncate text-sm font-semibold text-slate-950">
-                      {courseQuery.trim()
+                      {hasSearchQuery
                         ? "Подходящие доступные курсы"
-                        : "Все доступные курсы"}
+                        : "Введите минимум 2 символа"}
                     </div>
                   </div>
                 </div>
 
                 <div className="max-h-90 overflow-y-auto p-2">
-                  {coursesLoading ? (
+                  {!hasSearchQuery ? (
+                    <div className="rounded-[18px] border border-slate-200 bg-slate-50/80 px-4 py-4 text-sm leading-5 text-slate-600">
+                      Начните вводить название или навык. Поиск отправится после
+                      короткой паузы и покажет не больше шести курсов.
+                    </div>
+                  ) : coursesLoading ? (
                     <div className="flex items-center gap-3 rounded-[18px] px-3 py-6 text-sm text-slate-500">
                       <LoaderCircle className="h-4 w-4 animate-spin text-sky-500" />
                       Загружаем доступные курсы...
@@ -627,7 +526,9 @@ export default function UserDashHeader({
                       <div className="mt-1 text-xs text-slate-500">
                         {coursesLoading
                           ? "Каталог обновляется..."
-                          : `${courses.length} опубликованных курсов`}
+                          : hasSearchQuery
+                            ? `${matchedCourses.length} результатов в быстром поиске`
+                            : "Полный список опубликованных курсов"}
                       </div>
                     </div>
 
@@ -661,7 +562,7 @@ export default function UserDashHeader({
                     {inboxReady && unreadCount > 0 ? (
                       <motion.span
                         className="absolute -right-2 -top-2 inline-flex px-1.5 py-1 items-center justify-center rounded-full bg-sky-500 text-[9px] font-bold leading-none text-white shadow-[0_10px_24px_-16px_rgba(14,165,233,0.9)]"
-                        animate={{
+                        animate={reduceMotion ? undefined : {
                           scale: [1, 1.08, 1],
                           opacity: [0.92, 1, 0.92],
                         }}
@@ -733,7 +634,7 @@ export default function UserDashHeader({
                         className="flex w-full items-start gap-3 rounded-[18px] px-3 py-3 text-left transition hover:bg-slate-50"
                       >
                         <NotificationAvatar
-                          user={notificationUsers[item.sender_id]}
+                          user={item.sender}
                           senderId={item.sender_id}
                         />
 
@@ -741,7 +642,7 @@ export default function UserDashHeader({
                           <div className="flex items-center gap-2">
                             <div className="truncate text-sm font-semibold text-slate-900">
                               {getInboxSenderName(
-                                notificationUsers[item.sender_id],
+                                item.sender,
                                 item.sender_id,
                               )}
                             </div>
@@ -917,7 +818,7 @@ function NotificationAvatar({
   user,
   senderId,
 }: {
-  user?: User | null;
+  user?: MailSender | null;
   senderId: string;
 }) {
   const senderName = getInboxSenderName(user, senderId);
@@ -932,7 +833,10 @@ function NotificationAvatar({
   );
 }
 
-function getInboxSenderName(user?: User | null, senderId?: string | null) {
+function getInboxSenderName(
+  user?: MailSender | null,
+  senderId?: string | null,
+) {
   const fullName = [user?.first_name, user?.last_name].filter(Boolean).join(" ");
 
   if (fullName) {

@@ -1,60 +1,21 @@
-import { cache } from "react";
-import { headers } from "next/headers";
-import { BACKEND_URL } from "@/lib/backend-url.server";
-import type { ApiErr, ApiOk, Course } from "@/types/course";
+import type { Course } from "@/types/course";
 
 export const COURSE_PAGE_REVALIDATE_SECONDS = 300;
 export const COURSE_FALLBACK_IMAGE = "/images/course-placeholder.svg";
+export const PUBLIC_COURSES_PAGE_SIZE = 12;
 
-type CourseResponse<T> = ApiOk<T> | ApiErr | null | Record<string, unknown>;
+export type PublicCoursesPageMeta = {
+  count: number;
+  limit: number;
+  offset: number;
+  hasMore: boolean;
+  nextOffset: number | null;
+};
 
-function isApiOk<T>(value: unknown): value is ApiOk<T> {
-  if (!value || typeof value !== "object") return false;
-
-  const payload = value as { ok?: unknown; data?: unknown };
-  return payload.ok === true && "data" in payload;
-}
-
-export const getPublicCourse = cache(async (slug: string): Promise<Course | null> => {
-  const res = await fetch(
-    `${BACKEND_URL}/api/courses/public/${encodeURIComponent(slug)}`,
-    {
-      headers: { Accept: "application/json" },
-      next: { revalidate: COURSE_PAGE_REVALIDATE_SECONDS },
-    },
-  );
-
-  const json = (await res.json().catch(() => null)) as CourseResponse<Course>;
-
-  if (!res.ok || !isApiOk<Course>(json)) {
-    return null;
-  }
-
-  return json.data;
-});
-
-export async function getAppBaseUrl() {
-  const envUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL;
-  if (envUrl) {
-    return envUrl.startsWith("http")
-      ? envUrl.replace(/\/$/, "")
-      : `https://${envUrl.replace(/\/$/, "")}`;
-  }
-
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL.replace(/\/$/, "")}`;
-  }
-
-  const h = await headers();
-  const host = h.get("x-forwarded-host") ?? h.get("host");
-  const proto = h.get("x-forwarded-proto") ?? "http";
-
-  if (host) {
-    return `${proto}://${host}`;
-  }
-
-  return "http://localhost:3000";
-}
+export type PublicCoursesPage = {
+  courses: Course[];
+  meta: PublicCoursesPageMeta;
+};
 
 export function isCourseFree(course: Course) {
   return (

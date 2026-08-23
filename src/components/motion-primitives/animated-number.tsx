@@ -7,7 +7,6 @@ export type AnimatedNumberProps = {
   value: number;
   className?: string;
   springOptions?: SpringOptions;
-  as?: React.ElementType;
 };
 
 const MotionSpan = motion.create('span');
@@ -16,7 +15,6 @@ export function AnimatedNumber({
   value,
   className,
   springOptions,
-  as = 'span',
 }: AnimatedNumberProps) {
 
   const spring = useSpring(value, springOptions);

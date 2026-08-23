@@ -3,31 +3,56 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import {
+  motion,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+} from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import styles from "./team.module.css";
 import { brand } from "@/lib/brand";
 
 const phrase = ["Готовы", "Попробовать", brand.name];
 
-function Eyes() {
+function Eyes({ reduceMotion }: { reduceMotion: boolean }) {
   const [rotate, setRotate] = useState(0);
 
   useEffect(() => {
-    const handleMouseMove = (event: MouseEvent) => {
-      const deltaX = event.clientX - window.innerWidth / 2;
-      const deltaY = event.clientY - window.innerHeight / 2;
-      const angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+    const finePointer = window.matchMedia("(pointer: fine)");
+    if (reduceMotion || !finePointer.matches) {
+      return;
+    }
 
-      setRotate(angle - 280);
+    let frameId = 0;
+    let nextX = window.innerWidth / 2;
+    let nextY = window.innerHeight / 2;
+
+    const handleMouseMove = (event: MouseEvent) => {
+      nextX = event.clientX;
+      nextY = event.clientY;
+
+      if (frameId) {
+        return;
+      }
+
+      frameId = window.requestAnimationFrame(() => {
+        const deltaX = nextX - window.innerWidth / 2;
+        const deltaY = nextY - window.innerHeight / 2;
+        const angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+
+        setRotate(angle - 280);
+        frameId = 0;
+      });
     };
 
     window.addEventListener("mousemove", handleMouseMove);
 
     return () => {
+      window.cancelAnimationFrame(frameId);
       window.removeEventListener("mousemove", handleMouseMove);
     };
-  }, []);
+  }, [reduceMotion]);
 
   return (
     <div className={styles.eyesRow}>
@@ -75,6 +100,7 @@ function ReadyButton({
 
 export default function Ready() {
   const container = useRef<HTMLElement | null>(null);
+  const reduceMotion = useReducedMotion();
   const { scrollYProgress } = useScroll({
     target: container,
     offset: ["start end", "end start"],
@@ -111,8 +137,11 @@ export default function Ready() {
         </div>
       </div>
 
-      <motion.div className={styles.eyesLayer} style={{ y: mq }}>
-        <Eyes />
+      <motion.div
+        className={styles.eyesLayer}
+        style={reduceMotion ? undefined : { y: mq }}
+      >
+        <Eyes reduceMotion={Boolean(reduceMotion)} />
       </motion.div>
     </section>
   );

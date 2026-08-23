@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { redirect } from "next/navigation";
 
-import { RequireAuth } from "@/components/auth/require-auth";
 import { UserDashShell } from "@/components/dash/layout/user-dash-shell";
+import { AuthProvider } from "@/context/auth-context";
 import { withBrandPrefix } from "@/lib/brand";
+import { getMe } from "@/lib/me";
 
 export const metadata: Metadata = {
   title: withBrandPrefix("Student Platform"),
@@ -11,10 +13,24 @@ export const metadata: Metadata = {
     "Premium student platform experience for lessons, schedules, assignments, and learner communication.",
 };
 
-export default function PlatformLayout({ children }: { children: ReactNode }) {
+export default async function PlatformLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  const user = await getMe();
+
+  if (!user) {
+    redirect("/auth/sign-in?next=/platform");
+  }
+
+  if (user.role !== "student") {
+    redirect("/403");
+  }
+
   return (
-    <RequireAuth role="student" redirectTo="/auth/sign-in">
+    <AuthProvider initialUser={user}>
       <UserDashShell>{children}</UserDashShell>
-    </RequireAuth>
+    </AuthProvider>
   );
 }

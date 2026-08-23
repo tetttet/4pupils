@@ -7,7 +7,11 @@ import { GuidesSection } from "@/components/sections/guides-section";
 import HeroVideo from "@/components/sections/hero-video";
 import HowWeWorkWithTutors from "@/components/sections/how-we-work-with-tutors";
 import Subjects from "@/components/sections/segmented";
+import { ApprovedCoursesProvider } from "@/hooks/use-approved-courses";
 import { getGuidesList } from "@/lib/guides";
+import { getPublicCoursesPage } from "@/lib/public-course.server";
+
+export const revalidate = 300;
 
 const homeTheme = {
   "--frontier-home-primary": "#5D75CB",
@@ -30,20 +34,24 @@ const homeTheme = {
   background: "var(--frontier-home-bg-start)",
 } as CSSProperties;
 
-export default function Home() {
+export default async function Home() {
   const guides = getGuidesList().slice(0, 3);
+  const initialPage = await getPublicCoursesPage();
 
   return (
-    <div className="relative w-full" style={homeTheme}>
-      {/* <Hero /> */}
-      <HeroVideo />
-      {/* <LogoCloud /> */}
-      <CountDown />
-      <Subjects />
-      <ApprovedCoursesSection />
-      <HowWeWorkWithTutors />
-      <GuidesSection items={guides} home />
-      <FaqsSection />
-    </div>
+    <ApprovedCoursesProvider
+      initialCourses={initialPage?.courses}
+      initialMeta={initialPage?.meta}
+    >
+      <div className="relative w-full" style={homeTheme}>
+        <HeroVideo />
+        <CountDown />
+        <Subjects />
+        <ApprovedCoursesSection />
+        <HowWeWorkWithTutors />
+        <GuidesSection items={guides} home />
+        <FaqsSection />
+      </div>
+    </ApprovedCoursesProvider>
   );
 }

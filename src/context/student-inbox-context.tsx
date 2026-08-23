@@ -9,7 +9,7 @@ import { MailAPI } from "@/lib/mail/api";
 import type { MailListItem } from "@/types/mail";
 
 const INBOX_PREVIEW_LIMIT = 40;
-const INBOX_POLL_MS = 30000;
+const INBOX_POLL_MS = 60_000;
 
 type StudentInboxState = {
   items: MailListItem[];
@@ -50,17 +50,17 @@ function sortInboxItems(items: MailListItem[]) {
 }
 
 async function fetchInboxSnapshot() {
-  const [items, unreadCount] = await Promise.all([
-    MailAPI.list({
-      folder: "inbox",
-      limit: INBOX_PREVIEW_LIMIT,
-    }),
-    MailAPI.countUnreadInbox(),
-  ]);
+  const snapshotItems = await MailAPI.list({
+    folder: "inbox",
+    limit: INBOX_PREVIEW_LIMIT,
+  });
+  const sortedItems = sortInboxItems(snapshotItems);
 
   return {
-    items: sortInboxItems(items),
-    unreadCount,
+    items: sortedItems.slice(0, INBOX_PREVIEW_LIMIT),
+    unreadCount:
+      snapshotItems[0]?.unread_count ??
+      snapshotItems.reduce((count, item) => count + Number(item.unread), 0),
   };
 }
 

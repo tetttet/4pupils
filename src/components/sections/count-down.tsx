@@ -22,15 +22,26 @@ function AnimatedNumberInView({
   const value = useMemo(() => (isInView ? number : 0), [isInView, number]);
 
   return (
-    <div ref={ref} className="inline-flex items-baseline justify-center">
-      <AnimatedNumber
-        className={className}
-        springOptions={{
-          bounce: 0,
-          duration,
-        }}
-        value={value}
-      />
+    <div
+      ref={ref}
+      className="relative inline-flex items-baseline justify-center"
+    >
+      <span className={`${className ?? ""} ${isInView ? "opacity-0" : ""}`}>
+        {number.toLocaleString("ru-RU")}
+      </span>
+      <span
+        aria-hidden="true"
+        className={`absolute inset-0 ${isInView ? "opacity-100" : "opacity-0"}`}
+      >
+        <AnimatedNumber
+          className={className}
+          springOptions={{
+            bounce: 0,
+            duration,
+          }}
+          value={value}
+        />
+      </span>
     </div>
   );
 }
