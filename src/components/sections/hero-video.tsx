@@ -3,10 +3,16 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { PlayCircle, CheckCircle2, Maximize2, Minus, X } from "lucide-react";
+import {
+  ArrowUpRight,
+  CheckCircle2,
+  Maximize2,
+  Minus,
+  Play,
+  PlayCircle,
+  X,
+} from "lucide-react";
 import { brand } from "@/lib/brand";
-import ButtonSend from "../ui/button-send";
-import HeroTestBg from "../ui/hero-test-bg";
 
 type HeroVideoProps = {
   eyebrow?: string;
@@ -231,162 +237,152 @@ export default function HeroVideo({
   }, [closeFullscreenVideo, videoWindowMode]);
 
   return (
-    <section className="relative overflow-hidden">
-      <HeroTestBg />
+    <section className="relative overflow-hidden bg-transparent">
+      <div className="relative mx-auto max-w-[1200px] px-4 pb-10 pt-2 sm:px-5 sm:pb-14 sm:pt-4 lg:pb-10">
+        <div className="grid gap-5 lg:grid-cols-2">
+          <div className="group relative isolate flex min-h-[620px] flex-col overflow-hidden rounded-[28px] bg-white px-6 py-8 shadow-[0_12px_36px_rgba(35,48,103,0.055)] sm:rounded-[32px] sm:px-9 sm:py-10 xl:min-h-[660px] xl:px-10 xl:py-11">
+            <div className="pointer-events-none absolute -bottom-48 -left-28 -z-10 size-[520px] rounded-full border-[70px] border-[#ECEFFF] opacity-90 transition-transform duration-700 group-hover:scale-[1.03] sm:-bottom-52 sm:size-[600px] sm:border-[86px]" />
+            <div className="pointer-events-none absolute -bottom-28 left-32 -z-10 size-56 rounded-full border-[44px] border-[#F3F5FF]" />
 
-      <div className="relative mx-auto max-w-[1400px] px-6 py-14 md:px-10 md:py-20 lg:py-24">
-        <div className="grid items-center gap-10 lg:grid-cols-[1fr_1.45fr] lg:gap-12">
-          {/* ── LEFT CONTENT ── */}
-          <div className="max-w-lg text-white lg:py-6">
-            {/* Eyebrow pill */}
-            <div className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-[13px] font-medium tracking-wide text-white/90 backdrop-blur-sm">
+            <div className="inline-flex w-fit items-center rounded-full border border-[#D7DDF8] bg-[#F7F8FF] px-3.5 py-1.5 text-[12px] font-semibold tracking-[0.02em] text-[#4C63B8] sm:text-[13px]">
               {eyebrow}
             </div>
 
-            {/* Headline */}
-            <h1 className="mt-5 text-[28px] font-semibold leading-[1.25] tracking-[-0.02em] text-white sm:text-[32px] md:text-[36px] lg:text-[38px] xl:text-[42px]">
+            <h1 className="mt-5 max-w-[15ch] text-[36px] font-medium leading-[1.04] tracking-[-0.045em] text-[#202858] sm:text-[44px] lg:text-[46px] xl:text-[50px]">
               {headline}
             </h1>
 
-            {/* Description */}
-            <p className="mt-4 text-[14px] leading-[1.7] text-white/75 sm:text-[15px]">
+            <p className="mt-5 max-w-[54ch] text-[14px] leading-[1.65] text-[#68719B] sm:text-[15px]">
               {description}
             </p>
 
-            {/* Feature checklist */}
-            <ul className="mt-5 space-y-2.5">
+            <ul className="mt-6 grid gap-2.5">
               {[
                 "Поиск преподавателей по нужным направлениям",
                 "Удобный выбор курсов для обучения онлайн",
                 "Платформа для роста студентов и преподавателей",
               ].map((item) => (
-                <li key={item} className="flex items-center gap-2.5">
-                  <CheckCircle2 className="h-[18px] w-[18px] shrink-0 text-white/90" />
-                  <span className="text-[13.5px] leading-snug text-white/85 sm:text-[14px]">
+                <li key={item} className="flex items-start gap-2.5">
+                  <CheckCircle2 className="mt-0.5 size-[18px] shrink-0 text-[#5D75CB]" />
+                  <span className="text-[13px] leading-5 text-[#3F4568] sm:text-[14px]">
                     {item}
                   </span>
                 </li>
               ))}
             </ul>
 
-            {/* Note */}
-            <p className="mt-5 text-[12.5px] leading-[1.65] text-white/50 sm:text-[13px]">
+            <p className="mt-5 max-w-[52ch] text-[12px] leading-[1.6] text-[#7A82A8] sm:text-[13px]">
               {note}
             </p>
 
-            {/* CTAs */}
-            <div className="mt-7 flex flex-wrap items-center gap-3">
-              <ButtonSend
-                className="px-8! py-3! text-[14px]! font-medium!"
+            <div className="mt-auto flex flex-col gap-3 pt-7 sm:flex-row sm:flex-wrap sm:items-center">
+              <button
+                className="group/cta inline-flex h-13 items-center justify-center gap-3 rounded-full bg-[#233067] pl-6 pr-2 text-[14px] font-medium text-white shadow-[0_12px_26px_rgba(35,48,103,0.2)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#19224c] hover:shadow-[0_16px_34px_rgba(35,48,103,0.26)] active:translate-y-0"
                 onClick={() => router.push("/learning-fit")}
-              />
+                type="button"
+              >
+                Хочу начать заниматься
+                <span className="grid size-9 place-items-center rounded-full bg-white text-[#233067] transition-transform duration-300 group-hover/cta:rotate-6">
+                  <ArrowUpRight aria-hidden="true" className="size-4" />
+                </span>
+              </button>
 
               <button
                 type="button"
                 onClick={openFullscreenVideo}
-                className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-5 py-2.5 text-[13.5px] font-medium text-white/90 transition hover:bg-white/15 active:scale-[.97]"
+                className="inline-flex h-13 items-center justify-center gap-2 rounded-full border border-[#D7DDF8] bg-white/80 px-5 text-[13px] font-medium text-[#202858] transition duration-300 hover:-translate-y-0.5 hover:border-[#B8C2EF] hover:bg-[#F7F8FF] active:translate-y-0 sm:text-[14px]"
               >
-                <PlayCircle className="h-4 w-4 shrink-0" />
+                <PlayCircle className="size-[18px] shrink-0 text-[#5D75CB]" />
                 Смотреть видео
               </button>
             </div>
           </div>
 
-          {/* ── RIGHT VIDEO ── */}
-          <div className="relative">
-            {/* Layered glow atmosphere */}
-            <div className="pointer-events-none absolute -inset-8 rounded-[40px] bg-white/10 blur-3xl opacity-50" />
-            <div className="pointer-events-none absolute -bottom-10 -right-10 h-72 w-72 rounded-full bg-indigo-500/20 blur-3xl" />
-            <div className="pointer-events-none absolute -top-10 -left-6 h-48 w-48 rounded-full bg-sky-400/15 blur-2xl" />
+          <div className="grid gap-5 lg:grid-rows-[1fr_auto]">
+            <div className="group relative flex flex-col overflow-hidden rounded-[28px] bg-white p-3 shadow-[0_12px_36px_rgba(35,48,103,0.055)] transition duration-500 hover:-translate-y-1 hover:shadow-[0_22px_52px_rgba(35,48,103,0.11)] sm:rounded-[32px] sm:p-4">
+              <div className="flex h-10 items-center gap-2 px-2 sm:h-11 sm:px-3">
+                <span className="size-2.5 rounded-full bg-[#D7DDF8]" />
+                <span className="size-2.5 rounded-full bg-[#B8C2EF]" />
+                <span className="size-2.5 rounded-full bg-[#5D75CB]" />
+                <div className="ml-2 h-1.5 w-24 rounded-full bg-[#ECEFFF] sm:w-32" />
+                <button
+                  aria-label="Открыть видео на весь экран"
+                  className="ml-auto grid size-8 place-items-center rounded-full bg-[#F3F5FF] text-[#4C63B8] transition duration-300 hover:bg-[#ECEFFF] hover:text-[#233067]"
+                  onClick={openFullscreenVideo}
+                  title="Открыть видео на весь экран"
+                  type="button"
+                >
+                  <Maximize2 className="size-3.5" />
+                </button>
+              </div>
 
-            {/* Perspective tilt for depth */}
-            <div style={{ perspective: "1200px" }}>
-              <div
-                style={{
-                  transform: "rotateY(-4deg) rotateX(2deg)",
-                  transformStyle: "preserve-3d",
-                }}
-              >
-                {/* Glassmorphism card */}
-                <div className="relative overflow-hidden rounded-[22px] border border-white/15 bg-white/[0.08] p-3 shadow-[0_32px_100px_rgba(0,0,0,0.45)] backdrop-blur-xl">
-                  {/* Fake browser chrome */}
-                  <div className="mb-3 flex items-center gap-1.5 px-2.5 py-1.5">
-                    <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
-                    <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
-                    <button
-                      type="button"
-                      aria-label="Открыть видео на весь экран"
-                      title="Открыть видео на весь экран"
-                      onClick={openFullscreenVideo}
-                      className="h-3 w-3 rounded-full bg-[#28c840] transition hover:brightness-110 active:scale-90"
-                    />
-                    <div className="ml-3 h-2 w-40 rounded-full bg-white/10" />
-                    <div className="ml-auto h-2 w-16 rounded-full bg-white/8" />
-                  </div>
+              <div className="relative overflow-hidden rounded-[20px] bg-[#202858] sm:rounded-[24px] lg:flex-1">
+                <video
+                  key={src}
+                  className="block aspect-video w-full object-cover transition-transform duration-700 group-hover:scale-[1.015] lg:h-full lg:aspect-auto"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
+                  poster={poster}
+                >
+                  <source src={src} type="video/mp4" />
+                </video>
 
-                  {/* Video */}
-                  <div className="overflow-hidden rounded-[14px] bg-[#080e1a] ring-1 ring-white/10">
-                    <div className="relative">
-                      <video
-                        key={src}
-                        className="block w-full object-cover"
-                        style={{ aspectRatio: "16/9" }}
-                        autoPlay
-                        muted
-                        loop
-                        playsInline
-                        preload="metadata"
-                        poster={poster}
-                      >
-                        <source src={src} type="video/mp4" />
-                      </video>
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#202858]/55 via-transparent to-transparent" />
 
-                      {/* Vignette */}
-                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+                <button
+                  className="absolute bottom-3 left-3 inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-2 text-[12px] font-medium text-[#202858] shadow-lg transition duration-300 hover:scale-[1.03] sm:bottom-4 sm:left-4 sm:px-4 sm:text-[13px]"
+                  onClick={openFullscreenVideo}
+                  type="button"
+                >
+                  <span className="grid size-5 place-items-center rounded-full bg-[#5D75CB] text-white">
+                    <Play className="ml-0.5 size-2.5 fill-current" />
+                  </span>
+                  Смотреть обзор
+                </button>
 
-                      {/* Play badge */}
-                      <div className="select-none absolute bottom-4 left-4 inline-flex items-center gap-2 rounded-full bg-black/45 px-4 py-2 text-[12.5px] font-medium text-white backdrop-blur-sm">
-                        <PlayCircle className="h-3.5 w-3.5" />
-                        Смотреть обзор
-                      </div>
-
-                      {/* Live badge */}
-                      <div className="absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-black/40 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-white/80 backdrop-blur-sm">
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                        Live demo
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Mini stats bar inside card */}
-                  <div className="mt-3 grid grid-cols-3 divide-x divide-white/10 rounded-xl bg-white/5 px-2 py-2.5">
-                    {[
-                      { value: "Новый", label: "Проект" },
-                      { value: "Онлайн", label: "Обучение" },
-                      { value: "Скоро", label: "Новые курсы" },
-                    ].map(({ value, label }) => (
-                      <div
-                        key={label}
-                        className="flex flex-col items-center gap-0.5 px-2"
-                      >
-                        <span className="text-[15px] font-semibold text-white">
-                          {value}
-                        </span>
-                        <span className="text-[11px] text-white/50">
-                          {label}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
+                <div className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-[#202858]/75 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-white backdrop-blur-sm sm:right-4 sm:top-4 sm:text-[11px]">
+                  <span className="size-1.5 rounded-full bg-white" />
+                  Live demo
                 </div>
               </div>
+
+              <p className="px-2 pb-2 pt-4 text-[12px] leading-[1.6] text-[#7A82A8] sm:px-3 sm:text-[13px]">
+                БыстПознакомьтесь с платформой поближе — как она работает, что
+                предлагает и как будет поддерживать вас на каждом этапе обучения.
+              </p>
             </div>
 
-            {/* Caption */}
-            <p className="mt-4 max-w-2xl pl-1 text-[12.5px] leading-[1.65] text-white/50 sm:text-[13px]">
-              БыстПознакомьтесь с платформой поближе — как она работает, что
-              предлагает и как будет поддерживать вас на каждом этапе обучения.
-            </p>
+            <div className="grid grid-cols-3 gap-2.5 sm:gap-4">
+              {[
+                { value: "Новый", label: "Проект" },
+                { value: "Онлайн", label: "Обучение" },
+                { value: "Скоро", label: "Новые курсы" },
+              ].map(({ value, label }, index) => (
+                <div
+                  key={label}
+                  className={`group/stat relative min-h-28 overflow-hidden rounded-[22px] px-3 py-4 transition duration-300 hover:-translate-y-1 sm:min-h-32 sm:rounded-[26px] sm:px-5 sm:py-5 ${
+                    index === 1
+                      ? "bg-[#5D75CB] text-white shadow-[0_14px_30px_rgba(93,117,203,0.18)]"
+                      : "border border-white bg-white text-[#202858]"
+                  }`}
+                >
+                  <div className="absolute -bottom-8 -right-8 size-20 rounded-full border-[18px] border-current opacity-[0.06] transition-transform duration-500 group-hover/stat:scale-110" />
+                  <div className="relative text-[17px] font-medium tracking-[-0.02em] sm:text-[21px]">
+                    {value}
+                  </div>
+                  <div
+                    className={`relative mt-1 text-[10px] leading-4 sm:text-[12px] ${
+                      index === 1 ? "text-white/70" : "text-[#7A82A8]"
+                    }`}
+                  >
+                    {label}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

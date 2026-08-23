@@ -4,7 +4,15 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronDown, ChevronLeft, ChevronRight, LogOut } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  LogOut,
+  Plus,
+  Settings,
+  UserRound,
+} from "lucide-react";
 
 import { brand } from "@/lib/brand";
 import { cn } from "@/lib/utils";
@@ -246,6 +254,7 @@ export function Sidebar({ collapsed, onToggle }: Props) {
   const toggleLabel = collapsed
     ? "Развернуть боковую панель"
     : "Свернуть боковую панель";
+  const isTeacher = user?.role === "teacher";
 
   const navItems: NavItem[] = React.useMemo(() => {
     if (user?.role === "student") return STUDENT_NAV as unknown as NavItem[];
@@ -285,11 +294,11 @@ export function Sidebar({ collapsed, onToggle }: Props) {
   return (
     <>
       <motion.aside
-        animate={{ width: collapsed ? 72 : 280 }}
+        animate={{ width: collapsed ? 72 : isTeacher ? 248 : 280 }}
         transition={{ type: "spring", stiffness: 260, damping: 28 }}
         className={cn(
           "sticky top-0 h-screen shrink-0 overflow-hidden border-r will-change-[width]",
-          "bg-[#f3f4f6] text-foreground",
+          isTeacher ? "bg-white text-foreground" : "bg-[#f3f4f6] text-foreground",
         )}
       >
         <div className="flex h-full flex-col">
@@ -339,6 +348,11 @@ export function Sidebar({ collapsed, onToggle }: Props) {
           </div>
 
           <ScrollArea className="min-h-0 flex-1 px-2 pb-4">
+            {!collapsed && isTeacher ? (
+              <div className="px-3 pb-2 pt-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                Работа
+              </div>
+            ) : null}
             <motion.div layout className="mt-2 space-y-1">
               {navItems.map((item) => {
                 const Icon = item.icon;
@@ -359,7 +373,9 @@ export function Sidebar({ collapsed, onToggle }: Props) {
                   }),
                   "relative h-8 w-full justify-start gap-3 px-3 text-[13px] font-medium transition-colors",
                   active || subActive
-                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                    ? isTeacher
+                      ? "bg-slate-100 text-slate-950 hover:bg-slate-100"
+                      : "bg-primary text-primary-foreground hover:bg-primary/90"
                     : "text-foreground/90 hover:bg-muted",
                 );
 
@@ -471,11 +487,16 @@ export function Sidebar({ collapsed, onToggle }: Props) {
                         className={cn(
                           "h-4 w-4 shrink-0",
                           active
-                            ? "text-primary-foreground"
+                            ? isTeacher
+                              ? "text-sky-700"
+                              : "text-primary-foreground"
                             : "text-muted-foreground",
                         )}
                       />
-                      <InboxCornerBadge count={inboxUnreadCount} inverted={active} />
+                      <InboxCornerBadge
+                        count={inboxUnreadCount}
+                        inverted={active && !isTeacher}
+                      />
                     </span>
 
                     {!collapsed && (
@@ -554,10 +575,57 @@ export function Sidebar({ collapsed, onToggle }: Props) {
             </motion.div>
           </ScrollArea>
 
+          {isTeacher ? (
+            <div className="space-y-3 border-t border-slate-100 p-3">
+              <Button
+                asChild
+                size="sm"
+                className={cn(
+                  "w-full rounded-xl bg-[#0f3b57] hover:bg-[#123f5b]",
+                  collapsed ? "justify-center px-0" : "justify-start",
+                )}
+              >
+                <Link href="/dashboard/teacher/courses/create">
+                  <Plus className="h-4 w-4" />
+                  {!collapsed && "Создать курс"}
+                </Link>
+              </Button>
+
+              <div className="space-y-1">
+                <Link
+                  href="/dashboard/teacher/profile"
+                  className={cn(
+                    "flex h-9 items-center gap-3 rounded-lg px-3 text-[13px] font-medium text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-900",
+                    isActivePath(pathname, "/dashboard/teacher/profile") &&
+                      "bg-slate-100 text-slate-950",
+                    collapsed && "justify-center px-0",
+                  )}
+                >
+                  <UserRound className="h-4 w-4" />
+                  {!collapsed && "Профиль"}
+                </Link>
+                <Link
+                  href="/dashboard/teacher/settings"
+                  className={cn(
+                    "flex h-9 items-center gap-3 rounded-lg px-3 text-[13px] font-medium text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-900",
+                    isActivePath(pathname, "/dashboard/teacher/settings") &&
+                      "bg-slate-100 text-slate-950",
+                    collapsed && "justify-center px-0",
+                  )}
+                >
+                  <Settings className="h-4 w-4" />
+                  {!collapsed && "Настройки"}
+                </Link>
+              </div>
+            </div>
+          ) : null}
+
           <div className="mt-auto border-t p-3">
             <div
               className={cn(
-                "rounded-md border bg-background p-3 shadow-sm",
+                isTeacher
+                  ? "rounded-xl bg-slate-50 p-2"
+                  : "rounded-md border bg-background p-3 shadow-sm",
                 collapsed && "p-2",
               )}
             >
@@ -586,11 +654,12 @@ export function Sidebar({ collapsed, onToggle }: Props) {
 
               <Button
                 type="button"
-                variant="destructive"
+                variant={isTeacher ? "ghost" : "destructive"}
                 size="sm"
                 aria-label="Выйти"
                 className={cn(
                   "mt-3 w-full",
+                  isTeacher && "text-slate-500 hover:bg-white hover:text-rose-600",
                   collapsed ? "justify-center px-0" : "justify-start",
                 )}
                 onClick={() => setOpenLogoutConfirm(true)}

@@ -1,5 +1,3 @@
-import CoursesFooter from "@/components/courses/courses-footer";
-import CoursesHeader from "@/components/courses/courses-header";
 import type { Metadata } from "next";
 
 import type { ReactNode } from "react";
@@ -12,11 +10,5 @@ export const metadata: Metadata = {
 };
 
 export default function CoursesLayout({ children }: { children: ReactNode }) {
-  return (
-    <>
-      <CoursesHeader />
-      {children}
-      <CoursesFooter />
-    </>
-  );
+  return children;
 }

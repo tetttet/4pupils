@@ -27,13 +27,14 @@ import {
 import { cn } from "@/lib/utils";
 
 import {
+  ArrowLeft,
+  Check,
+  Circle,
+  ImagePlus,
+  Info,
   X,
   Plus,
-  UploadCloud,
-  Eye,
-  EyeOff,
-  ChevronLeft,
-  ChevronRight,
+  Sparkles,
 } from "lucide-react";
 import { categoryOptions } from "@/constant/dash";
 
@@ -208,43 +209,45 @@ function ChipField({
   );
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2.5">
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-1">
-          <Label className="text-sm font-medium text-zinc-900">{label}</Label>
+          <Label className="text-sm font-medium text-slate-900">{label}</Label>
           {hint ? (
-            <p className="text-xs leading-5 text-zinc-500">{hint}</p>
+            <p className="text-xs leading-5 text-slate-500">{hint}</p>
           ) : null}
           {botHint ? (
-            <p className="text-xs leading-5 text-zinc-500">{botHint}</p>
+            <p className="text-xs leading-5 text-slate-500">{botHint}</p>
           ) : null}
         </div>
-        <div className="text-xs uppercase tracking-[0.14em] text-zinc-500">
+        <div className="shrink-0 text-xs text-slate-400">
           {value.length}/{max}
         </div>
       </div>
 
-      <div className="border border-zinc-300 bg-white p-3">
-        <div className="flex flex-wrap gap-2">
-          {value.map((item, idx) => (
-            <div
-              key={`${item}-${idx}`}
-              className="inline-flex items-center gap-2 border border-zinc-300 bg-zinc-50 px-2 py-1 text-xs text-zinc-800"
-            >
-              <span className="max-w-55 truncate">{item}</span>
-              <button
-                type="button"
-                className="inline-flex h-4 w-4 items-center justify-center text-zinc-500 transition-colors hover:text-zinc-900"
-                onClick={() => remove(idx)}
-                aria-label={`Удалить: ${item}`}
+      <div className="rounded-lg border border-slate-300 bg-white p-3 shadow-xs transition focus-within:border-slate-500 focus-within:ring-2 focus-within:ring-slate-200">
+        {value.length ? (
+          <div className="mb-3 flex flex-wrap gap-2">
+            {value.map((item, idx) => (
+              <div
+                key={`${item}-${idx}`}
+                className="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2.5 py-1.5 text-xs font-medium text-slate-700"
               >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          ))}
-        </div>
+                <span className="max-w-55 truncate">{item}</span>
+                <button
+                  type="button"
+                  className="inline-flex h-4 w-4 items-center justify-center rounded text-slate-400 transition-colors hover:bg-slate-200 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                  onClick={() => remove(idx)}
+                  aria-label={`Удалить: ${item}`}
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : null}
 
-        <div className="mt-3 flex gap-2">
+        <div className="flex gap-2">
           <Input
             ref={inputRef}
             value={draft}
@@ -265,25 +268,22 @@ function ChipField({
                 remove(value.length - 1);
               }
             }}
-            className="rounded-none border-zinc-300 shadow-none focus-visible:border-zinc-900 focus-visible:ring-zinc-200"
+            className="h-10 rounded-md border-0 bg-slate-50 shadow-none focus-visible:ring-0"
           />
           <Button
             type="button"
             variant="outline"
             onClick={addDraft}
             disabled={!draft.trim()}
-            className="shrink-0 rounded-none border-zinc-300"
+            className="h-10 shrink-0 rounded-lg border-slate-300 bg-white px-3 shadow-none"
           >
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus className="h-4 w-4" />
             {addButtonLabel}
           </Button>
         </div>
 
-        <p className="mt-2 text-xs leading-5 text-zinc-500">
-          Можно вводить через <span className="font-medium">запятую</span>,
-          <span className="font-medium"> точку с запятой</span> или
-          <span className="font-medium"> с новой строки</span>. Нажмите Enter,
-          чтобы добавить.
+        <p className="mt-2 text-xs leading-5 text-slate-500">
+          Нажмите Enter или используйте запятую, чтобы добавить несколько значений.
         </p>
       </div>
     </div>
@@ -291,11 +291,13 @@ function ChipField({
 }
 
 function MoneyInput({
+  id,
   value,
   onChange,
   disabled,
   className,
 }: {
+  id?: string;
   value: number;
   onChange: (n: number) => void;
   disabled?: boolean;
@@ -303,6 +305,7 @@ function MoneyInput({
 }) {
   return (
     <Input
+      id={id}
       type="number"
       inputMode="decimal"
       step="0.01"
@@ -319,27 +322,11 @@ function MoneyInput({
 }
 
 const CONTROL_CLASS =
-  "rounded-none border-zinc-300 bg-white text-zinc-900 shadow-none focus-visible:border-zinc-900 focus-visible:ring-zinc-200";
+  "h-10 rounded-lg border-slate-300 bg-white text-slate-900 shadow-xs focus-visible:border-slate-500 focus-visible:ring-slate-200";
 
-const SELECT_CONTENT_CLASS = "rounded-none border-zinc-300";
+const SELECT_CONTENT_CLASS = "rounded-lg border-slate-200";
 
-const steps = [
-  { id: "basics", title: "Основное", desc: "Название, slug, описание" },
-  { id: "meta", title: "Детали", desc: "Язык, уровень, теги" },
-  {
-    id: "pricing",
-    title: "Цена и доступ",
-    desc: "Стоимость, видимость, обложка",
-  },
-] as const;
-
-type StepId = (typeof steps)[number]["id"];
-
-function clamp(n: number, min: number, max: number) {
-  return Math.max(min, Math.min(max, n));
-}
-
-function MonoPill({
+function StatusPill({
   children,
   className,
 }: {
@@ -349,7 +336,7 @@ function MonoPill({
   return (
     <span
       className={cn(
-        "inline-flex items-center border px-2 py-1 text-[11px] font-medium uppercase tracking-[0.14em]",
+        "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium",
         className,
       )}
     >
@@ -358,73 +345,53 @@ function MonoPill({
   );
 }
 
-function StepGrid({ index }: { index: number }) {
+function FormCard({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+}) {
   return (
-    <div className="grid gap-px border border-zinc-300 bg-zinc-300 md:grid-cols-3">
-      {steps.map((step, i) => {
-        const isDone = i < index;
-        const isActive = i === index;
-
-        return (
-          <div key={step.id} className="bg-white p-4">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <div className="text-[11px] uppercase tracking-[0.18em] text-zinc-500">
-                  Шаг {i + 1}
-                </div>
-                <div className="mt-2 text-base font-semibold text-zinc-950">
-                  {step.title}
-                </div>
-                <div className="mt-1 text-sm leading-5 text-zinc-600">
-                  {step.desc}
-                </div>
-              </div>
-              <MonoPill
-                className={
-                  isActive
-                    ? "border-zinc-900 bg-zinc-900 text-white"
-                    : isDone
-                      ? "border-zinc-300 bg-zinc-100 text-zinc-900"
-                      : "border-zinc-300 bg-white text-zinc-500"
-                }
-              >
-                {isActive ? "текущий" : isDone ? "готов" : "ожидает"}
-              </MonoPill>
-            </div>
-          </div>
-        );
-      })}
-    </div>
+    <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+      <div className="border-b border-slate-200 px-5 py-4 sm:px-6">
+        <h2 className="text-base font-semibold text-slate-950">{title}</h2>
+        {description ? (
+          <p className="mt-1 text-sm leading-5 text-slate-500">{description}</p>
+        ) : null}
+      </div>
+      <div className="space-y-5 p-5 sm:p-6">{children}</div>
+    </section>
   );
 }
 
-function FieldCell({
+function FormField({
   label,
   htmlFor,
-  note,
+  hint,
+  required,
   action,
   children,
-  className,
 }: {
   label: string;
   htmlFor?: string;
-  note?: string | null;
+  hint?: string;
+  required?: boolean;
   action?: React.ReactNode;
   children: React.ReactNode;
-  className?: string;
 }) {
   return (
-    <div className={cn("bg-white p-4 space-y-3", className)}>
+    <div className="space-y-2">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <Label
-            htmlFor={htmlFor}
-            className="text-sm font-medium leading-5 text-zinc-900"
-          >
+          <Label htmlFor={htmlFor} className="text-sm font-medium text-slate-900">
             {label}
+            {required ? <span className="ml-1 text-rose-600">*</span> : null}
           </Label>
-          {note ? (
-            <p className="mt-1 text-xs leading-5 text-zinc-500">{note}</p>
+          {hint ? (
+            <p className="mt-1 text-xs leading-5 text-slate-500">{hint}</p>
           ) : null}
         </div>
         {action ? <div className="shrink-0">{action}</div> : null}
@@ -434,256 +401,23 @@ function FieldCell({
   );
 }
 
-function MetaTable({
-  rows,
+function ReadinessItem({
+  done,
+  children,
 }: {
-  rows: Array<{ label: string; value: React.ReactNode }>;
+  done: boolean;
+  children: React.ReactNode;
 }) {
   return (
-    <div className="overflow-x-auto border border-zinc-300">
-      <table className="w-full text-sm">
-        <tbody>
-          {rows.map((row) => (
-            <tr
-              key={row.label}
-              className="border-b border-zinc-200 last:border-b-0"
-            >
-              <td className="w-36 border-r border-zinc-200 bg-zinc-100 px-3 py-2.5 text-[11px] uppercase tracking-[0.14em] text-zinc-500">
-                {row.label}
-              </td>
-              <td className="px-3 py-2.5 text-zinc-800">{row.value}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function CreateFormSidebar({
-  stepIndex,
-  slugLocked,
-  showHints,
-  onFillExample,
-  onToggleHints,
-  isEditMode,
-  title,
-  finalSlug,
-  language,
-  level,
-  category,
-  isFree,
-  price,
-  currency,
-  visibility,
-  previewImageUrl,
-  courseStatus,
-  reviewNotes,
-}: {
-  stepIndex: number;
-  slugLocked: boolean;
-  showHints: boolean;
-  onFillExample: () => void;
-  onToggleHints: () => void;
-  isEditMode: boolean;
-  title: string;
-  finalSlug: string;
-  language: string;
-  level: string;
-  category: string;
-  isFree: boolean;
-  price: number;
-  currency: string;
-  visibility: "private" | "public";
-  previewImageUrl: string | null;
-  courseStatus: Course["lifecycle_status"] | null;
-  reviewNotes: string | null;
-}) {
-  const messages: Record<StepId, string[]> = {
-    basics: [
-      "Название должно сразу объяснять результат и формат курса.",
-      slugLocked
-        ? "Slug сейчас в ручном режиме: значение не меняется от названия."
-        : "Slug сейчас в авто-режиме: строится из названия через транслит и slugify.",
-    ],
-    meta: [
-      "Теги, требования и результаты лучше писать короткими предметными фразами.",
-      "Результаты формулируй через действия: собрать, написать, настроить, пройти, улучшить.",
-    ],
-    pricing: [
-      "Если курс бесплатный, цена фиксируется в 0 и поле блокируется.",
-      "Даже при visibility=public курс станет публичным только после approved.",
-    ],
-  };
-
-  const stepId = steps[stepIndex]?.id as StepId;
-  const stack = messages[stepId] ?? [];
-
-  return (
-    <div className="sticky top-6 space-y-4">
-      <section className="border border-zinc-300 bg-white">
-        <div className="border-b border-zinc-300 px-4 py-4">
-          <div className="text-[11px] uppercase tracking-[0.18em] text-zinc-500">
-            Course Control
-          </div>
-          <div className="mt-2 text-lg font-semibold text-zinc-950">
-            {isEditMode ? "Редактирование карточки" : "Новая карточка курса"}
-          </div>
-          <div className="mt-1 text-sm leading-5 text-zinc-600">
-            Справа всегда видна текущая сводка, чтобы не терять контекст во время заполнения.
-          </div>
-        </div>
-
-        <div className="space-y-3 px-4 py-4">
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full rounded-none border-zinc-300"
-            onClick={onFillExample}
-          >
-            Заполнить примером курса
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full rounded-none border-zinc-300"
-            onClick={onToggleHints}
-          >
-            {showHints ? "Скрыть подсказки" : "Показать подсказки"}
-          </Button>
-        </div>
-      </section>
-
-      <section className="border border-zinc-300 bg-white">
-        <div className="border-b border-zinc-300 px-4 py-3 text-sm font-semibold text-zinc-950">
-          Снимок курса
-        </div>
-        <div className="p-4 space-y-4">
-          <div className="overflow-hidden border border-zinc-300 bg-zinc-100">
-            {previewImageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={previewImageUrl}
-                alt="Preview"
-                className="h-36 w-full object-cover"
-              />
-            ) : (
-              <div className="flex h-36 items-center justify-center text-sm text-zinc-500">
-                Обложка не выбрана
-              </div>
-            )}
-          </div>
-
-          <MetaTable
-            rows={[
-              {
-                label: "Название",
-                value: title.trim() || "Без названия",
-              },
-              {
-                label: "Slug",
-                value: (
-                  <span className="font-mono text-xs text-zinc-600">
-                    {finalSlug || "—"}
-                  </span>
-                ),
-              },
-              {
-                label: "Шаг",
-                value: `${stepIndex + 1} / ${steps.length} — ${steps[stepIndex]?.title}`,
-              },
-              {
-                label: "Цена",
-                value: isFree ? "Free" : `${price || 0} ${currency}`,
-              },
-              {
-                label: "Доступ",
-                value: visibility,
-              },
-              {
-                label: "Язык",
-                value: language,
-              },
-              {
-                label: "Уровень",
-                value: level,
-              },
-              {
-                label: "Категория",
-                value: category,
-              },
-              {
-                label: "Slug режим",
-                value: slugLocked ? "manual" : "auto",
-              },
-              {
-                label: "Статус",
-                value: courseStatus || (isEditMode ? "—" : "draft"),
-              },
-            ]}
-          />
-        </div>
-      </section>
-
-      <section className="border border-zinc-300 bg-white">
-        <div className="border-b border-zinc-300 px-4 py-3 text-sm font-semibold text-zinc-950">
-          Фокус текущего шага
-        </div>
-        <div className="space-y-2 px-4 py-4">
-          {stack.map((item) => (
-            <div
-              key={item}
-              className="border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm leading-6 text-zinc-700"
-            >
-              {item}
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {isEditMode && courseStatus === "rejected" ? (
-        <section className="border border-zinc-300 bg-zinc-50">
-          <div className="border-b border-zinc-300 px-4 py-3 text-sm font-semibold text-zinc-950">
-            Замечания модерации
-          </div>
-          <div className="px-4 py-4 text-sm leading-6 text-zinc-700">
-            {reviewNotes ||
-              "Исправьте замечания, сохраните курс и затем отправьте его повторно."}
-          </div>
-        </section>
-      ) : null}
-
-      <section className="border border-zinc-300 bg-white">
-        <div className="border-b border-zinc-300 px-4 py-3 text-sm font-semibold text-zinc-950">
-          Базовый контроль
-        </div>
-        <div className="space-y-2 px-4 py-4 text-sm text-zinc-700">
-          <div className="flex items-center justify-between gap-3 border border-zinc-300 px-3 py-2">
-            <span>Название объясняет результат</span>
-            <MonoPill className="border-zinc-300 bg-white text-zinc-700">
-              check
-            </MonoPill>
-          </div>
-          <div className="flex items-center justify-between gap-3 border border-zinc-300 px-3 py-2">
-            <span>Slug выглядит чисто и понятно</span>
-            <MonoPill className="border-zinc-300 bg-white text-zinc-700">
-              check
-            </MonoPill>
-          </div>
-          <div className="flex items-center justify-between gap-3 border border-zinc-300 px-3 py-2">
-            <span>Outcomes написаны через действия</span>
-            <MonoPill className="border-zinc-300 bg-white text-zinc-700">
-              check
-            </MonoPill>
-          </div>
-          <div className="flex items-center justify-between gap-3 border border-zinc-300 px-3 py-2">
-            <span>Цена и visibility согласованы</span>
-            <MonoPill className="border-zinc-300 bg-white text-zinc-700">
-              check
-            </MonoPill>
-          </div>
-        </div>
-      </section>
+    <div className="flex items-center gap-2.5 text-sm text-slate-700">
+      {done ? (
+        <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-emerald-100 text-emerald-700">
+          <Check className="h-3.5 w-3.5" />
+        </span>
+      ) : (
+        <Circle className="h-5 w-5 shrink-0 text-slate-300" />
+      )}
+      <span className={done ? "text-slate-500" : undefined}>{children}</span>
     </div>
   );
 }
@@ -704,10 +438,6 @@ export default function CourseCreateWizard({
   const [courseLoaded, setCourseLoaded] = React.useState(!isEditMode);
   const [err, setErr] = React.useState<string | null>(null);
   const [okMsg, setOkMsg] = React.useState<string | null>(null);
-
-  // wizard
-  const [stepIndex, setStepIndex] = React.useState(0);
-  const step = steps[stepIndex];
 
   // form state
   const [title, setTitle] = React.useState("");
@@ -738,8 +468,6 @@ export default function CourseCreateWizard({
   const imageUrl = useObjectUrl(imageFile);
   const previewImageUrl = imageUrl ?? existingImageUrl;
 
-  // Optional: show more popovers by toggling this
-  const [showHints, setShowHints] = React.useState(false);
   const [courseStatus, setCourseStatus] =
     React.useState<Course["lifecycle_status"] | null>(null);
   const [reviewNotes, setReviewNotes] = React.useState<string | null>(null);
@@ -752,6 +480,24 @@ export default function CourseCreateWizard({
   }, [title, slugLocked]);
 
   const finalSlug = slugifyAny(slug);
+  const readinessChecks = [
+    { label: "Название и ссылка", done: Boolean(title.trim() && finalSlug) },
+    { label: "Короткое описание", done: Boolean(shortDescription.trim()) },
+    { label: "Обложка курса", done: Boolean(previewImageUrl) },
+    { label: "Результаты обучения", done: outcomes.length > 0 },
+    { label: "Цена курса", done: isFree || price > 0 },
+  ];
+  const completedChecks = readinessChecks.filter((item) => item.done).length;
+  const readinessPercent = Math.round(
+    (completedChecks / readinessChecks.length) * 100,
+  );
+  const isFormEmpty =
+    !title.trim() &&
+    !shortDescription.trim() &&
+    !description.trim() &&
+    tags.length === 0 &&
+    requirements.length === 0 &&
+    outcomes.length === 0;
 
   const applyCourseToForm = React.useCallback((course: Course) => {
     const normalizedPrice = Number(course.price);
@@ -832,7 +578,6 @@ export default function CourseCreateWizard({
 
         if (!cancelled) {
           applyCourseToForm(course);
-          setStepIndex(0);
           setCourseLoaded(true);
         }
       } catch (e: unknown) {
@@ -897,33 +642,13 @@ export default function CourseCreateWizard({
     setPrice(49.99);
     setCurrency("USD");
     setVisibility("private");
-
-    setStepIndex(0);
   }
 
-  function validateStep(idx: number) {
-    if (idx === 0) {
-      if (!title.trim()) return "Введите название курса";
-      if (!finalSlug)
-        return "Slug пустой — заполните название или задайте slug";
-    }
-    // other steps can be optional
+  function validateForm() {
+    if (!title.trim()) return "Введите название курса";
+    if (!finalSlug)
+      return "Ссылка курса пустая — заполните название или задайте её вручную";
     return null;
-  }
-
-  function goNext() {
-    const v = validateStep(stepIndex);
-    if (v) {
-      setErr(v);
-      return;
-    }
-    setErr(null);
-    setStepIndex((i) => clamp(i + 1, 0, steps.length - 1));
-  }
-
-  function goPrev() {
-    setErr(null);
-    setStepIndex((i) => clamp(i - 1, 0, steps.length - 1));
   }
 
   function buildCourseFormData(includeEmptyFields = false) {
@@ -975,14 +700,7 @@ export default function CourseCreateWizard({
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (loading) return;
-
-    setErr(null);
-    setOkMsg(null);
-
-    if (stepIndex < steps.length - 1) {
-      goNext();
-    }
+    void saveCourse();
   }
 
   async function saveCourse() {
@@ -991,7 +709,7 @@ export default function CourseCreateWizard({
     setErr(null);
     setOkMsg(null);
 
-    const v0 = validateStep(0);
+    const v0 = validateForm();
     if (v0) return setErr(v0);
 
     setLoading(true);
@@ -1049,7 +767,6 @@ export default function CourseCreateWizard({
       setExistingImageUrl(null);
       setCourseStatus(null);
       setReviewNotes(null);
-      setStepIndex(0);
     } catch (e: unknown) {
       setErr(
         getUserFacingErrorMessage(
@@ -1064,10 +781,12 @@ export default function CourseCreateWizard({
 
   if (isEditMode && bootstrapping) {
     return (
-      <div className="bg-white p-6 text-zinc-900">
-        <div className="flex items-center gap-3 border border-zinc-300 bg-white p-6 text-sm text-zinc-600">
-          <div className="h-4 w-4 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-900" />
-          <span>Загружаю курс для редактирования...</span>
+      <div className="teacher-workspace min-h-full bg-[#f6f6f7] px-4 py-8 text-slate-900 sm:px-6">
+        <div className="mx-auto max-w-6xl">
+          <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600 shadow-sm">
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-slate-200 border-t-slate-800" />
+            <span>Загружаем данные курса…</span>
+          </div>
         </div>
       </div>
     );
@@ -1075,17 +794,18 @@ export default function CourseCreateWizard({
 
   if (isEditMode && !courseLoaded) {
     return (
-      <div className="bg-white p-6 text-zinc-900">
-        <div className="space-y-4 border border-zinc-300 bg-white p-6">
-          <div className="text-sm text-zinc-700">
+      <div className="teacher-workspace min-h-full bg-[#f6f6f7] px-4 py-8 text-slate-900 sm:px-6">
+        <div className="mx-auto max-w-6xl space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="text-sm text-slate-700">
             {err || "Не удалось открыть курс"}
           </div>
           <Button
             type="button"
             variant="outline"
-            className="rounded-none border-zinc-300"
+            className="rounded-lg border-slate-300"
             onClick={() => router.push("/dashboard/teacher/courses")}
           >
+            <ArrowLeft className="h-4 w-4" />
             Вернуться к списку
           </Button>
         </div>
@@ -1094,548 +814,510 @@ export default function CourseCreateWizard({
   }
 
   return (
-    <div className="space-y-6 bg-white p-6 text-zinc-900">
-      <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-        <div className="space-y-2">
-          <div className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">
-            Course Setup
-          </div>
-          <h1 className="text-3xl font-semibold tracking-tight text-zinc-950">
-            {isEditMode ? "Редактирование курса" : "Создание курса"}
-          </h1>
-          <p className="max-w-4xl text-sm leading-6 text-zinc-600">
-            {isEditMode
-              ? "Исправьте поля курса, сохраните изменения и затем снова отправьте карточку на модерацию."
-              : "Соберите курс пошагово: основа, метаданные, доступ и обложка. Всё в одном рабочем интерфейсе без лишних отвлечений."}
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <MonoPill className="border-zinc-900 bg-zinc-900 text-white">
-            Шаг {stepIndex + 1} / {steps.length}
-          </MonoPill>
-          {courseStatus ? (
-            <MonoPill className="border-zinc-300 bg-white text-zinc-700">
-              {courseStatus}
-            </MonoPill>
-          ) : null}
-          <Button
-            type="button"
-            variant="outline"
-            className="rounded-none border-zinc-300"
-            onClick={() => router.push("/dashboard/teacher/courses")}
-          >
-            К списку курсов
-          </Button>
-        </div>
-      </div>
-
-      <StepGrid index={stepIndex} />
-
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
-        <section className="border border-zinc-300 bg-white">
-          <div className="flex flex-col gap-2 border-b border-zinc-300 px-4 py-4 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <div className="text-[11px] uppercase tracking-[0.18em] text-zinc-500">
-                Текущий шаг
-              </div>
-              <div className="mt-2 text-lg font-semibold text-zinc-950">
-                {step.title}
-              </div>
-              <div className="mt-1 text-sm leading-5 text-zinc-600">
-                {step.desc}
-              </div>
-            </div>
-            <div className="text-xs uppercase tracking-[0.16em] text-zinc-500">
-              {showHints ? "Подсказки включены" : "Подсказки скрыты"}
-            </div>
-          </div>
-
-          <form onSubmit={onSubmit}>
-            <div className="space-y-6 p-4">
-              {err || okMsg ? (
-                <div
-                  className={cn(
-                    "border px-4 py-3 text-sm",
-                    err
-                      ? "border-zinc-900 bg-zinc-100 text-zinc-900"
-                      : "border-zinc-300 bg-white text-zinc-900",
-                  )}
-                >
-                  {err || okMsg}
+    <form onSubmit={onSubmit}>
+      <div className="teacher-workspace min-h-full bg-[#f6f6f7] px-4 py-6 text-slate-900 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl">
+          <header className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex min-w-0 items-start gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="mt-0.5 rounded-lg border-slate-300 bg-white shadow-xs"
+                onClick={() => router.push("/dashboard/teacher/courses")}
+                aria-label="Вернуться к списку курсов"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h1 className="text-2xl font-semibold tracking-tight text-slate-950 sm:text-[28px]">
+                    {isEditMode ? "Редактировать курс" : "Создать курс"}
+                  </h1>
+                  <StatusPill className="bg-slate-200 text-slate-700">
+                    {courseStatus === "submitted"
+                      ? "На проверке"
+                      : courseStatus === "approved"
+                        ? "Одобрен"
+                        : courseStatus === "rejected"
+                          ? "Нужны исправления"
+                          : courseStatus === "archived"
+                            ? "В архиве"
+                            : "Черновик"}
+                  </StatusPill>
                 </div>
-              ) : null}
-
-              {step.id === "basics" ? (
-                <section className="space-y-4">
-                  <div className="grid gap-px border border-zinc-300 bg-zinc-300 md:grid-cols-2">
-                    <FieldCell
-                      label="Название курса"
-                      htmlFor="title"
-                      note={
-                        showHints
-                          ? "Пиши название через итог и формат. Пример: Разговорный английский за 8 недель."
-                          : null
-                      }
-                    >
-                      <Input
-                        id="title"
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        placeholder="Например: Разговорный английский за 8 недель"
-                        className={CONTROL_CLASS}
-                      />
-                      <p className="text-xs leading-5 text-zinc-500">
-                        Slug может собираться автоматически даже из русского названия.
-                      </p>
-                    </FieldCell>
-
-                    <FieldCell
-                      label="Ссылка (slug)"
-                      htmlFor="slug"
-                      note={
-                        showHints
-                          ? "Авто-режим строит slug из названия. В ручном режиме можно править напрямую."
-                          : null
-                      }
-                      action={
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className="rounded-none border-zinc-300"
-                          onClick={() => setSlugLocked((v) => !v)}
-                        >
-                          {slugLocked ? (
-                            <>
-                              <EyeOff className="mr-2 h-4 w-4" />
-                              Ручной
-                            </>
-                          ) : (
-                            <>
-                              <Eye className="mr-2 h-4 w-4" />
-                              Авто
-                            </>
-                          )}
-                        </Button>
-                      }
-                    >
-                      <Input
-                        id="slug"
-                        value={slug}
-                        onChange={(e) => setSlug(e.target.value)}
-                        placeholder="english-speaking-club"
-                        disabled={!slugLocked}
-                        className={CONTROL_CLASS}
-                      />
-                      <p className="text-xs leading-5 text-zinc-500">
-                        Итоговый slug:{" "}
-                        <span className="font-mono text-zinc-700">
-                          {finalSlug || "—"}
-                        </span>
-                      </p>
-                    </FieldCell>
-
-                    <FieldCell
-                      label="Короткое описание"
-                      htmlFor="short_description"
-                      note={
-                        showHints
-                          ? "Сделай 1–2 предложения: кому курс подходит и какой результат обещает."
-                          : null
-                      }
-                      className="md:col-span-2"
-                    >
-                      <Textarea
-                        id="short_description"
-                        value={shortDescription}
-                        onChange={(e) => setShortDescription(e.target.value)}
-                        rows={2}
-                        placeholder="Например: Практика разговорного английского с живыми сценариями и обратной связью."
-                        className={CONTROL_CLASS}
-                      />
-                    </FieldCell>
-
-                    <FieldCell
-                      label="Полное описание"
-                      htmlFor="description"
-                      note={
-                        showHints
-                          ? "Опиши программу, формат, блоки курса, как проходит обучение и что получает студент."
-                          : null
-                      }
-                      className="md:col-span-2"
-                    >
-                      <Textarea
-                        id="description"
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        rows={8}
-                        placeholder="Опишите программу, формат, что входит, как проходит обучение..."
-                        className={CONTROL_CLASS}
-                      />
-                    </FieldCell>
-                  </div>
-                </section>
-              ) : null}
-
-              {step.id === "meta" ? (
-                <section className="space-y-4">
-                  <div className="grid gap-px border border-zinc-300 bg-zinc-300 md:grid-cols-3">
-                    <FieldCell
-                      label="Язык"
-                      note={showHints ? "Язык основного контента курса." : null}
-                    >
-                      <Select value={language} onValueChange={setLanguage}>
-                        <SelectTrigger className={cn("w-full", CONTROL_CLASS)}>
-                          <SelectValue placeholder="Выберите язык" />
-                        </SelectTrigger>
-                        <SelectContent className={SELECT_CONTENT_CLASS}>
-                          <SelectItem value="kz">Қазақ тілі</SelectItem>
-                          <SelectItem value="ru">Русский</SelectItem>
-                          <SelectItem value="en">English</SelectItem>
-                          <SelectItem value="tr">Türkçe</SelectItem>
-                          <SelectItem value="es">Español</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FieldCell>
-
-                    <FieldCell label="Уровень">
-                      <Select value={level} onValueChange={setLevel}>
-                        <SelectTrigger className={cn("w-full", CONTROL_CLASS)}>
-                          <SelectValue placeholder="Выберите уровень" />
-                        </SelectTrigger>
-                        <SelectContent className={SELECT_CONTENT_CLASS}>
-                          <SelectItem value="beginner">Новичок</SelectItem>
-                          <SelectItem value="intermediate">Средний</SelectItem>
-                          <SelectItem value="advanced">Продвинутый</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FieldCell>
-
-                    <FieldCell label="Категория">
-                      <Select value={category} onValueChange={setCategory}>
-                        <SelectTrigger className={cn("w-full", CONTROL_CLASS)}>
-                          <SelectValue placeholder="Выберите категорию" />
-                        </SelectTrigger>
-                        <SelectContent className={SELECT_CONTENT_CLASS}>
-                          {categoryOptions.map((opt) => (
-                            <SelectItem key={opt.value} value={opt.value}>
-                              {opt.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </FieldCell>
-                  </div>
-
-                  <div className="space-y-6">
-                    <ChipField
-                      label="Теги"
-                      hint="Ключевые слова, по которым курс будет находиться в поиске."
-                      value={tags}
-                      onChange={setTags}
-                      placeholder="Например: English, Speaking, Vocabulary"
-                      addButtonLabel="Добавить тег"
-                      botHint={
-                        showHints
-                          ? "Полезно собрать 5–10 тегов: тема, формат, уровень и ожидаемый результат."
-                          : undefined
-                      }
-                    />
-
-                    <ChipField
-                      label="Требования"
-                      hint="Что нужно знать или иметь заранее."
-                      value={requirements}
-                      onChange={setRequirements}
-                      placeholder="Например: уровень B1+, готовность делать домашку"
-                      addButtonLabel="Добавить"
-                      botHint={
-                        showHints
-                          ? "Требования лучше формулировать мягко и конкретно: уровень, инструменты, нагрузка."
-                          : undefined
-                      }
-                    />
-
-                    <ChipField
-                      label="Результаты"
-                      hint="Что человек сможет после курса."
-                      value={outcomes}
-                      onChange={setOutcomes}
-                      placeholder="Например: уверенно вести короткий разговор"
-                      addButtonLabel="Добавить"
-                      botHint={
-                        showHints
-                          ? "Пиши глаголами: написать, собрать, настроить, пройти, улучшить."
-                          : undefined
-                      }
-                    />
-                  </div>
-                </section>
-              ) : null}
-
-              {step.id === "pricing" ? (
-                <section className="space-y-4">
-                  <div className="grid gap-px border border-zinc-300 bg-zinc-300 md:grid-cols-2">
-                    <FieldCell
-                      label="Бесплатный курс"
-                      note={
-                        showHints
-                          ? "Если включить этот режим, цена фиксируется в 0."
-                          : "Включите, если курс распространяется бесплатно."
-                      }
-                    >
-                      <div className="flex items-center justify-between border border-zinc-300 bg-zinc-50 px-3 py-3">
-                        <div className="text-sm text-zinc-700">
-                          Бесплатный доступ
-                        </div>
-                        <Switch
-                          checked={isFree}
-                          onCheckedChange={setIsFree}
-                          className="data-[state=checked]:bg-zinc-900 data-[state=unchecked]:bg-white rounded-none border-zinc-300"
-                        />
-                      </div>
-                    </FieldCell>
-
-                    <FieldCell
-                      label="Цена и валюта"
-                      note={
-                        isFree
-                          ? "При бесплатном режиме цена остаётся равной 0."
-                          : "Можно указать дробную сумму, например 19.99."
-                      }
-                    >
-                      <div className="grid gap-3 sm:grid-cols-2">
-                        <div className="space-y-2">
-                          <Label className="text-xs uppercase tracking-[0.12em] text-zinc-500">
-                            Цена
-                          </Label>
-                          <MoneyInput
-                            value={price}
-                            onChange={setPrice}
-                            disabled={isFree}
-                            className={CONTROL_CLASS}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label className="text-xs uppercase tracking-[0.12em] text-zinc-500">
-                            Валюта
-                          </Label>
-                          <Select value={currency} onValueChange={setCurrency}>
-                            <SelectTrigger className={cn("w-full", CONTROL_CLASS)}>
-                              <SelectValue placeholder="Выберите валюту" />
-                            </SelectTrigger>
-                            <SelectContent className={SELECT_CONTENT_CLASS}>
-                              <SelectItem value="KZT">KZT(₸)</SelectItem>
-                              <SelectItem value="USD">USD($)</SelectItem>
-                              <SelectItem value="EUR">EUR(€)</SelectItem>
-                              <SelectItem value="TRY">TRY(₺)</SelectItem>
-                              <SelectItem value="RUB">RUB(₽)</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-                    </FieldCell>
-
-                    <FieldCell
-                      label="Видимость"
-                      note={
-                        showHints
-                          ? "Public сработает только после одобрения курса модератором."
-                          : "Определяет, кому курс потенциально может быть виден."
-                      }
-                    >
-                      <Select
-                        value={visibility}
-                        onValueChange={(value) =>
-                          setVisibility(value as "private" | "public")
-                        }
-                      >
-                        <SelectTrigger className={cn("w-full", CONTROL_CLASS)}>
-                          <SelectValue placeholder="Выберите видимость" />
-                        </SelectTrigger>
-                        <SelectContent className={SELECT_CONTENT_CLASS}>
-                          <SelectItem value="private">
-                            Черновик (видно только вам)
-                          </SelectItem>
-                          <SelectItem value="public">
-                            Публичный (после approved)
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FieldCell>
-
-                    <FieldCell
-                      label="Обложка"
-                      note={
-                        showHints
-                          ? "Лучше всего работает 16:9 или аккуратный квадрат без перегруженного текста."
-                          : "Файл JPG или PNG."
-                      }
-                    >
-                      <div className="flex items-start gap-3 border border-zinc-300 bg-zinc-50 p-3">
-                        <div className="relative flex h-20 w-28 items-center justify-center overflow-hidden border border-zinc-300 bg-white">
-                          {previewImageUrl ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              src={previewImageUrl}
-                              alt="Preview"
-                              className="h-full w-full object-cover"
-                            />
-                          ) : (
-                            <UploadCloud className="h-5 w-5 text-zinc-500" />
-                          )}
-                        </div>
-
-                        <div className="min-w-0 flex-1 space-y-3">
-                          <Input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) =>
-                              setImageFile(e.target.files?.[0] || null)
-                            }
-                            className={CONTROL_CLASS}
-                          />
-                          <div className="flex flex-wrap items-center gap-2">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              className="rounded-none border-zinc-300"
-                              onClick={() => setImageFile(null)}
-                              disabled={!imageFile}
-                            >
-                              Убрать
-                            </Button>
-                            <span className="text-xs leading-5 text-zinc-500">
-                              Лучше 16:9 или квадрат.
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </FieldCell>
-                  </div>
-
-                  <div className="border border-zinc-300 bg-white">
-                    <div className="border-b border-zinc-300 px-4 py-3 text-sm font-semibold text-zinc-950">
-                      Предпросмотр
-                    </div>
-                    <div className="p-4">
-                      <MetaTable
-                        rows={[
-                          {
-                            label: "Название",
-                            value: title || "(без названия)",
-                          },
-                          {
-                            label: "URL",
-                            value: (
-                              <span className="font-mono text-xs text-zinc-600">
-                                /{finalSlug || "—"}
-                              </span>
-                            ),
-                          },
-                          {
-                            label: "Цена",
-                            value: isFree ? "Free" : `${price || 0} ${currency}`,
-                          },
-                          {
-                            label: "Visibility",
-                            value: visibility,
-                          },
-                        ]}
-                      />
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        <MonoPill className="border-zinc-300 bg-white text-zinc-700">
-                          {language}
-                        </MonoPill>
-                        <MonoPill className="border-zinc-300 bg-white text-zinc-700">
-                          {level}
-                        </MonoPill>
-                        <MonoPill className="border-zinc-300 bg-white text-zinc-700">
-                          {category}
-                        </MonoPill>
-                      </div>
-                    </div>
-                  </div>
-                </section>
-              ) : null}
+                <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500">
+                  {isEditMode
+                    ? "Обновите информацию о курсе и сохраните изменения."
+                    : "Заполните основную информацию. После создания вы сможете добавить уроки и отправить курс на модерацию."}
+                </p>
+              </div>
             </div>
 
-            <div className="flex flex-col gap-3 border-t border-zinc-300 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="text-xs leading-5 text-zinc-500">
-                {stepIndex < steps.length - 1
-                  ? "На следующих шагах можно дополнять карточку по мере готовности."
-                  : isEditMode
-                    ? "На финальном шаге сохраните изменения, затем курс можно снова отправить на модерацию."
-                    : "На финальном шаге нажмите «Создать курс», чтобы открыть новый черновик."}
-              </div>
-
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <div className="flex flex-wrap items-center gap-2 sm:pl-12 lg:pl-0">
+              {!isEditMode && isFormEmpty ? (
                 <Button
                   type="button"
-                  variant="outline"
-                  className="rounded-none border-zinc-300"
-                  onClick={goPrev}
-                  disabled={stepIndex === 0 || loading}
+                  variant="ghost"
+                  className="rounded-lg text-slate-600"
+                  onClick={fillCourseExample}
                 >
-                  <ChevronLeft className="mr-2 h-4 w-4" />
-                  Назад
+                  <Sparkles className="h-4 w-4" />
+                  Подставить пример
                 </Button>
+              ) : null}
+              <Button
+                type="button"
+                variant="outline"
+                className="rounded-lg border-slate-300 bg-white shadow-xs"
+                onClick={() => router.push("/dashboard/teacher/courses")}
+                disabled={loading}
+              >
+                Отмена
+              </Button>
+              <Button
+                type="submit"
+                className="min-w-36 rounded-lg bg-[#0f3b57] text-white shadow-xs hover:bg-[#123f5b]"
+                disabled={loading}
+              >
+                {loading
+                  ? "Сохраняем…"
+                  : isEditMode
+                    ? "Сохранить"
+                    : "Создать курс"}
+              </Button>
+            </div>
+          </header>
 
-                {stepIndex < steps.length - 1 ? (
-                  <Button
-                    type="button"
-                    className="rounded-none bg-zinc-900 text-white hover:bg-zinc-800"
-                    onClick={goNext}
-                    disabled={loading}
-                  >
-                    Далее
-                    <ChevronRight className="ml-2 h-4 w-4" />
-                  </Button>
-                ) : (
-                  <Button
-                    type="button"
-                    onClick={saveCourse}
-                    disabled={loading}
-                    className="min-w-45 rounded-none bg-zinc-900 text-white hover:bg-zinc-800"
-                  >
-                    {loading
-                      ? isEditMode
-                        ? "Сохраняем..."
-                        : "Создаём..."
-                      : isEditMode
-                        ? "Сохранить изменения"
-                        : "Создать курс"}
-                  </Button>
-                )}
+          {err ? (
+            <div
+              role="alert"
+              className="mb-5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800"
+            >
+              {err}
+            </div>
+          ) : null}
+
+          {okMsg ? (
+            <div
+              role="status"
+              className="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800"
+            >
+              {okMsg}
+            </div>
+          ) : null}
+
+          {isEditMode && courseStatus === "rejected" ? (
+            <div className="mb-5 flex gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+              <Info className="mt-0.5 h-4 w-4 shrink-0" />
+              <div>
+                <div className="font-medium">Замечания модерации</div>
+                <p className="mt-1 leading-5 text-amber-800">
+                  {reviewNotes ||
+                    "Исправьте данные курса, сохраните изменения и отправьте его на повторную проверку."}
+                </p>
               </div>
             </div>
-          </form>
-        </section>
+          ) : null}
 
-        <CreateFormSidebar
-          stepIndex={stepIndex}
-          slugLocked={slugLocked}
-          showHints={showHints}
-          onFillExample={fillCourseExample}
-          onToggleHints={() => setShowHints((value) => !value)}
-          isEditMode={isEditMode}
-          title={title}
-          finalSlug={finalSlug}
-          language={language}
-          level={level}
-          category={category}
-          isFree={isFree}
-          price={price}
-          currency={currency}
-          visibility={visibility}
-          previewImageUrl={previewImageUrl}
-          courseStatus={courseStatus}
-          reviewNotes={reviewNotes}
-        />
+          <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
+            <main className="min-w-0 space-y-5">
+              <FormCard
+                title="Основная информация"
+                description="Объясните студенту, чему он научится и как будет проходить обучение."
+              >
+                <FormField
+                  label="Название курса"
+                  htmlFor="title"
+                  hint="Понятное название с темой и результатом работает лучше всего."
+                  required
+                >
+                  <Input
+                    id="title"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Например, Разговорный английский за 8 недель"
+                    className={CONTROL_CLASS}
+                    aria-invalid={Boolean(err) && !title.trim()}
+                    autoFocus={!isEditMode}
+                  />
+                </FormField>
+
+                <FormField
+                  label="Короткое описание"
+                  htmlFor="short_description"
+                  hint="Одно-два предложения для карточки курса в каталоге."
+                >
+                  <Textarea
+                    id="short_description"
+                    value={shortDescription}
+                    onChange={(e) => setShortDescription(e.target.value)}
+                    rows={3}
+                    placeholder="Кому подходит курс и какой результат получит студент"
+                    className="min-h-24 rounded-lg border-slate-300 bg-white shadow-xs focus-visible:border-slate-500 focus-visible:ring-slate-200"
+                  />
+                  <div className="text-right text-xs text-slate-400">
+                    {shortDescription.length} символов
+                  </div>
+                </FormField>
+
+                <FormField
+                  label="Описание"
+                  htmlFor="description"
+                  hint="Расскажите о программе, формате занятий и поддержке студентов."
+                >
+                  <Textarea
+                    id="description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    rows={9}
+                    placeholder="Опишите программу и формат обучения…"
+                    className="min-h-56 rounded-lg border-slate-300 bg-white shadow-xs focus-visible:border-slate-500 focus-visible:ring-slate-200"
+                  />
+                </FormField>
+              </FormCard>
+
+              <FormCard
+                title="Обложка"
+                description="Используйте изображение 16:9 без мелкого текста — оно будет хорошо выглядеть и в каталоге, и на странице курса."
+              >
+                <Input
+                  id="course-cover"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                  className="sr-only"
+                />
+                <label
+                  htmlFor="course-cover"
+                  className="group block cursor-pointer rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 p-3 transition hover:border-slate-400 hover:bg-slate-100/70 focus-within:ring-2 focus-within:ring-slate-300"
+                >
+                  {previewImageUrl ? (
+                    <div className="grid items-center gap-4 sm:grid-cols-[220px_1fr]">
+                      <div className="aspect-video overflow-hidden rounded-lg border border-slate-200 bg-white">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={previewImageUrl}
+                          alt="Предпросмотр обложки курса"
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                      <div className="px-1 py-2">
+                        <div className="text-sm font-medium text-slate-900">
+                          {imageFile ? imageFile.name : "Текущая обложка"}
+                        </div>
+                        <p className="mt-1 text-sm leading-5 text-slate-500">
+                          Нажмите, чтобы выбрать другое изображение.
+                        </p>
+                        <span className="mt-3 inline-flex rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-xs">
+                          Заменить изображение
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex min-h-44 flex-col items-center justify-center px-4 py-8 text-center">
+                      <span className="grid h-11 w-11 place-items-center rounded-lg bg-white text-slate-600 shadow-sm ring-1 ring-slate-200">
+                        <ImagePlus className="h-5 w-5" />
+                      </span>
+                      <div className="mt-3 text-sm font-medium text-slate-900">
+                        Добавить обложку
+                      </div>
+                      <p className="mt-1 text-xs leading-5 text-slate-500">
+                        Нажмите для выбора JPG, PNG или WebP
+                      </p>
+                    </div>
+                  )}
+                </label>
+                {imageFile ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="rounded-lg text-slate-600"
+                    onClick={() => setImageFile(null)}
+                  >
+                    <X className="h-4 w-4" />
+                    Отменить выбор
+                  </Button>
+                ) : null}
+              </FormCard>
+
+              <FormCard
+                title="Содержание курса"
+                description="Конкретные результаты и понятные требования помогают студенту принять решение."
+              >
+                <ChipField
+                  label="Результаты обучения"
+                  hint="Что студент сможет сделать после курса. Начинайте с глагола: создать, настроить, объяснить."
+                  value={outcomes}
+                  onChange={setOutcomes}
+                  placeholder="Например, уверенно вести короткий разговор"
+                  addButtonLabel="Добавить"
+                />
+
+                <div className="border-t border-slate-200" />
+
+                <ChipField
+                  label="Требования"
+                  hint="Какие знания, инструменты или время понадобятся до начала обучения."
+                  value={requirements}
+                  onChange={setRequirements}
+                  placeholder="Например, базовый уровень B1"
+                  addButtonLabel="Добавить"
+                />
+              </FormCard>
+
+              <FormCard
+                title="Поиск и ссылка"
+                description="Настройте адрес страницы и слова, по которым курс легче найти."
+              >
+                <FormField
+                  label="Ссылка курса"
+                  htmlFor="slug"
+                  hint={
+                    slugLocked
+                      ? "Вы редактируете ссылку вручную. Используйте латинские буквы, цифры и дефисы."
+                      : "Ссылка создаётся автоматически из названия курса."
+                  }
+                  required
+                  action={
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 rounded-lg px-2 text-xs text-slate-600"
+                      onClick={() => setSlugLocked((value) => !value)}
+                    >
+                      {slugLocked ? "Вернуть авто" : "Изменить"}
+                    </Button>
+                  }
+                >
+                  <Input
+                    id="slug"
+                    value={slug}
+                    onChange={(e) => setSlug(e.target.value)}
+                    placeholder="english-speaking-club"
+                    disabled={!slugLocked}
+                    className={cn(
+                      CONTROL_CLASS,
+                      "font-mono text-sm disabled:bg-slate-50 disabled:opacity-100",
+                    )}
+                  />
+                  <p className="text-xs text-slate-500">
+                    Итоговый адрес:{" "}
+                    <span className="font-mono text-slate-700">
+                      /{finalSlug || "название-курса"}
+                    </span>
+                  </p>
+                </FormField>
+
+                <div className="border-t border-slate-200" />
+
+                <ChipField
+                  label="Теги"
+                  hint="Добавьте тему, формат и ключевые навыки. Обычно достаточно 5–10 тегов."
+                  value={tags}
+                  onChange={setTags}
+                  placeholder="Например, English, Speaking, Vocabulary"
+                  addButtonLabel="Добавить тег"
+                />
+              </FormCard>
+            </main>
+
+            <aside className="min-w-0 space-y-5 lg:sticky lg:top-5">
+              <FormCard title="Статус">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-sm text-slate-600">Состояние курса</span>
+                  <StatusPill className="bg-slate-100 text-slate-700">
+                    {courseStatus === "submitted"
+                      ? "На проверке"
+                      : courseStatus === "approved"
+                        ? "Одобрен"
+                        : courseStatus === "rejected"
+                          ? "Исправить"
+                          : courseStatus === "archived"
+                            ? "Архив"
+                            : "Черновик"}
+                  </StatusPill>
+                </div>
+
+                <FormField
+                  label="Видимость"
+                  hint="Публичный курс появится у студентов только после одобрения модератором."
+                >
+                  <Select
+                    value={visibility}
+                    onValueChange={(value) =>
+                      setVisibility(value as "private" | "public")
+                    }
+                  >
+                    <SelectTrigger className={cn("w-full", CONTROL_CLASS)}>
+                      <SelectValue placeholder="Выберите видимость" />
+                    </SelectTrigger>
+                    <SelectContent className={SELECT_CONTENT_CLASS}>
+                      <SelectItem value="private">Приватный</SelectItem>
+                      <SelectItem value="public">
+                        Публичный после одобрения
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormField>
+
+                <div className="flex gap-2 rounded-lg bg-sky-50 p-3 text-xs leading-5 text-sky-800">
+                  <Info className="mt-0.5 h-4 w-4 shrink-0" />
+                  Сейчас можно спокойно сохранить черновик — публикация не произойдёт автоматически.
+                </div>
+              </FormCard>
+
+              <FormCard title="Цена">
+                <div className="flex items-center justify-between gap-4 rounded-lg border border-slate-200 bg-slate-50 px-3 py-3">
+                  <div>
+                    <div className="text-sm font-medium text-slate-900">
+                      Бесплатный курс
+                    </div>
+                    <div className="mt-0.5 text-xs text-slate-500">
+                      Цена будет равна нулю
+                    </div>
+                  </div>
+                  <Switch
+                    checked={isFree}
+                    onCheckedChange={setIsFree}
+                    className="data-[state=checked]:bg-[#0f3b57]"
+                    aria-label="Бесплатный курс"
+                  />
+                </div>
+
+                <div className="grid grid-cols-[minmax(0,1fr)_110px] gap-3">
+                  <FormField label="Цена" htmlFor="price">
+                    <MoneyInput
+                      id="price"
+                      value={isFree ? 0 : price}
+                      onChange={setPrice}
+                      disabled={isFree}
+                      className={CONTROL_CLASS}
+                    />
+                  </FormField>
+                  <FormField label="Валюта">
+                    <Select
+                      value={currency}
+                      onValueChange={setCurrency}
+                      disabled={isFree}
+                    >
+                      <SelectTrigger className={cn("w-full", CONTROL_CLASS)}>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className={SELECT_CONTENT_CLASS}>
+                        <SelectItem value="KZT">KZT</SelectItem>
+                        <SelectItem value="USD">USD</SelectItem>
+                        <SelectItem value="EUR">EUR</SelectItem>
+                        <SelectItem value="TRY">TRY</SelectItem>
+                        <SelectItem value="RUB">RUB</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormField>
+                </div>
+              </FormCard>
+
+              <FormCard title="Организация">
+                <FormField label="Язык курса">
+                  <Select value={language} onValueChange={setLanguage}>
+                    <SelectTrigger className={cn("w-full", CONTROL_CLASS)}>
+                      <SelectValue placeholder="Выберите язык" />
+                    </SelectTrigger>
+                    <SelectContent className={SELECT_CONTENT_CLASS}>
+                      <SelectItem value="kz">Қазақ тілі</SelectItem>
+                      <SelectItem value="ru">Русский</SelectItem>
+                      <SelectItem value="en">English</SelectItem>
+                      <SelectItem value="tr">Türkçe</SelectItem>
+                      <SelectItem value="es">Español</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormField>
+
+                <FormField label="Уровень">
+                  <Select value={level} onValueChange={setLevel}>
+                    <SelectTrigger className={cn("w-full", CONTROL_CLASS)}>
+                      <SelectValue placeholder="Выберите уровень" />
+                    </SelectTrigger>
+                    <SelectContent className={SELECT_CONTENT_CLASS}>
+                      <SelectItem value="beginner">Новичок</SelectItem>
+                      <SelectItem value="intermediate">Средний</SelectItem>
+                      <SelectItem value="advanced">Продвинутый</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormField>
+
+                <FormField label="Категория">
+                  <Select value={category} onValueChange={setCategory}>
+                    <SelectTrigger className={cn("w-full", CONTROL_CLASS)}>
+                      <SelectValue placeholder="Выберите категорию" />
+                    </SelectTrigger>
+                    <SelectContent className={SELECT_CONTENT_CLASS}>
+                      {categoryOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormField>
+              </FormCard>
+
+              <FormCard
+                title="Готовность курса"
+                description={`${completedChecks} из ${readinessChecks.length} пунктов заполнено`}
+              >
+                <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">
+                  <div
+                    className="h-full rounded-full bg-emerald-500 transition-[width] duration-300"
+                    style={{ width: `${readinessPercent}%` }}
+                  />
+                </div>
+                <div className="space-y-3">
+                  {readinessChecks.map((item) => (
+                    <ReadinessItem key={item.label} done={item.done}>
+                      {item.label}
+                    </ReadinessItem>
+                  ))}
+                </div>
+                <p className="text-xs leading-5 text-slate-500">
+                  Для сохранения обязательны только название и ссылка. Остальное можно дополнить позже.
+                </p>
+              </FormCard>
+            </aside>
+          </div>
+
+          <footer className="mt-5 flex flex-col gap-3 rounded-xl border border-slate-200 bg-white px-5 py-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm leading-5 text-slate-500">
+              {isEditMode
+                ? "Изменения вступят в силу после сохранения."
+                : "Курс сохранится как черновик — уроки можно добавить следующим шагом."}
+            </p>
+            <div className="flex items-center justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                className="rounded-lg border-slate-300"
+                onClick={() => router.push("/dashboard/teacher/courses")}
+                disabled={loading}
+              >
+                Отмена
+              </Button>
+              <Button
+                type="submit"
+                className="min-w-36 rounded-lg bg-[#0f3b57] text-white shadow-xs hover:bg-[#123f5b]"
+                disabled={loading}
+              >
+                {loading
+                  ? "Сохраняем…"
+                  : isEditMode
+                    ? "Сохранить"
+                    : "Создать курс"}
+              </Button>
+            </div>
+          </footer>
+        </div>
       </div>
-    </div>
+    </form>
   );
 }

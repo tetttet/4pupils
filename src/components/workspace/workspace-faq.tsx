@@ -1,6 +1,7 @@
 "use client";
-import React, { useState } from "react";
+
 import { Plus } from "lucide-react";
+import { useState } from "react";
 
 type FAQItem = {
   id: number;
@@ -11,99 +12,107 @@ type FAQItem = {
 const faqItems: FAQItem[] = [
   {
     id: 1,
-    question: "Как создать страницу на 4Pupils?",
+    question: "Как создать страницу компании на 4Pupils?",
     answer:
-      "Запуск начинается с простой настройки страницы компании: вы добавляете название, описание, оформляете пространство в стиле бренда и размещаете свои программы. После этого можно загрузить готовые курсы или собрать новые прямо на платформе и сразу открыть доступ нужной аудитории.",
+      "Добавьте название и описание компании, оформите пространство в стиле бренда и разместите свои программы. Затем можно загрузить готовые курсы или собрать новые прямо на платформе и открыть доступ нужной аудитории.",
   },
   {
     id: 2,
     question: "Нужны ли технические знания для старта?",
     answer:
-      "Нет, для старта не нужна отдельная команда разработки или технический специалист. Платформа рассчитана на быстрый и понятный запуск: основные действия выполняются через готовый интерфейс, поэтому можно сосредоточиться на содержании обучения, а не на сложной настройке.",
+      "Нет. Основные действия выполняются через готовый интерфейс, поэтому отдельная команда разработки или технический специалист для запуска не нужны.",
   },
   {
     id: 3,
     question: "Как проходит обучение?",
     answer:
-      "Обучение проходит онлайн в едином пространстве 4Pupils. Сотрудники, клиенты или партнёры получают доступ к назначенным программам, проходят уроки в удобном темпе, возвращаются к материалам и двигаются по обучению в понятной структуре.",
+      "Участники получают доступ к назначенным программам, проходят уроки в удобном темпе, возвращаются к материалам и двигаются по понятной учебной структуре.",
   },
   {
     id: 4,
     question: "Можно ли сделать курсы платными для внешней аудитории?",
     answer:
-      "Да, на платформе можно размещать как бесплатные, так и платные курсы. Это удобно, если вы хотите одновременно развивать внутреннее обучение для команды и запускать внешние образовательные продукты для клиентов, партнёров или широкой аудитории.",
+      "Да. В одном пространстве можно развивать внутреннее обучение и запускать внешние образовательные продукты для клиентов, партнёров или широкой аудитории.",
   },
   {
     id: 5,
     question: "Есть ли бесплатный пробный период?",
     answer:
-      "Да, начать можно бесплатно в течение первых 3 месяцев. Этого времени обычно достаточно, чтобы собрать страницу компании, загрузить первые программы, пригласить участников и спокойно проверить платформу на реальных задачах.",
+      "Да, первые 3 месяца доступны бесплатно. За это время можно собрать страницу, загрузить первые программы, пригласить участников и проверить платформу на реальных задачах.",
   },
   {
     id: 6,
     question: "Как отслеживать прогресс сотрудников?",
     answer:
-      "В 4Pupils можно видеть прогресс по сотрудникам, группам и отдельным программам: кто начал обучение, кто продвигается по курсу, а кому нужна поддержка. Это помогает руководителям и HR-командам быстро понимать общую картину без таблиц, ручных отчётов и лишней операционной нагрузки.",
+      "В платформе виден прогресс по сотрудникам, группам и отдельным программам: кто начал обучение, кто продвигается по курсу, а кому нужна поддержка.",
   },
   {
     id: 7,
-    question: "Можно ли обучать не только сотрудников, но и клиентов или партнёров?",
+    question: "Можно ли обучать клиентов и партнёров?",
     answer:
-      "Да, платформа подходит и для внутреннего, и для внешнего обучения. Вы можете в одном пространстве запускать онбординг сотрудников, обучающие программы для отделов, а также отдельные курсы для клиентов, партнёров и других внешних аудиторий.",
+      "Да. Платформа подходит и для внутреннего, и для внешнего обучения: онбординга сотрудников, программ для отделов, а также курсов для клиентов и партнёров.",
   },
   {
     id: 8,
-    question: "Можно ли загрузить готовые материалы и курсы?",
+    question: "Можно ли загрузить готовые материалы?",
     answer:
-      "Да, не обязательно начинать с нуля. Если у вас уже есть готовые материалы, инструкции, уроки или учебные модули, их можно использовать как основу и постепенно собрать из них полноценную образовательную витрину компании.",
+      "Да. Существующие инструкции, уроки и учебные модули можно использовать как основу и постепенно собрать из них полноценную образовательную витрину компании.",
   },
 ];
 
 export default function WorkSpaceFaq() {
   const [openId, setOpenId] = useState<number>(1);
 
-  const toggleItem = (id: number) => {
-    setOpenId((prev) => (prev === id ? 0 : id));
-  };
-
   return (
-    <section className="min-h-screen bg-[#171717] px-4 py-10 text-white md:px-8 lg:px-12">
-      <div className="mx-auto max-w-[1180px] mb-10">
-        <h2 className="mb-4 text-center text-[34px] font-normal leading-none tracking-[-0.04em] text-white md:text-[56px]">
-          Отвечаем на вопросы
-        </h2>
+    <section className="relative overflow-hidden bg-[#F3F5FF] pb-28 pt-20 sm:pb-32 sm:pt-24 lg:pb-40 lg:pt-32">
+      <div className="pointer-events-none absolute -left-64 top-16 size-[520px] rounded-full bg-[#E5E9FF] blur-3xl" />
 
-        <p className="mx-auto mb-8 max-w-[760px] text-center text-[16px] leading-[1.35] tracking-[-0.03em] text-white/60 md:mb-12 md:text-[20px]">
-          Собрали самые частые вопросы о запуске корпоративной страницы,
-          внутренних программах, внешних курсах и аналитике обучения на
-          4Pupils.
-        </p>
+      <div className="relative mx-auto max-w-[1200px] px-4 sm:px-5">
+        <div className="grid gap-5 border-t border-[#D7DDF8] pt-6 md:grid-cols-[0.34fr_0.66fr] md:gap-10 lg:pt-8">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.13em] text-[#5D75CB] sm:text-[12px]">
+            FAQ
+          </p>
+          <div>
+            <h2 className="max-w-[18ch] text-[34px] font-medium leading-[1.08] tracking-[-0.045em] text-[#202858] sm:text-[44px] lg:text-[52px]">
+              Коротко отвечаем на важные вопросы.
+            </h2>
+            <p className="mt-6 max-w-[61ch] text-[14px] leading-7 text-[#68719B] sm:text-[15px]">
+              Всё о запуске корпоративной страницы, доступах, программах и
+              аналитике обучения.
+            </p>
+          </div>
+        </div>
 
-        <div className="mx-auto overflow-hidden rounded-[28px] bg-[#2d2d2d]">
+        <div className="mt-12 overflow-hidden rounded-[28px] border border-white bg-white px-5 shadow-[0_16px_48px_rgba(35,48,103,0.06)] sm:rounded-[32px] sm:px-7 lg:px-9">
           {faqItems.map((item, index) => {
             const isOpen = openId === item.id;
+            const answerId = `workspace-faq-answer-${item.id}`;
+            const buttonId = `workspace-faq-button-${item.id}`;
 
             return (
               <div
-                key={item.id}
                 className={
-                  index !== faqItems.length - 1
-                    ? "border-b border-black/35"
-                    : ""
+                  index === faqItems.length - 1
+                    ? ""
+                    : "border-b border-[#E4E8FA]"
                 }
+                key={item.id}
               >
                 <button
+                  aria-controls={answerId}
+                  aria-expanded={isOpen}
+                  className="group flex w-full items-center justify-between gap-5 py-5 text-left sm:py-6"
+                  id={buttonId}
+                  onClick={() => setOpenId((current) => (current === item.id ? 0 : item.id))}
                   type="button"
-                  onClick={() => toggleItem(item.id)}
-                  className="flex w-full items-center justify-between gap-4 px-7 py-4 text-left transition-colors duration-200 hover:bg-white/[0.02] md:px-8 md:py-6"
                 >
-                  <span className="text-[18px] font-normal leading-[1.15] tracking-[-0.03em] text-white md:text-[24px]">
+                  <span className="text-[17px] font-medium leading-[1.25] tracking-[-0.025em] text-[#202858] sm:text-[20px]">
                     {item.question}
                   </span>
-
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center text-white/55">
+                  <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#ECEFFF] text-[#4C63B8] transition duration-300 group-hover:bg-[#DDE3FF]">
                     <Plus
-                      className={`h-8 w-8 stroke-[1.5] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                      aria-hidden="true"
+                      className={`size-[18px] transition-transform duration-300 ${
                         isOpen ? "rotate-45" : "rotate-0"
                       }`}
                     />
@@ -111,16 +120,17 @@ export default function WorkSpaceFaq() {
                 </button>
 
                 <div
-                  className={`grid transition-all duration-300 ease-in-out ${
+                  aria-labelledby={buttonId}
+                  className={`grid transition-[grid-template-rows] duration-300 ease-out ${
                     isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
                   }`}
+                  id={answerId}
+                  role="region"
                 >
                   <div className="overflow-hidden">
-                    <div className="border-t border-black/35 px-7 py-8 md:px-8 md:py-9">
-                      <p className="max-w-[900px] text-[16px] font-normal leading-[1.35] tracking-[-0.03em] text-white/60 md:text-[20px]">
-                        {item.answer}
-                      </p>
-                    </div>
+                    <p className="max-w-[850px] pb-6 pr-12 text-[13px] leading-6 text-[#68719B] sm:pb-7 sm:text-[15px] sm:leading-7">
+                      {item.answer}
+                    </p>
                   </div>
                 </div>
               </div>

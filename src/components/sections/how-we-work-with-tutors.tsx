@@ -42,308 +42,113 @@ function CheckIcon(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
-function ShieldIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" {...props}>
-      <path
-        d="M12 2l8 4v6c0 5-3.4 9.4-8 10-4.6-.6-8-5-8-10V6l8-4z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M8.8 12.2l2.1 2.1 4.6-4.6"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function BackgroundArtwork() {
-  return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden">
-      {/* base */}
-      <div className="absolute inset-0 bg-[linear-gradient(135deg,var(--frontier-home-primary)_0%,var(--frontier-home-primary-strong)_42%,var(--frontier-home-primary-deep)_100%)]" />
-
-      {/* depth overlay */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.20),transparent_30%),radial-gradient(circle_at_80%_20%,rgba(255,255,255,0.10),transparent_24%),radial-gradient(circle_at_bottom_right,rgba(8,33,56,0.24),transparent_34%)]" />
-
-      {/* animated grid */}
-      <motion.div
-        className="absolute inset-0 opacity-[0.1]"
-        animate={{ backgroundPosition: ["0px 0px", "40px 40px"] }}
-        transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
-        style={{
-          backgroundImage: `
-            linear-gradient(rgba(255,255,255,0.18) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,0.18) 1px, transparent 1px)
-          `,
-          backgroundSize: "40px 40px",
-        }}
-      />
-
-      {/* big waves */}
-      <motion.svg
-        className="absolute -left-24 top-6 h-105 w-245 opacity-[0.42] blur-[0.4px]"
-        viewBox="0 0 1000 420"
-        fill="none"
-        aria-hidden="true"
-        animate={{ x: [0, 24, 0], y: [0, -10, 0] }}
-        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-      >
-        <defs>
-          <linearGradient id="waveA" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#F1F3FF" stopOpacity="0.38" />
-            <stop offset="45%" stopColor="#D7DEFF" stopOpacity="0.16" />
-            <stop offset="100%" stopColor="#BBC7FF" stopOpacity="0.26" />
-          </linearGradient>
-        </defs>
-        <path
-          d="M0 260C140 205 250 205 390 250C545 300 640 300 780 245C875 207 930 195 1000 205V420H0V260Z"
-          fill="url(#waveA)"
-        />
-      </motion.svg>
-
-      <motion.svg
-        className="absolute -right-28 bottom-0 h-112.5 w-270 opacity-[0.42] blur-[0.4px]"
-        viewBox="0 0 1100 460"
-        fill="none"
-        aria-hidden="true"
-        animate={{ x: [0, -28, 0], y: [0, 10, 0] }}
-        transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
-      >
-        <defs>
-          <linearGradient id="waveB" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#F6F7FF" stopOpacity="0.24" />
-            <stop offset="55%" stopColor="#DFE4FF" stopOpacity="0.11" />
-            <stop offset="100%" stopColor="#C4CCFF" stopOpacity="0.22" />
-          </linearGradient>
-        </defs>
-        <path
-          d="M0 210C120 255 245 290 395 270C530 252 640 200 770 215C925 233 1010 290 1100 330V460H0V210Z"
-          fill="url(#waveB)"
-        />
-      </motion.svg>
-
-      {/* blurred glows */}
-      <motion.div
-        className="absolute -left-24 top-8 h-72 w-72 rounded-full bg-[rgba(var(--frontier-home-primary-rgb),0.28)] blur-3xl"
-        animate={{ x: [0, 16, 0], y: [0, -18, 0], scale: [1, 1.08, 1] }}
-        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-      />
-      <motion.div
-        className="absolute right-8 top-10 h-80 w-80 rounded-full bg-[rgba(var(--frontier-home-primary-strong-rgb),0.22)] blur-3xl"
-        animate={{ x: [0, -20, 0], y: [0, 18, 0], scale: [1, 1.1, 1] }}
-        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-      />
-      <motion.div
-        className="absolute left-1/3 bottom-0 h-72 w-72 rounded-full bg-[rgba(var(--frontier-home-primary-deep-rgb),0.16)] blur-3xl"
-        animate={{ y: [0, -14, 0], x: [0, 12, 0], scale: [1, 1.06, 1] }}
-        transition={{ duration: 11, repeat: Infinity, ease: "easeInOut" }}
-      />
-
-      {/* sparkles */}
-      <motion.div
-        className="absolute left-10 top-24 h-2 w-2 rounded-full bg-white/70 shadow-[0_0_18px_rgba(255,255,255,0.38)]"
-        animate={{ opacity: [0.4, 1, 0.4], scale: [1, 1.6, 1] }}
-        transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
-      />
-      <motion.div
-        className="absolute left-40 top-44 h-1.5 w-1.5 rounded-full bg-white/60 shadow-[0_0_16px_rgba(255,255,255,0.25)]"
-        animate={{ opacity: [0.3, 0.9, 0.3], scale: [1, 1.4, 1] }}
-        transition={{
-          duration: 3.2,
-          repeat: Infinity,
-          ease: "easeInOut",
-          delay: 0.5,
-        }}
-      />
-      <motion.div
-        className="absolute right-36 top-36 h-2 w-2 rounded-full bg-white/55 shadow-[0_0_18px_rgba(255,255,255,0.28)]"
-        animate={{ opacity: [0.35, 1, 0.35], scale: [1, 1.7, 1] }}
-        transition={{
-          duration: 2.6,
-          repeat: Infinity,
-          ease: "easeInOut",
-          delay: 0.2,
-        }}
-      />
-      <motion.div
-        className="absolute right-24 bottom-28 h-1.5 w-1.5 rounded-full bg-white/55 shadow-[0_0_16px_rgba(255,255,255,0.22)]"
-        animate={{ opacity: [0.35, 0.95, 0.35], scale: [1, 1.5, 1] }}
-        transition={{
-          duration: 3.4,
-          repeat: Infinity,
-          ease: "easeInOut",
-          delay: 0.8,
-        }}
-      />
-
-      {/* shield watermark */}
-      <motion.div
-        className="absolute -right-10 -top-10 opacity-[0.10]"
-        animate={{ rotate: [0, 4, 0], y: [0, 8, 0] }}
-        transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
-      >
-        <ShieldIcon className="h-72 w-72 text-white" />
-      </motion.div>
-
-      {/* top shine */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(255,255,255,0.10),transparent_35%,rgba(0,0,0,0.10))]" />
-
-      {/* subtle noise */}
-      <div
-        className="absolute inset-0 opacity-[0.05] mix-blend-soft-light"
-        style={{
-          backgroundImage:
-            "radial-gradient(rgba(255,255,255,0.9) 0.6px, transparent 0.6px)",
-          backgroundSize: "16px 16px",
-        }}
-      />
-    </div>
-  );
-}
-
 const containerVariants = {
   hidden: {},
   show: {
     transition: {
-      staggerChildren: 0.12,
-      delayChildren: 0.12,
+      staggerChildren: 0.1,
+      delayChildren: 0.08,
     },
   },
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 26, scale: 0.96 },
+  hidden: { opacity: 0, y: 24, scale: 0.98 },
   show: {
     opacity: 1,
     y: 0,
     scale: 1,
     transition: {
-      duration: 0.65,
+      duration: 0.58,
       ease: [0.22, 1, 0.36, 1] as const,
     },
   },
 };
 
-function FeatureCard({ item }: { item: CardItem }) {
+function FeatureCard({ item, index }: { item: CardItem; index: number }) {
+  const wideLeft = index === 0 || index === 3;
+
   return (
     <motion.article
       variants={itemVariants}
-      whileHover={{ y: -8, scale: 1.015 }}
+      whileHover={{ y: -5 }}
       transition={{ duration: 0.28, ease: "easeOut" }}
-      className="group relative overflow-hidden rounded-[28px] border border-white/35 bg-white/90 p-6 py-8 shadow-[0_18px_50px_rgba(var(--frontier-home-primary-deep-rgb),0.18)] backdrop-blur-xl"
+      className={`group relative flex min-h-[250px] flex-col overflow-hidden rounded-[26px] border border-white/80 p-6 transition-shadow duration-300 sm:min-h-[270px] sm:rounded-[30px] sm:p-8 ${
+        wideLeft ? "lg:col-span-5" : "lg:col-span-7"
+      } ${index === 1 || index === 2 ? "bg-[#ECEFFF]" : "bg-white"}`}
     >
-      {/* animated hover glow */}
-      <div className="pointer-events-none absolute inset-0 opacity-0 transition duration-500 group-hover:opacity-100">
-        <div className="absolute -left-10 top-0 h-32 w-32 rounded-full bg-[rgba(var(--frontier-home-primary-rgb),0.24)] blur-2xl" />
-        <div className="absolute right-0 bottom-0 h-28 w-28 rounded-full bg-[rgba(var(--frontier-home-primary-strong-rgb),0.20)] blur-2xl" />
+      <div className="absolute -bottom-20 -right-16 size-52 rounded-full border-[42px] border-[#5D75CB] opacity-[0.055] transition-transform duration-500 group-hover:scale-110" />
+
+      <div className="relative grid size-12 place-items-center rounded-full bg-[#F7F8FF] text-[#5D75CB] shadow-[0_8px_22px_rgba(35,48,103,0.06)]">
+        <CheckIcon className="size-6" />
       </div>
 
-      {/* top gradient line */}
-      <div className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-[rgba(var(--frontier-home-primary-rgb),0.8)] to-transparent" />
+      <h3 className="relative mt-8 max-w-[24ch] text-[22px] font-medium leading-[1.08] tracking-[-0.035em] text-[#202858] sm:text-[26px]">
+        {item.title}
+      </h3>
 
-      <div className="relative z-10">
-        <div className="mb-6 flex">
-          <motion.div
-            className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--frontier-home-surface)] ring-1 ring-[rgba(var(--frontier-home-border-rgb),0.85)] shadow-[0_8px_20px_rgba(var(--frontier-home-primary-rgb),0.16)]"
-            whileHover={{ rotate: -4, scale: 1.06 }}
-            transition={{ duration: 0.25 }}
-          >
-            <motion.div
-              className="absolute inset-0 rounded-2xl border border-[rgba(var(--frontier-home-primary-rgb),0.32)]"
-              animate={{ scale: [1, 1.12, 1], opacity: [0.35, 0, 0.35] }}
-              transition={{
-                duration: 2.6,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-            />
-            <CheckIcon className="h-7 w-7 text-[var(--frontier-home-primary)]" />
-          </motion.div>
-        </div>
-
-        <h3 className="text-[20px] font-extrabold leading-snug text-[var(--frontier-home-ink)]">
-          {item.title}
-        </h3>
-
-        <p className="mt-4 text-[15px] leading-7 text-[var(--frontier-home-ink-muted)]">
-          {item.text}
-        </p>
-      </div>
+      <p className="relative mt-auto max-w-[58ch] pt-5 text-[13px] leading-6 text-[#68719B] sm:text-[14px]">
+        {item.text}
+      </p>
     </motion.article>
   );
 }
 
 export default function HowWeWorkWithTutors() {
   return (
-    <section className="relative bg-white py-10 md:py-28">
-      <div className="mx-auto w-full max-w-400 px-0 lg:px-8">
-        <div className="relative min-h-[72vh] overflow-hidden rounded-[40px] px-6 py-12 sm:px-10 sm:py-14 md:rounded-[48px] md:px-12 lg:px-14">
-          <BackgroundArtwork />
-
-          <div className="pointer-events-none absolute inset-0 rounded-[40px] ring-1 ring-white/20 md:rounded-[48px]" />
-          <div className="pointer-events-none absolute inset-x-10 top-0 h-px bg-linear-to-r from-transparent via-white/50 to-transparent" />
+    <section className="relative overflow-hidden bg-transparent py-20 sm:py-24 lg:py-28">
+      <div className="mx-auto w-full max-w-[1200px] px-4 sm:px-5">
+        <div className="relative isolate overflow-hidden rounded-[30px] bg-[#233067] px-5 py-10 shadow-[0_24px_70px_rgba(35,48,103,0.18)] sm:rounded-[34px] sm:px-9 sm:py-14 lg:px-12 lg:py-16">
+          <div className="pointer-events-none absolute -left-36 -top-40 -z-10 size-[460px] rounded-full border-[84px] border-white opacity-[0.045]" />
+          <div className="pointer-events-none absolute -bottom-56 -right-28 -z-10 size-[540px] rounded-full border-[92px] border-[#5D75CB] opacity-25" />
+          <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_84%_12%,rgba(93,117,203,0.5),transparent_34%)]" />
 
           <motion.div
             initial={{ opacity: 0, y: 18 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.35 }}
-            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="relative z-10 mx-auto max-w-6xl"
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+            className="relative z-10 grid gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-end"
           >
-            <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
-              <div className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium text-white/90 backdrop-blur-md shadow-[0_8px_24px_rgba(255,255,255,0.08)]">
+            <div>
+              <div className="inline-flex items-center rounded-full border border-white/[0.18] bg-white/[0.08] px-4 py-2 text-[12px] font-medium text-white/80 backdrop-blur-sm sm:text-[13px]">
                 Безопасность · Доверие · Качество
               </div>
 
-              <h2 className="mt-6 text-3xl font-extrabold tracking-tight text-white md:text-5xl lg:text-6xl">
+              <h2 className="mt-6 max-w-[13ch] text-[36px] font-medium leading-[1.02] tracking-[-0.045em] text-white sm:text-[44px] lg:text-[52px]">
                 Как мы обеспечиваем качество
               </h2>
-
-              <p className="mt-5 max-w-2xl text-sm leading-7 text-white/85 md:text-base">
-                Прозрачная система проверки и контроля качества — чтобы вы
-                находили преподавателя с уверенностью
-              </p>
             </div>
 
-            <motion.div
-              variants={containerVariants}
-              initial="hidden"
-              whileInView="show"
-              viewport={{ once: true, amount: 0.18 }}
-              className="mx-auto mt-14 grid max-w-6xl grid-cols-1 gap-4 px-1 md:mt-18 md:grid-cols-2 lg:grid-cols-4"
-            >
-              {items.map((item) => (
-                <FeatureCard key={item.title} item={item} />
-              ))}
-            </motion.div>
+            <p className="max-w-[58ch] text-[14px] leading-7 text-white/[0.72] sm:text-[15px] lg:justify-self-end">
+              Прозрачная система проверки и контроля качества — чтобы вы
+              находили преподавателя с уверенностью
+            </p>
+          </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 18 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.4 }}
-              transition={{ duration: 0.7, delay: 0.15 }}
-              className="mt-12 flex justify-center md:mt-14"
-            >
-              <motion.div
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.98 }}
-                className="relative"
-              >
-                <div className="absolute -inset-3 rounded-full bg-white/20 blur-xl" />
-                <div className="relative">
-                  <ButtonSend
-                    text="Найти репетитора"
-                    className="px-10! py-4! text-[15px]! shadow-[0_18px_40px_rgba(255,255,255,0.16)]"
-                  />
-                </div>
-              </motion.div>
-            </motion.div>
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.15 }}
+            className="relative z-10 mt-10 grid grid-cols-1 gap-4 md:grid-cols-2 lg:mt-12 lg:grid-cols-12"
+          >
+            {items.map((item, index) => (
+              <FeatureCard key={item.title} item={item} index={index} />
+            ))}
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.4 }}
+            transition={{ duration: 0.6, delay: 0.12 }}
+            className="relative z-10 mt-9 flex justify-center sm:mt-11"
+          >
+            <ButtonSend
+              text="Найти репетитора"
+              className="rounded-full! bg-white! px-8! py-4! text-[14px]! font-medium! text-[#233067]! shadow-[0_14px_32px_rgba(0,0,0,0.16)]! hover:bg-[#F7F8FF]! sm:px-10! sm:text-[15px]!"
+            />
           </motion.div>
         </div>
       </div>

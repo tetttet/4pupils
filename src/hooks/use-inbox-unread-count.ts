@@ -12,14 +12,18 @@ const INBOX_BADGE_POLL_MS = 30000;
 
 export function useInboxUnreadCount() {
   const { user, loading } = useAuth();
+  const userId = user?.id ?? null;
   const [unreadCount, setUnreadCount] = React.useState(0);
   const [ready, setReady] = React.useState(false);
+  const refreshIdRef = React.useRef(0);
 
   React.useEffect(() => {
     if (loading) return;
 
     async function refreshUnreadCount() {
-      if (!user) {
+      const refreshId = ++refreshIdRef.current;
+
+      if (!userId) {
         React.startTransition(() => {
           setUnreadCount(0);
           setReady(true);
@@ -29,12 +33,15 @@ export function useInboxUnreadCount() {
 
       try {
         const nextCount = await MailAPI.countUnreadInbox();
+        if (refreshId !== refreshIdRef.current) return;
 
         React.startTransition(() => {
           setUnreadCount(nextCount);
           setReady(true);
         });
       } catch {
+        if (refreshId !== refreshIdRef.current) return;
+
         React.startTransition(() => {
           setReady(true);
         });
@@ -43,7 +50,7 @@ export function useInboxUnreadCount() {
 
     void refreshUnreadCount();
 
-    if (!user) return;
+    if (!userId) return;
 
     const handleFocus = () => {
       void refreshUnreadCount();
@@ -73,6 +80,7 @@ export function useInboxUnreadCount() {
     );
 
     return () => {
+      refreshIdRef.current += 1;
       window.clearInterval(intervalId);
       window.removeEventListener("focus", handleFocus);
       document.removeEventListener("visibilitychange", handleVisibility);
@@ -81,7 +89,7 @@ export function useInboxUnreadCount() {
         handleMailRefresh as EventListener,
       );
     };
-  }, [loading, user]);
+  }, [loading, userId]);
 
   return {
     unreadCount,

@@ -1,302 +1,368 @@
 "use client";
-import { useMemo, useState } from "react";
+
+import {
+  ArrowUpRight,
+  BarChart3,
+  Building2,
+  Check,
+  Sparkles,
+  UsersRound,
+} from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import Link from "next/link";
+import { useState } from "react";
 
 type TabKey = "hr" | "leaders" | "companies";
 
 const tabContent: Record<
   TabKey,
   {
-    badge: string;
+    label: string;
+    eyebrow: string;
     title: string;
+    description: string;
     points: string[];
-    stat: string;
-    statTitle: string;
-    guideTitle: string;
-    cta: string;
+    metric: string;
+    metricLabel: string;
   }
 > = {
   hr: {
-    badge: "HR и L&D",
-    title:
-      "Запускайте корпоративное обучение в одном пространстве: программы, материалы и доступы для сотрудников, партнёров и внешних аудиторий без лишней операционной нагрузки",
+    label: "HR и L&D",
+    eyebrow: "Для HR и L&D",
+    title: "Запускайте обучение без лишней операционной нагрузки.",
+    description:
+      "Соберите онбординг, внутренние курсы и базу знаний в одном понятном пространстве.",
     points: [
-      "Собирайте внутренние курсы, адаптационные треки и экспертные материалы на одной платформе",
-      "Настраивайте страницу компании с понятной структурой программ, ролей и сценариев доступа",
-      "Управляйте обучением через контроль прогресса, прозрачную аналитику и единый рабочий контур",
+      "Программы для команд и отдельных сотрудников",
+      "Единая структура материалов и доступов",
+      "Прогресс участников без ручных таблиц",
     ],
-    stat: "Быстрый старт",
-    statTitle:
-      "Готовая инфраструктура помогает быстро запустить обучение, выстроить процессы без отдельной разработки и сохранить удобный формат для команды и бизнеса",
-    guideTitle:
-      "Гайд. Как запустить корпоративное обучение на платформе, собрать программы в одном месте и подготовить команду к старту",
-    cta: "Получить гайд",
+    metric: "82%",
+    metricLabel: "команды завершили онбординг",
   },
   leaders: {
-    badge: "Руководителям",
-    title:
-      "Покажите бизнесу понятный формат запуска обучения: единая среда, где легко управлять программами, видеть статус и поддерживать развитие сотрудников",
+    label: "Руководителям",
+    eyebrow: "Для руководителей",
+    title: "Видите развитие команды и поддерживайте его вовремя.",
+    description:
+      "Управляйте программами, сроками и вовлечённостью без лишней координации.",
     points: [
-      "Запускайте программы для отделов, новых сотрудников и управленческих команд без лишней координации",
-      "Держите под контролем содержание, сроки и участие в обучении на одном экране",
-      "Получайте понятную картину по активности команд и масштабируйте сильные образовательные сценарии",
+      "Понятный статус по каждой программе",
+      "Общая картина по отделам и группам",
+      "Масштабирование успешных сценариев",
     ],
-    stat: "Контроль прогресса",
-    statTitle:
-      "Руководителю важно видеть, как движутся программы, где нужна поддержка и какие форматы готовы к следующему этапу роста",
-    guideTitle:
-      "Подборка. Как руководителю организовать обучение компании без сложного внедрения и сохранить управляемость на каждом этапе",
-    cta: "Смотреть подборку",
+    metric: "24",
+    metricLabel: "активные учебные программы",
   },
   companies: {
-    badge: "Компаниям",
-    title:
-      "Создайте корпоративную образовательную витрину под брендом компании и публикуйте программы для сотрудников, клиентов и партнёров в едином пространстве",
+    label: "Компаниям",
+    eyebrow: "Для компаний",
+    title: "Создайте образовательное пространство под своим брендом.",
+    description:
+      "Обучайте сотрудников, клиентов и партнёров на одной современной платформе.",
     points: [
-      "Запускайте собственные курсы и программы на готовой платформе с гибкой настройкой под ваш формат",
-      "Объединяйте адаптацию, развитие команд и внешние обучающие продукты в одной системе",
-      "Масштабируйте образовательные процессы постепенно: от первых партнёров и пилотных групп к устойчивой модели обучения",
+      "Корпоративная страница в стиле бренда",
+      "Внутренние и внешние курсы вместе",
+      "Гибкий рост от пилота до всей компании",
     ],
-    stat: "Гибкая настройка",
-    statTitle:
-      "Платформа помогает начать с понятного сценария запуска, собрать структуру программ и развивать обучение в темпе вашей компании",
-    guideTitle:
-      "Инструкция. Как собрать корпоративную страницу, оформить программы и запустить обучение без длительной подготовки",
-    cta: "Открыть инструкцию",
+    metric: "3 мес.",
+    metricLabel: "бесплатно для спокойного старта",
   },
+};
+
+const audienceIcons = {
+  hr: UsersRound,
+  leaders: BarChart3,
+  companies: Building2,
 };
 
 export default function CorporatePlatformLanding() {
   const [activeTab, setActiveTab] = useState<TabKey>("hr");
-
-  const current = useMemo(() => tabContent[activeTab], [activeTab]);
+  const reduceMotion = useReducedMotion();
+  const current = tabContent[activeTab];
 
   return (
-    <div className="min-h-screen bg-[#1e2754] text-white">
-      <div className="mx-auto flex min-h-screen w-full max-w-305 flex-col px-4 pb-6 pt-5 sm:px-5 md:px-7 md:pb-8 lg:px-8 lg:pb-10">
-        <section className="flex flex-col items-center pt-8 text-center sm:pt-10 md:pt-14 lg:pt-6">
-          <h1 className="max-w-210 text-[28px] font-light leading-[1.02] tracking-[-0.05em] text-white sm:text-[38px] md:text-[50px] lg:text-[60px]">
-            Разместите курсы вашего
-            <br />
-            бизнеса на 4Pupils
-          </h1>
+    <>
+      <section className="relative overflow-hidden bg-[#F3F5FF]">
+        <div className="pointer-events-none absolute -left-48 top-16 size-[480px] rounded-full bg-[#E2E7FF] blur-3xl" />
+        <div className="pointer-events-none absolute -right-52 bottom-4 size-[460px] rounded-full bg-[#E7EBFF] blur-3xl" />
 
-          <button className="mt-7 h-11.5 rounded-[10px] bg-white px-6 text-[14px] font-medium text-[#1e2754] transition hover:bg-[#eef2ff] sm:mt-8 sm:h-12 sm:px-7 sm:text-[15px]">
-            Создать страницу компании
-          </button>
+        <div className="relative mx-auto max-w-[1200px] px-4 pb-12 pt-2 sm:px-5 sm:pb-16 sm:pt-4 lg:pb-20">
+          <div className="overflow-hidden rounded-[28px] bg-white p-2 shadow-[0_18px_60px_rgba(35,48,103,0.08)] sm:rounded-[36px] sm:p-3">
+            <div className="grid min-h-[650px] gap-2 lg:grid-cols-[1.12fr_0.88fr] lg:gap-3">
+              <div className="relative isolate flex flex-col overflow-hidden rounded-[22px] bg-[#FBFCFF] px-5 pb-6 pt-7 sm:rounded-[28px] sm:px-8 sm:pb-8 sm:pt-9 lg:px-10 lg:pb-10 lg:pt-11">
+                <div className="pointer-events-none absolute -bottom-56 -left-40 -z-10 size-[620px] rounded-full border-[86px] border-[#ECEFFF]" />
+                <div className="pointer-events-none absolute -bottom-24 left-40 -z-10 size-56 rounded-full border-[42px] border-[#F4F6FF]" />
 
-          <div className="mt-8 flex w-full max-w-190 flex-wrap items-center justify-center gap-2 rounded-[18px] bg-[#27336b] p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] sm:mt-10 sm:gap-0 sm:rounded-3xl sm:p-1.5">
-            {(
-              [
-                ["hr", "HR, L&D"],
-                ["leaders", "Руководителям"],
-                ["companies", "Компаниям"],
-              ] as [TabKey, string][]
-            ).map(([key, label]) => {
+                <motion.div
+                  initial={reduceMotion ? false : { opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: reduceMotion ? 0 : 0.6 }}
+                  className="inline-flex w-fit items-center gap-2 rounded-full border border-[#D7DDF8] bg-white px-3.5 py-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-[#4C63B8] sm:text-[12px]"
+                >
+                  <Sparkles aria-hidden="true" className="size-3.5" />
+                  4Pupils для бизнеса
+                </motion.div>
+
+                <motion.h1
+                  initial={reduceMotion ? false : { opacity: 0, y: 24 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: reduceMotion ? 0 : 0.72,
+                    delay: reduceMotion ? 0 : 0.08,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                  className="mt-8 max-w-[12ch] text-[43px] font-medium leading-[0.98] tracking-[-0.055em] text-[#202858] sm:text-[56px] lg:text-[64px] xl:text-[70px]"
+                >
+                  Развивайте людей. Собирайте знания.{" "}
+                  <span className="text-[#5D75CB]">Растите вместе.</span>
+                </motion.h1>
+
+                <motion.p
+                  initial={reduceMotion ? false : { opacity: 0, y: 18 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: reduceMotion ? 0 : 0.65,
+                    delay: reduceMotion ? 0 : 0.16,
+                  }}
+                  className="mt-6 max-w-[55ch] text-[14px] leading-7 text-[#68719B] sm:text-[16px]"
+                >
+                  Корпоративная платформа, где обучение сотрудников, клиентов
+                  и партнёров становится понятной частью роста компании.
+                </motion.p>
+
+                <motion.div
+                  initial={reduceMotion ? false : { opacity: 0, y: 18 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: reduceMotion ? 0 : 0.65,
+                    delay: reduceMotion ? 0 : 0.24,
+                  }}
+                  className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap"
+                >
+                  <Link
+                    className="group inline-flex h-13 w-fit items-center gap-3 rounded-full bg-[#233067] pl-6 pr-2 text-[14px] font-medium text-white shadow-[0_12px_28px_rgba(35,48,103,0.2)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#19224C]"
+                    href="/auth/sign-up"
+                  >
+                    Создать пространство
+                    <span className="grid size-9 place-items-center rounded-full bg-white text-[#233067] transition-transform duration-300 group-hover:rotate-6">
+                      <ArrowUpRight aria-hidden="true" className="size-4" />
+                    </span>
+                  </Link>
+                  <Link
+                    className="inline-flex h-13 w-fit items-center gap-2 rounded-full border border-[#D7DDF8] bg-white px-5 text-[14px] font-medium text-[#202858] transition duration-300 hover:-translate-y-0.5 hover:border-[#B8C2EF] hover:bg-[#F7F8FF]"
+                    href="/courses"
+                  >
+                    Смотреть курсы
+                    <ArrowUpRight aria-hidden="true" className="size-4 text-[#5D75CB]" />
+                  </Link>
+                </motion.div>
+
+                <div className="mt-auto grid grid-cols-2 gap-4 pt-6 sm:flex sm:items-end sm:justify-between sm:gap-8">
+                  <div>
+                    <p className="text-[22px] font-medium tracking-[-0.04em] text-[#202858] sm:text-[26px]">
+                      3 месяца
+                    </p>
+                    <p className="mt-1 text-[11px] leading-5 text-[#7A82A8] sm:text-[12px]">
+                      бесплатного старта
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[22px] font-medium tracking-[-0.04em] text-[#202858] sm:text-[26px]">
+                      1 пространство
+                    </p>
+                    <p className="mt-1 text-[11px] leading-5 text-[#7A82A8] sm:text-[12px]">
+                      для всех форматов обучения
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <motion.aside
+                initial={
+                  reduceMotion ? false : { opacity: 0, scale: 0.97, y: 10 }
+                }
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{
+                  duration: reduceMotion ? 0 : 0.7,
+                  delay: reduceMotion ? 0 : 0.12,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+                className="group relative isolate flex min-h-[570px] flex-col overflow-hidden rounded-[22px] bg-[#5D75CB] p-6 text-white sm:rounded-[28px] sm:p-8 lg:min-h-full lg:p-9"
+              >
+                <div className="pointer-events-none absolute -right-36 -top-36 -z-10 size-[410px] rounded-full border-[70px] border-white opacity-[0.07] transition-transform duration-700 group-hover:scale-105" />
+                <div className="pointer-events-none absolute -bottom-28 -left-28 -z-10 size-[300px] rounded-full border-[56px] border-[#202858] opacity-[0.1]" />
+
+                <div className="flex items-center justify-between border-b border-white/20 pb-5">
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/55">
+                      Learning workspace
+                    </p>
+                    <p className="mt-1 text-[14px] font-medium">Обучение команды</p>
+                  </div>
+                  <span className="grid size-10 place-items-center rounded-full bg-white text-[#5D75CB]">
+                    <BarChart3 aria-hidden="true" className="size-[17px]" />
+                  </span>
+                </div>
+
+                <div className="my-auto py-8">
+                  <p className="text-[12px] font-medium text-white/65">
+                    Общий прогресс
+                  </p>
+                  <div className="mt-3 flex items-end justify-between gap-4">
+                    <p className="text-[54px] font-medium leading-none tracking-[-0.06em] sm:text-[66px]">
+                      78%
+                    </p>
+                    <p className="pb-1 text-right text-[11px] leading-5 text-white/60">
+                      +12% за месяц
+                      <br />
+                      186 участников
+                    </p>
+                  </div>
+                  <div className="mt-5 h-2 overflow-hidden rounded-full bg-white/15">
+                    <div className="h-full w-[78%] rounded-full bg-white" />
+                  </div>
+                </div>
+
+                <div className="grid gap-3">
+                  {[
+                    ["Онбординг новых сотрудников", "82%", "bg-[#C7D2FF]"],
+                    ["Продажи для B2B", "68%", "bg-white"],
+                    ["Работа с клиентами", "54%", "bg-[#202858]"],
+                  ].map(([title, progress, color]) => (
+                    <div
+                      className="rounded-[18px] border border-white/15 bg-white/[0.09] p-4 backdrop-blur-sm"
+                      key={title}
+                    >
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex min-w-0 items-center gap-3">
+                          <span className={`size-2.5 shrink-0 rounded-full ${color}`} />
+                          <p className="truncate text-[12px] font-medium sm:text-[13px]">
+                            {title}
+                          </p>
+                        </div>
+                        <span className="text-[11px] text-white/60">{progress}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </motion.aside>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="relative overflow-hidden bg-[#F3F5FF] py-16 sm:py-20 lg:py-28">
+        <div className="mx-auto max-w-[1200px] px-4 sm:px-5">
+          <div className="grid gap-5 border-t border-[#D7DDF8] pt-6 md:grid-cols-[0.34fr_0.66fr] md:gap-10 lg:pt-8">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.13em] text-[#5D75CB] sm:text-[12px]">
+              Для каждой задачи
+            </p>
+            <div>
+              <h2 className="max-w-[18ch] text-[34px] font-medium leading-[1.08] tracking-[-0.045em] text-[#202858] sm:text-[44px] lg:text-[52px]">
+                Один продукт. Разные сценарии роста.
+              </h2>
+              <p className="mt-5 max-w-[62ch] text-[14px] leading-7 text-[#68719B] sm:text-[15px]">
+                Настройте пространство под процессы своей компании — от
+                адаптации новичков до обучения клиентов и партнёров.
+              </p>
+            </div>
+          </div>
+
+          <div
+            aria-label="Сценарии корпоративного обучения"
+            className="mt-10 grid gap-2 rounded-[22px] border border-white bg-white p-2 shadow-[0_12px_36px_rgba(35,48,103,0.05)] sm:grid-cols-3 sm:rounded-[26px]"
+            role="tablist"
+          >
+            {(Object.keys(tabContent) as TabKey[]).map((key) => {
+              const Icon = audienceIcons[key];
               const isActive = activeTab === key;
 
               return (
                 <button
+                  aria-controls="corporate-audience-panel"
+                  aria-selected={isActive}
+                  className={`flex min-h-14 items-center justify-center gap-2.5 rounded-[16px] px-4 text-[13px] font-medium transition duration-300 sm:min-h-16 sm:text-[14px] ${
+                    isActive
+                      ? "bg-[#233067] text-white shadow-[0_10px_24px_rgba(35,48,103,0.16)]"
+                      : "text-[#68719B] hover:bg-[#F7F8FF] hover:text-[#202858]"
+                  }`}
+                  id={`corporate-tab-${key}`}
                   key={key}
                   onClick={() => setActiveTab(key)}
-                  className={`min-w-37.5 rounded-2xl px-4 py-3 text-[14px] font-medium transition sm:flex-1 sm:rounded-[10px] sm:px-6 ${
-                    isActive
-                      ? "bg-[#3b4a8f] text-white shadow-[0_10px_30px_rgba(0,0,0,0.18)]"
-                      : "text-white/75 hover:text-white"
-                  }`}
+                  role="tab"
+                  type="button"
                 >
-                  {label}
+                  <Icon aria-hidden="true" className="size-4" />
+                  {tabContent[key].label}
                 </button>
               );
             })}
           </div>
-        </section>
 
-        <section className="mt-5 grid grid-cols-1 gap-4 lg:mt-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-6">
-          <div className="relative overflow-hidden rounded-[24px] bg-[#27336b] px-5 pb-0 pt-5 shadow-[0_0_0_1px_rgba(255,255,255,0.04)] sm:px-6 sm:pt-6 md:px-7 md:pt-7">
-            <h2 className="max-w-140 text-[22px] font-normal leading-[1.1] tracking-[-0.04em] text-white sm:text-[26px] md:text-[32px] lg:text-[36px]">
-              {current.title}
-            </h2>
+          <AnimatePresence mode="wait">
+            <motion.div
+              aria-labelledby={`corporate-tab-${activeTab}`}
+              className="mt-5 grid overflow-hidden rounded-[28px] bg-white shadow-[0_18px_48px_rgba(35,48,103,0.065)] lg:grid-cols-[1fr_0.78fr]"
+              id="corporate-audience-panel"
+              initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={reduceMotion ? undefined : { opacity: 0, y: -8 }}
+              key={activeTab}
+              role="tabpanel"
+              transition={{ duration: reduceMotion ? 0 : 0.28 }}
+            >
+              <div className="p-6 sm:p-8 lg:p-10">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#5D75CB]">
+                  {current.eyebrow}
+                </p>
+                <h3 className="mt-5 max-w-[17ch] text-[30px] font-medium leading-[1.06] tracking-[-0.04em] text-[#202858] sm:text-[38px]">
+                  {current.title}
+                </h3>
+                <p className="mt-5 max-w-[55ch] text-[14px] leading-7 text-[#68719B] sm:text-[15px]">
+                  {current.description}
+                </p>
 
-            <div className="mt-6 space-y-4 pb-55 sm:space-y-5 sm:pb-62.5 md:mt-7 md:pb-72.5">
-              {current.points.map((item) => (
-                <div key={item} className="flex items-start gap-3 sm:gap-4">
-                  <div className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#8fa4ff]/15 text-[#c6d2ff] sm:h-7 sm:w-7">
-                    <svg
-                      width="18"
-                      height="18"
-                      viewBox="0 0 20 20"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M4.5 10.5L8.5 14.5L15.5 6.5"
-                        stroke="currentColor"
-                        strokeWidth="1.8"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </div>
+                <ul className="mt-7 grid gap-3">
+                  {current.points.map((point) => (
+                    <li className="flex items-start gap-3" key={point}>
+                      <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-[#ECEFFF] text-[#4C63B8]">
+                        <Check aria-hidden="true" className="size-3.5" strokeWidth={2.2} />
+                      </span>
+                      <span className="text-[13px] leading-6 text-[#3F4568] sm:text-[14px]">
+                        {point}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
 
-                  <p className="max-w-115 text-[15px] font-normal leading-[1.28] tracking-[-0.03em] text-white/92 sm:text-[16px] md:text-[18px] lg:text-[19px]">
-                    {item}
+              <div className="relative isolate flex min-h-[320px] flex-col justify-between overflow-hidden bg-[#202858] p-6 text-white sm:p-8 lg:p-10">
+                <div className="pointer-events-none absolute -bottom-40 -right-32 -z-10 size-[400px] rounded-full border-[70px] border-[#5D75CB] opacity-35" />
+                <div className="flex items-center justify-between border-b border-white/15 pb-5">
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.13em] text-white/50">
+                    Эффект
+                  </span>
+                  <span className="grid size-9 place-items-center rounded-full bg-white/10">
+                    <ArrowUpRight aria-hidden="true" className="size-4" />
+                  </span>
+                </div>
+                <div className="py-10">
+                  <p className="text-[56px] font-medium leading-none tracking-[-0.06em] sm:text-[68px]">
+                    {current.metric}
+                  </p>
+                  <p className="mt-4 max-w-[22ch] text-[16px] leading-6 text-white/65 sm:text-[18px]">
+                    {current.metricLabel}
                   </p>
                 </div>
-              ))}
-            </div>
-
-            <div className="select-none absolute bottom-0 left-0 right-0 h-48.75 overflow-hidden rounded-t-[22px] border border-b-0 border-[#6f88ff] bg-[#202b5e] sm:h-[220px] md:h-[270px]">
-              <div className="absolute left-4 top-4 flex gap-2">
-                <span className="h-2.5 w-2.5 rounded-full bg-[#6f88ff]" />
-                <span className="h-2.5 w-2.5 rounded-full bg-[#8fa4ff]" />
+                <p className="text-[11px] leading-5 text-white/45">
+                  Пример того, как обучение становится видимым и управляемым.
+                </p>
               </div>
-
-              <div className="absolute left-1/2 top-0 h-4 w-24 -translate-x-1/2 rounded-b-[18px] border-b border-[#6f88ff] sm:w-[112px]" />
-              <div className="absolute right-4 top-3 text-[20px] font-medium leading-none text-[#aebcff] sm:text-[22px]">
-                LMS
-              </div>
-
-              <div className="absolute inset-x-0 bottom-0 top-8.5 flex items-end justify-center">
-                <div className="relative h-[145px] w-[250px] rounded-[24px] border border-[#7187f7] bg-[#25316a] shadow-[0_30px_70px_rgba(4,10,36,0.45)] sm:h-[165px] sm:w-[290px] md:h-[190px] md:w-[330px]">
-                  <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-                    <div>
-                      <div className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#aebcff]">
-                        Learning Hub
-                      </div>
-                      <div className="mt-1 text-[13px] text-white/90 sm:text-[14px]">
-                        Внутреннее обучение
-                      </div>
-                    </div>
-                    <div className="rounded-full bg-[#6f88ff] px-3 py-1 text-[11px] font-medium text-white">
-                      24 курса
-                    </div>
-                  </div>
-
-                  <div className="space-y-3 px-4 py-4">
-                    <div className="rounded-[16px] border border-white/10 bg-white/5 p-3">
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <div className="text-[13px] font-medium text-white sm:text-[14px]">
-                            Онбординг команды
-                          </div>
-                          <div className="mt-1 text-[11px] text-white/60 sm:text-[12px]">
-                            Адаптация • База знаний
-                          </div>
-                        </div>
-                        <div className="text-[11px] font-medium text-[#bcd0ff]">
-                          82%
-                        </div>
-                      </div>
-                      <div className="mt-3 h-2 rounded-full bg-white/10">
-                        <div className="h-2 w-[82%] rounded-full bg-[#7d95ff]" />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="rounded-[16px] border border-white/10 bg-white/5 p-3">
-                        <div className="text-[11px] text-white/60">Сотрудники</div>
-                        <div className="mt-1 text-[18px] font-light text-white">
-                          240+
-                        </div>
-                      </div>
-                      <div className="rounded-[16px] border border-white/10 bg-white/5 p-3">
-                        <div className="text-[11px] text-white/60">Программы</div>
-                        <div className="mt-1 text-[18px] font-light text-white">
-                          18
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="absolute -right-5 top-[34px] hidden rounded-[18px] border border-[#89a0ff] bg-[#eef2ff] px-4 py-3 shadow-[0_20px_40px_rgba(7,12,40,0.18)] md:block">
-                    <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#4e62b8]">
-                      Новый курс
-                    </div>
-                    <div className="mt-1 text-[13px] font-medium text-[#1e2754]">
-                      Продажи для B2B
-                    </div>
-                  </div>
-
-                  <div className="absolute -left-6 bottom-5 hidden h-[56px] w-[56px] items-center justify-center rounded-[18px] border border-[#89a0ff] bg-[#dfe7ff] text-[#1e2754] shadow-[0_18px_36px_rgba(7,12,40,0.18)] md:flex">
-                    <svg
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M4 7.5C4 6.67157 4.67157 6 5.5 6H18.5C19.3284 6 20 6.67157 20 7.5V16.5C20 17.3284 19.3284 18 18.5 18H5.5C4.67157 18 4 17.3284 4 16.5V7.5Z"
-                        stroke="currentColor"
-                        strokeWidth="1.6"
-                      />
-                      <path
-                        d="M8 10H16"
-                        stroke="currentColor"
-                        strokeWidth="1.6"
-                        strokeLinecap="round"
-                      />
-                      <path
-                        d="M8 14H13"
-                        stroke="currentColor"
-                        strokeWidth="1.6"
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid gap-4 lg:gap-6">
-            <div className="rounded-[24px] bg-[#27336b] px-5 py-5 shadow-[0_0_0_1px_rgba(255,255,255,0.04)] sm:px-6 sm:py-6 md:px-7 md:py-7">
-              <div className="text-[68px] font-light leading-[0.9] tracking-[-0.07em] text-white sm:text-[84px] md:text-[98px] lg:text-[108px]">
-                {current.stat}
-              </div>
-
-              <p className="mt-5 max-w-[480px] text-[18px] font-normal leading-[1.08] tracking-[-0.04em] text-white/78 sm:text-[20px] md:mt-6 md:text-[23px] lg:mt-7 lg:text-[26px]">
-                {current.statTitle}
-              </p>
-            </div>
-
-            <div className="rounded-[24px] bg-[#4a67d6] px-5 py-5 text-center shadow-[0_0_0_1px_rgba(255,255,255,0.04)] sm:px-6 sm:py-6 md:px-7 md:py-7">
-              <div className="mx-auto inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-[12px] font-medium text-[#4d5b93] sm:text-[13px]">
-                <span className="inline-flex h-4 w-4 items-center justify-center text-[#4a67d6]">
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 16 16"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M8 1.5V14.5M1.5 8H14.5"
-                      stroke="currentColor"
-                      strokeWidth="1.6"
-                      strokeLinecap="round"
-                    />
-                    <path
-                      d="M3 4.5H13V11.5H3V4.5Z"
-                      stroke="currentColor"
-                      strokeWidth="1.2"
-                    />
-                  </svg>
-                </span>
-                Бесплатно
-              </div>
-
-              <h3 className="mx-auto mt-6 max-w-[500px] text-[20px] font-normal leading-[1.08] tracking-[-0.04em] text-white sm:text-[22px] md:text-[25px] lg:mt-7">
-                {current.guideTitle}
-              </h3>
-
-              <button className="mt-7 h-[44px] rounded-[10px] bg-white px-8 text-[14px] font-medium text-[#1e2754] transition hover:bg-[#eef2ff] sm:h-[46px] sm:px-12 sm:text-[15px]">
-                {current.cta}
-              </button>
-            </div>
-          </div>
-        </section>
-      </div>
-    </div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </section>
+    </>
   );
 }

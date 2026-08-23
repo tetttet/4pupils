@@ -9,6 +9,19 @@ import type {
 } from "@/types/mail";
 import { emitMailInboxBadgeRefresh } from "@/lib/mail/inbox-events";
 import { getUserFacingErrorMessage } from "@/lib/error-messages";
+import { clientFetch } from "@/lib/client-fetch";
+
+const UNREAD_COUNT_LIMIT = 100;
+const UNREAD_COUNT_TTL_MS = 10_000;
+
+let unreadCountCache: { value: number; expiresAt: number } | null = null;
+let unreadCountRequest: { version: number; promise: Promise<number> } | null = null;
+let unreadCountVersion = 0;
+
+function invalidateUnreadCountCache() {
+  unreadCountVersion += 1;
+  unreadCountCache = null;
+}
 
 async function json<T>(r: Response): Promise<T> {
   const text = await r.text();
@@ -47,40 +60,62 @@ export const MailAPI = {
     if (typeof params?.important === "boolean") sp.set("important", String(params.important));
     if (params?.tag) sp.set("tag", params.tag);
 
-    const r = await fetch(`/api/mail${sp.toString() ? `?${sp.toString()}` : ""}`, { cache: "no-store" });
+    const r = await clientFetch(
+      `/api/mail${sp.toString() ? `?${sp.toString()}` : ""}`,
+      { cache: "no-store" },
+    );
     return json<MailListItem[]>(r);
   },
 
   countUnreadInbox: async () => {
-    const pageSize = 100;
-    const maxPages = 50;
-    let total = 0;
-
-    for (let pageIndex = 0; pageIndex < maxPages; pageIndex += 1) {
-      const page = await MailAPI.list({
-        folder: "inbox",
-        unread: true,
-        limit: pageSize,
-        offset: pageIndex * pageSize,
-      });
-
-      total += page.length;
-
-      if (page.length < pageSize) {
-        break;
-      }
+    if (unreadCountCache && unreadCountCache.expiresAt > Date.now()) {
+      return unreadCountCache.value;
     }
 
-    return total;
+    if (
+      unreadCountRequest &&
+      unreadCountRequest.version === unreadCountVersion
+    ) {
+      return unreadCountRequest.promise;
+    }
+
+    const requestVersion = unreadCountVersion;
+    const request = (async () => {
+      const unreadItems = await MailAPI.list({
+        folder: "inbox",
+        unread: true,
+        limit: UNREAD_COUNT_LIMIT,
+        offset: 0,
+      });
+      const value = unreadItems.length;
+
+      if (requestVersion === unreadCountVersion) {
+        unreadCountCache = {
+          value,
+          expiresAt: Date.now() + UNREAD_COUNT_TTL_MS,
+        };
+      }
+
+      return value;
+    })();
+    unreadCountRequest = { version: requestVersion, promise: request };
+
+    try {
+      return await request;
+    } finally {
+      if (unreadCountRequest?.promise === request) {
+        unreadCountRequest = null;
+      }
+    }
   },
 
   get: async (id: string) => {
-    const r = await fetch(`/api/mail/${id}`, { cache: "no-store" });
+    const r = await clientFetch(`/api/mail/${id}`, { cache: "no-store" });
     return json<MailDetail>(r);
   },
 
   createDraft: async (payload: CreateDraftPayload) => {
-    const r = await fetch(`/api/mail/drafts`, {
+    const r = await clientFetch(`/api/mail/drafts`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -89,7 +124,7 @@ export const MailAPI = {
   },
 
   updateDraft: async (id: string, payload: UpdateDraftPayload) => {
-    const r = await fetch(`/api/mail/${id}/draft`, {
+    const r = await clientFetch(`/api/mail/${id}/draft`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -98,7 +133,7 @@ export const MailAPI = {
   },
 
   send: async (id: string, payload: SendPayload = {}) => {
-    const r = await fetch(`/api/mail/${id}/send`, {
+    const r = await clientFetch(`/api/mail/${id}/send`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -107,29 +142,31 @@ export const MailAPI = {
   },
 
   markRead: async (id: string, unread: boolean) => {
-    const r = await fetch(`/api/mail/${id}/read`, {
+    const r = await clientFetch(`/api/mail/${id}/read`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ unread }),
     });
     const result = await json(r);
+    invalidateUnreadCountCache();
     emitMailInboxBadgeRefresh();
     return result;
   },
 
   moveFolder: async (id: string, folder: MailFolder) => {
-    const r = await fetch(`/api/mail/${id}/folder`, {
+    const r = await clientFetch(`/api/mail/${id}/folder`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ folder }),
     });
     const result = await json(r);
+    invalidateUnreadCountCache();
     emitMailInboxBadgeRefresh();
     return result;
   },
 
   updateFlags: async (id: string, flags: { starred?: boolean; important?: boolean }) => {
-    const r = await fetch(`/api/mail/${id}/flags`, {
+    const r = await clientFetch(`/api/mail/${id}/flags`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(flags),
@@ -138,7 +175,7 @@ export const MailAPI = {
   },
 
   replaceTags: async (id: string, tags: MailTag) => {
-    const r = await fetch(`/api/mail/${id}/tags`, {
+    const r = await clientFetch(`/api/mail/${id}/tags`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ tags }),
@@ -150,7 +187,10 @@ export const MailAPI = {
     const fd = new FormData();
     for (const f of files) fd.append("files", f);
 
-    const r = await fetch(`/api/mail/${id}/attachments`, { method: "POST", body: fd });
+    const r = await clientFetch(`/api/mail/${id}/attachments`, {
+      method: "POST",
+      body: fd,
+    });
     return json(r);
   },
 };

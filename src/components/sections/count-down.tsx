@@ -3,7 +3,6 @@
 import React, { useMemo, useRef } from "react";
 import { useInView } from "motion/react";
 import { AnimatedNumber } from "@/components/motion-primitives/animated-number";
-import H2Text from "../text/h2-text";
 import { BookOpenCheck, CalendarDays, Layers3 } from "lucide-react";
 
 type AnimatedNumberInViewProps = {
@@ -86,83 +85,87 @@ export default function CountDown() {
   );
 
   return (
-    <section className="relative overflow-hidden bg-white">
-      {/* background */}
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -left-16 top-10 h-72 w-72 rounded-full bg-[rgba(var(--frontier-home-primary-rgb),0.10)] blur-3xl" />
-        <div className="absolute right-0 top-0 h-80 w-80 rounded-full bg-[rgba(var(--frontier-home-primary-strong-rgb),0.08)] blur-3xl" />
+    <section className="relative overflow-hidden bg-transparent">
+      <div className="pointer-events-none absolute -right-40 bottom-10 size-[460px] rounded-full bg-[#ECEFFF] blur-3xl" />
 
-        {/* grid */}
-        <div
-          className="absolute inset-0 opacity-[0.05]"
-          style={{
-            backgroundImage: `
-          linear-gradient(rgba(var(--frontier-home-primary-rgb),0.20) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(var(--frontier-home-primary-rgb),0.20) 1px, transparent 1px)
-        `,
-            backgroundSize: "34px 34px",
-          }}
-        />
-      </div>
+      <div className="relative mx-auto max-w-[1200px] px-4 pb-20 pt-8 sm:px-5 sm:pb-24 sm:pt-12 lg:pb-28 lg:pt-10">
+        <div className="grid items-end gap-5 md:grid-cols-[0.95fr_1.05fr] md:gap-10">
+          <h2 className="max-w-[10ch] text-[36px] font-medium leading-[1.04] tracking-[-0.045em] text-[#202858] sm:text-[44px] lg:text-[52px]">
+            4Pupils в цифрах
+          </h2>
 
-      <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-18">
-        <div className="grid items-center gap-10 lg:grid-cols-[420px_1fr] lg:gap-14">
-          {/* left */}
-          <div className="text-left">
-            <H2Text
-              title="4Pupils в цифрах"
-              className="mt-5! mb-0! text-3xl! text-[var(--frontier-home-ink)]! sm:text-4xl! lg:text-5xl!"
-            />
+          <p className="max-w-[58ch] text-[14px] leading-7 text-[#68719B] sm:text-[15px] md:justify-self-end">
+            Мы создаём удобную образовательную платформу, где ученики находят
+            своего преподавателя, а репетиторы строят карьеру в образовании с
+            первых дней работы с нами.
+          </p>
+        </div>
 
-            <p className="mt-5 max-w-[42ch] text-sm leading-7 text-[var(--frontier-home-ink-muted)] sm:text-[15px]">
-              Мы создаём удобную образовательную платформу, где ученики находят
-своего преподавателя, а репетиторы строят карьеру в образовании с
-первых дней работы с нами.
-            </p>
-          </div>
+        <div className="mt-9 grid gap-5 md:grid-cols-2 xl:grid-cols-12">
+          {prepared.map((s, index) => {
+            const isPrimary = index === 1;
 
-          {/* right */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {prepared.map((s) => (
+            return (
               <div
                 key={s.label}
-                className="group relative overflow-hidden rounded-3xl border border-[rgba(var(--frontier-home-border-rgb),0.85)] bg-white/90 p-6 shadow-[0_10px_40px_rgba(var(--frontier-home-primary-deep-rgb),0.08)] backdrop-blur-sm transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_50px_rgba(var(--frontier-home-primary-deep-rgb),0.16)]"
+                className={`group relative flex min-h-[290px] flex-col overflow-hidden rounded-[28px] border p-6 transition duration-500 hover:-translate-y-1 sm:min-h-[310px] sm:rounded-[32px] sm:p-8 ${
+                  index === 0
+                    ? "border-white bg-white text-[#202858] shadow-[0_12px_36px_rgba(35,48,103,0.055)] md:col-span-2 xl:col-span-4"
+                    : isPrimary
+                      ? "border-[#5D75CB] bg-[#5D75CB] text-white shadow-[0_18px_40px_rgba(93,117,203,0.2)] xl:col-span-5"
+                      : "border-[#D7DDF8] bg-[#ECEFFF] text-[#202858] xl:col-span-3"
+                }`}
               >
-                {/* top accent */}
-                <div className="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-[var(--frontier-home-primary)] to-[var(--frontier-home-primary-strong)]" />
-
-                {/* card glow */}
-                <div className="absolute -right-10 -top-10 h-24 w-24 rounded-full bg-[rgba(var(--frontier-home-primary-rgb),0.10)] blur-2xl transition duration-300 group-hover:bg-[rgba(var(--frontier-home-primary-rgb),0.16)]" />
-
-                <div className="relative mb-5 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-[rgba(var(--frontier-home-primary-rgb),0.10)] text-[var(--frontier-home-primary-deep)]">
+                <div
+                  className={`absolute -bottom-24 -right-20 size-64 rounded-full border-[54px] border-current opacity-[0.055] transition-transform duration-700 group-hover:scale-110 ${
+                    isPrimary ? "text-white" : "text-[#5D75CB]"
+                  }`}
+                />
+                <div
+                  className={`relative grid size-11 place-items-center rounded-full sm:size-12 ${
+                    isPrimary
+                      ? "bg-white text-[#5D75CB]"
+                      : "bg-[#F7F8FF] text-[#4C63B8]"
+                  }`}
+                >
                   {s.icon}
                 </div>
 
-                <div className="relative flex items-end gap-1">
+                <div className="relative mt-8 flex items-start gap-1 sm:mt-10">
                   <AnimatedNumberInView
                     number={s.numeric}
                     duration={2400}
-                    className="text-[34px] font-extrabold leading-none tracking-tight text-[var(--frontier-home-ink)] sm:text-[38px] lg:text-[42px]"
+                    className="text-[48px] font-medium leading-[0.92] tracking-[-0.055em] sm:text-[58px]"
                   />
                   {s.suffix ? (
-                    <span className="pb-1 text-[22px] font-extrabold leading-none text-[var(--frontier-home-primary)] sm:text-[24px]">
+                    <span
+                      className={`text-[28px] font-medium leading-none sm:text-[34px] ${
+                        isPrimary ? "text-white/90" : "text-[#5D75CB]"
+                      }`}
+                    >
                       {s.suffix}
                     </span>
                   ) : null}
                 </div>
 
-                <div className="relative mt-3 max-w-[18ch] text-sm font-medium leading-6 text-[var(--frontier-home-ink-muted)] sm:text-[15px]">
+                <div
+                  className={`relative mt-3 max-w-[22ch] text-[15px] font-medium leading-5 sm:text-[16px] ${
+                    isPrimary ? "text-white/85" : "text-[#3F4568]"
+                  }`}
+                >
                   {s.label}
                 </div>
 
-                <div className="relative mt-5 h-px w-full bg-linear-to-r from-[rgba(var(--frontier-home-primary-rgb),0.22)] via-[rgba(var(--frontier-home-primary-deep-rgb),0.06)] to-transparent" />
-
-                <p className="relative mt-4 text-xs leading-6 text-[var(--frontier-home-ink-muted)] sm:text-[13px]">
+                <p
+                  className={`relative mt-auto max-w-[46ch] pt-7 text-[12px] leading-5 sm:text-[13px] sm:leading-6 ${
+                    isPrimary ? "text-white/70" : "text-[#68719B]"
+                  }`}
+                >
                   {s.description}
                 </p>
               </div>
-            ))}
-          </div>
+            );
+          })}
         </div>
       </div>
     </section>

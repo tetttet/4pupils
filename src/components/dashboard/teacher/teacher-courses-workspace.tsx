@@ -4,17 +4,12 @@ import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
-  BookOpen,
-  Check,
-  ChevronRight,
-  Clipboard,
-  LayoutGrid,
   RefreshCw,
   Search,
-  Send,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { TeacherSectionTabs } from "@/components/dashboard/teacher/teacher-section-tabs";
 import type { Course, CourseLifecycle } from "@/types/course";
 import { useTeacherCourses } from "@/hooks/use-teacher-courses";
 
@@ -112,39 +107,38 @@ const MODE_META: Record<
   { title: string; subtitle: string }
 > = {
   workspace: {
-    title: "Рабочая зона курсов",
-    subtitle:
-      "Здесь собран весь рабочий контур преподавателя: каталог, быстрые действия, контроль статусов и точки роста по каждому курсу.",
+    title: "Курсы",
+    subtitle: "Создавайте курсы, продолжайте черновики и следите за публикацией.",
   },
   pipeline: {
-    title: "Поток курсов",
-    subtitle:
-      "Смотри, на каком этапе находится каждый курс, где есть задержки, и какие позиции готовы к следующему шагу.",
+    title: "Этапы курсов",
+    subtitle: "Посмотрите, на каком этапе находится каждый курс и что делать дальше.",
   },
   insights: {
     title: "Аналитика курсов",
-    subtitle:
-      "Короткий, ясный срез по структуре каталога: статусы, языки, категории, качество наполнения и курсы с лучшей готовностью.",
+    subtitle: "Короткий срез по каталогу, наполнению и публикациям.",
   },
   readiness: {
     title: "Чек-лист качества",
-    subtitle:
-      "Проверка карточек перед отправкой: где не хватает обложки, описания, структуры и что именно ещё нужно довести до готовности.",
+    subtitle: "Проверьте карточки и устраните пробелы перед отправкой.",
   },
 };
+
+const countFormatter = new Intl.NumberFormat("ru-RU");
+const shortDateFormatter = new Intl.DateTimeFormat("ru-RU");
 
 function formatDate(value?: string | null) {
   if (!value) return "—";
 
   try {
-    return new Date(value).toLocaleDateString("ru-RU");
+    return shortDateFormatter.format(new Date(value));
   } catch {
     return value;
   }
 }
 
 function formatCount(value: number) {
-  return new Intl.NumberFormat("ru-RU").format(value);
+  return countFormatter.format(value);
 }
 
 function formatShare(part: number, whole: number) {
@@ -306,45 +300,6 @@ function MetricCell({
       </div>
       <div className="mt-2 text-sm leading-5 text-zinc-600">{note}</div>
     </div>
-  );
-}
-
-function WorkspaceLink({
-  href,
-  title,
-  description,
-  note,
-  icon: Icon,
-}: {
-  href: string;
-  title: string;
-  description: string;
-  note: React.ReactNode;
-  icon: React.ElementType;
-}) {
-  return (
-    <Link
-      href={href}
-      className="group bg-white p-4 transition-colors hover:bg-zinc-50"
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="space-y-3">
-          <div className="inline-flex h-9 w-9 items-center justify-center border border-zinc-300 bg-white text-zinc-900">
-            <Icon className="h-4 w-4" />
-          </div>
-          <div>
-            <div className="text-sm font-semibold text-zinc-950">{title}</div>
-            <div className="mt-1 text-sm leading-5 text-zinc-600">
-              {description}
-            </div>
-          </div>
-        </div>
-        <ChevronRight className="mt-1 h-4 w-4 text-zinc-400 transition-transform group-hover:translate-x-0.5" />
-      </div>
-      <div className="mt-4 border-t border-zinc-200 pt-3 text-xs uppercase tracking-[0.16em] text-zinc-500">
-        {note}
-      </div>
-    </Link>
   );
 }
 
@@ -972,63 +927,6 @@ export default function TeacherCoursesWorkspace({
     });
   }, [readinessMap, rows]);
 
-  const courseLinks = [
-    {
-      href: "/dashboard/teacher/courses",
-      title: "Рабочая зона",
-      description: "Главная панель со сводкой, фокусом и всем каталогом курсов.",
-      note: loading ? (
-        <TeacherCoursePanelCountSkeleton className="h-3 w-32 bg-zinc-200" />
-      ) : (
-        `${formatCount(rows.length)} курсов в кабинете`
-      ),
-      icon: LayoutGrid,
-    },
-    {
-      href: "/dashboard/teacher/courses/pipeline",
-      title: "Поток курсов",
-      description: "Контроль очереди: черновики, модерация, доработки и архив.",
-      note: loading ? (
-        <TeacherCoursePanelCountSkeleton className="h-3 w-32 bg-zinc-200" />
-      ) : (
-        `${formatCount(
-          statusCounts.draft + statusCounts.submitted + statusCounts.rejected,
-        )} активных статусов`
-      ),
-      icon: Clipboard,
-    },
-    {
-      href: "/dashboard/teacher/courses/insights",
-      title: "Аналитика",
-      description:
-        "Распределение по языкам, категориям, наполнению и общему качеству.",
-      note: loading ? (
-        <TeacherCoursePanelCountSkeleton className="h-3 w-32 bg-zinc-200" />
-      ) : (
-        `${averageReadiness}% средняя готовность`
-      ),
-      icon: BookOpen,
-    },
-    {
-      href: "/dashboard/teacher/courses/readiness",
-      title: "Чек-лист",
-      description: "Список пробелов по каждой карточке перед отправкой и публикацией.",
-      note: loading ? (
-        <TeacherCoursePanelCountSkeleton className="h-3 w-32 bg-zinc-200" />
-      ) : (
-        `${formatCount(attentionRows.length)} требуют внимания`
-      ),
-      icon: Check,
-    },
-    {
-      href: "/dashboard/teacher/courses/create",
-      title: "Создать курс",
-      description: "Открыть новый черновик и собрать курс с нуля.",
-      note: "Новый курс за один проход",
-      icon: Send,
-    },
-  ];
-
   const renderToolbar = (
     <div className="grid gap-px border-b border-zinc-300 bg-zinc-300 lg:grid-cols-[minmax(0,1fr)_220px_220px]">
       <div className="relative bg-white p-3">
@@ -1082,12 +980,6 @@ export default function TeacherCoursesWorkspace({
 
   const renderWorkspaceView = (
     <div className="space-y-6">
-      <div className="grid gap-px border border-zinc-300 bg-zinc-300 lg:grid-cols-5">
-        {courseLinks.map((link) => (
-          <WorkspaceLink key={link.href} {...link} />
-        ))}
-      </div>
-
       <Panel
         title="Фокус на ближайшие действия"
         subtitle="Показываем курсы, где прямо сейчас есть смысл что-то сделать: доработать, отправить или проверить публикацию."
@@ -1519,13 +1411,10 @@ export default function TeacherCoursesWorkspace({
 
   return (
     <>
-      <div className="space-y-6 bg-white p-6 text-zinc-900">
+      <div className="teacher-workspace space-y-5 bg-[#f7f8fa] p-4 text-zinc-900 sm:p-6">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div className="space-y-2">
-            <div className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">
-              Teacher Courses
-            </div>
-            <h1 className="text-3xl font-semibold tracking-tight text-zinc-950">
+            <h1 className="text-[28px] font-semibold tracking-tight text-zinc-950">
               {meta.title}
             </h1>
             <p className="max-w-4xl text-sm leading-6 text-zinc-600">
@@ -1555,6 +1444,8 @@ export default function TeacherCoursesWorkspace({
           </div>
         </div>
 
+        <TeacherSectionTabs section="courses" />
+
         {error ? (
           <div className="border border-zinc-900 bg-zinc-100 px-4 py-3 text-sm text-zinc-900">
             {error}
@@ -1564,26 +1455,16 @@ export default function TeacherCoursesWorkspace({
         {loading ? (
           <TeacherCourseMetricGridSkeleton />
         ) : (
-          <div className="grid gap-px border border-zinc-300 bg-zinc-300 sm:grid-cols-2 xl:grid-cols-5">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             <MetricCell
               label="Всего курсов"
               value={formatCount(rows.length)}
               note="Весь каталог преподавателя в одном месте."
             />
             <MetricCell
-              label="Готовы к отправке"
-              value={formatCount(readyToSubmitCount)}
-              note="Карточки без базовых пробелов, которые можно продвигать дальше."
-            />
-            <MetricCell
               label="На модерации"
               value={formatCount(statusCounts.submitted)}
               note="Курсы, которые сейчас ждут решения администратора."
-            />
-            <MetricCell
-              label="Public / Private"
-              value={`${formatCount(publicCount)} / ${formatCount(privateCount)}`}
-              note="Баланс видимых и внутренних курсов."
             />
             <MetricCell
               label="Средняя готовность"

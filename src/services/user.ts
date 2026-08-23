@@ -4,6 +4,39 @@ import { User } from "@/types/user";
 
 const userCache = new Map<string, User>();
 const userRequestCache = new Map<string, Promise<User>>();
+const userRequestQueue: Array<() => void> = [];
+
+const MAX_CONCURRENT_USER_REQUESTS = 8;
+
+let activeUserRequests = 0;
+
+function drainUserRequestQueue() {
+  while (
+    activeUserRequests < MAX_CONCURRENT_USER_REQUESTS &&
+    userRequestQueue.length > 0
+  ) {
+    const runNext = userRequestQueue.shift();
+    if (!runNext) return;
+
+    activeUserRequests += 1;
+    runNext();
+  }
+}
+
+function scheduleUserRequest<T>(request: () => Promise<T>) {
+  return new Promise<T>((resolve, reject) => {
+    userRequestQueue.push(() => {
+      void request()
+        .then(resolve, reject)
+        .finally(() => {
+          activeUserRequests -= 1;
+          drainUserRequestQueue();
+        });
+    });
+
+    drainUserRequestQueue();
+  });
+}
 
 export function getCachedUserById(id: string | null | undefined) {
   const normalizedId = id?.trim() ?? "";
@@ -32,7 +65,7 @@ export async function fetchUserById(id: string): Promise<User> {
     return pendingRequest;
   }
 
-  const request = (async () => {
+  const request = scheduleUserRequest(async () => {
     const r = await http(`/api/users/${normalizedId}`, { method: "GET" });
     if (!r.ok) {
       const data = await r.json().catch(() => ({}));
@@ -49,7 +82,7 @@ export async function fetchUserById(id: string): Promise<User> {
     const user = data.user as User;
     userCache.set(normalizedId, user);
     return user;
-  })();
+  });
 
   userRequestCache.set(normalizedId, request);
 

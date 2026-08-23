@@ -645,6 +645,10 @@ export function AtlasChat() {
     const abortController = new AbortController();
     const chatId = activeChat.id;
     const memorySnapshot = activeChat.memory;
+    const historySnapshot = activeChat.messages
+      .filter((message) => message.content.trim())
+      .slice(-10)
+      .map(({ content, role }) => ({ content, role }));
     const contextSnapshot = {
       ...activeChat.context,
       ...(user?.role ? { role: user.role } : {}),
@@ -688,6 +692,7 @@ export function AtlasChat() {
         },
         body: JSON.stringify({
           message: text,
+          history: historySnapshot,
           memory: memorySnapshot,
           context: contextSnapshot,
         }),
@@ -738,8 +743,8 @@ export function AtlasChat() {
         function applyStreamReply(reply: BotReply) {
           hasFinalReply = true;
 
-          if (reply.engine === "atlas") {
-            console.log("Atlas отправил ответ");
+          if (reply.engine === "openrouter") {
+            console.log("Atlas получил ответ через OpenRouter");
           }
 
           setChats((current) =>
@@ -847,8 +852,8 @@ export function AtlasChat() {
       }
 
       const reply = (await response.json()) as BotReply;
-      if (reply.engine === "atlas") {
-        console.log("Atlas отправил ответ");
+      if (reply.engine === "openrouter") {
+        console.log("Atlas получил ответ через OpenRouter");
       }
 
       const assistantMessage = {

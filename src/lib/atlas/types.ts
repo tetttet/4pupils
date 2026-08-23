@@ -82,9 +82,14 @@ export type ChatAction = {
   href?: string;
 };
 
+export type AtlasHistoryMessage = {
+  content: string;
+  role: "assistant" | "user";
+};
+
 export type BotReply = {
   answer: string;
-  engine: "local" | "atlas" | "atlas-fallback";
+  engine: "local" | "openrouter" | "openrouter-fallback";
   intent: AtlasIntent;
   confidence: number;
   actions: ChatAction[];
@@ -100,6 +105,7 @@ export type BotReply = {
 
 export type ChatRequest = {
   message: string;
+  history?: AtlasHistoryMessage[];
   memory?: AtlasMemory;
   context?: UserContext;
 };

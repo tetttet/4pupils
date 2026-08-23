@@ -544,4 +544,51 @@ html[data-atlas-theme="dark"] .chat-shell {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
   }
+
+  .teacher-workspace *,
+  .teacher-workspace *::before,
+  .teacher-workspace *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Calm, task-first teacher workspace. Keeps dense data tools readable while
+   giving primary surfaces the softer hierarchy used by the new dashboard. */
+.teacher-workspace {
+  --teacher-border: #e2e8f0;
+  --teacher-muted: #f8fafc;
+}
+
+.teacher-workspace section {
+  border-color: var(--teacher-border);
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.025);
+}
+
+.teacher-workspace .border-zinc-300 {
+  border-color: var(--teacher-border);
+}
+
+.teacher-workspace .bg-zinc-300 {
+  background-color: #edf1f5;
+}
+
+.teacher-workspace .bg-zinc-950,
+.teacher-workspace .bg-zinc-900 {
+  background-color: #0f3b57;
+}
+
+.teacher-workspace .rounded-none {
+  border-radius: 0.625rem !important;
+}
+
+.teacher-workspace button,
+.teacher-workspace a,
+.teacher-workspace input,
+.teacher-workspace textarea {
+  transition-duration: 180ms;
 }

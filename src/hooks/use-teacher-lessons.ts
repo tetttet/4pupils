@@ -3,6 +3,7 @@
 import * as React from "react";
 
 import { apiFetch } from "@/lib/api";
+import { invalidateClientFetchCache } from "@/lib/client-fetch";
 import { getUserFacingErrorMessage } from "@/lib/error-messages";
 import { readApiData } from "@/lib/api-response";
 import { EnrollmentsAPI } from "@/services/enrollment";
@@ -15,9 +16,11 @@ export function useTeacherLessons() {
   const [loading, setLoading] = React.useState(true);
   const [refreshing, setRefreshing] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const requestIdRef = React.useRef(0);
 
   const load = React.useCallback(
     async (options: { background?: boolean } = {}) => {
+      const requestId = ++requestIdRef.current;
       const isBackground = !!options.background;
 
       if (isBackground) {
@@ -28,6 +31,8 @@ export function useTeacherLessons() {
 
       if (!isBackground) {
         setError(null);
+      } else {
+        invalidateClientFetchCache();
       }
 
       try {
@@ -42,9 +47,21 @@ export function useTeacherLessons() {
           }),
         ]);
 
-        setCourses(nextCourses);
-        setEnrollments(nextEnrollments);
+        if (requestId !== requestIdRef.current) return;
+
+        const updateData = () => {
+          setCourses(nextCourses);
+          setEnrollments(nextEnrollments);
+        };
+
+        if (isBackground) {
+          React.startTransition(updateData);
+        } else {
+          updateData();
+        }
       } catch (loadError) {
+        if (requestId !== requestIdRef.current) return;
+
         setError(
           getUserFacingErrorMessage(
             loadError,
@@ -52,8 +69,10 @@ export function useTeacherLessons() {
           ),
         );
       } finally {
-        setLoading(false);
-        setRefreshing(false);
+        if (requestId === requestIdRef.current) {
+          setLoading(false);
+          setRefreshing(false);
+        }
       }
     },
     [],
@@ -61,6 +80,10 @@ export function useTeacherLessons() {
 
   React.useEffect(() => {
     void load();
+
+    return () => {
+      requestIdRef.current += 1;
+    };
   }, [load]);
 
   return {

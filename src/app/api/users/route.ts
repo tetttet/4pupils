@@ -17,6 +17,7 @@ export async function GET(req: Request) {
       "x-forwarded-for": req.headers.get("x-forwarded-for") || "",
     },
     cache: "no-store",
+    signal: req.signal,
   });
 
   // users endpoints set cookies обычно не должны, но пусть будет совместимо

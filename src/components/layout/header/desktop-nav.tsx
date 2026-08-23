@@ -1,7 +1,7 @@
 "use client";
 
 import { isActivePath } from "@/components/layout/header/header-nav-utils";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowUpRight, ChevronDown, ChevronUp } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
@@ -9,13 +9,13 @@ import { authLink, headerLinks } from "@/components/layout/header/nav-links";
 import { cn } from "@/lib/utils";
 import BaseButton from "@/components/ui/base-button";
 
-const navItemClassName =
-  "inline-flex h-10 items-center rounded-lg px-2 text-[16px] font-medium text-slate-700 transition-colors hover:text-slate-950";
-
-export function DesktopNav() {
+export function DesktopNav({ home = false }: { home?: boolean }) {
   const pathname = usePathname();
   const [openGroup, setOpenGroup] = React.useState<string | null>(null);
   const containerRef = React.useRef<HTMLDivElement>(null);
+  const navItemClassName = home
+    ? "inline-flex h-10 items-center rounded-full px-2 text-[14px] font-medium tracking-[-0.01em] text-[#3F4568] transition duration-200 hover:bg-[#F3F5FF] hover:text-[#202858]"
+    : "inline-flex h-10 items-center rounded-lg px-2 text-[16px] font-medium text-slate-700 transition-colors hover:text-slate-950";
 
   React.useEffect(() => {
     setOpenGroup(null);
@@ -44,7 +44,13 @@ export function DesktopNav() {
   }, []);
 
   return (
-    <div className="hidden items-center gap-4 md:flex" ref={containerRef}>
+    <div
+      className={cn(
+        "hidden items-center",
+        home ? "gap-1.5 xl:flex" : "gap-4 md:flex",
+      )}
+      ref={containerRef}
+    >
       {headerLinks.map((item) => {
         const hasSubmenu = Boolean(item.submenu?.length);
         const hasActiveChild = item.submenu?.some((subItem) =>
@@ -105,7 +111,12 @@ export function DesktopNav() {
 
                 {isOpen ? (
                   <div
-                    className="absolute left-1/2 top-[calc(100%+14px)] z-20 w-40 -translate-x-1/2 rounded-2xl border border-slate-200 bg-white p-3 shadow-[0_24px_60px_rgba(15,23,42,0.14)]"
+                    className={cn(
+                      "absolute left-1/2 top-[calc(100%+14px)] z-20 w-40 -translate-x-1/2 border bg-white p-3 shadow-[0_24px_60px_rgba(15,23,42,0.14)]",
+                      home
+                        ? "rounded-[22px] border-[#D7DDF8]"
+                        : "rounded-2xl border-slate-200",
+                    )}
                     role="menu"
                   >
                     <div className="flex flex-col gap-1">
@@ -140,7 +151,19 @@ export function DesktopNav() {
           </div>
         );
       })}
-      <BaseButton href={authLink.href} label={authLink.label} />
+      {home ? (
+        <Link
+          className="group ml-2 inline-flex h-12 items-center gap-3 rounded-full bg-[#233067] pl-5 pr-2 text-[14px] font-medium text-white shadow-[0_10px_24px_rgba(35,48,103,0.18)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#19224c] hover:shadow-[0_14px_30px_rgba(35,48,103,0.24)]"
+          href={authLink.href}
+        >
+          {authLink.label}
+          <span className="grid size-8 place-items-center rounded-full bg-white text-[#233067] transition-transform duration-300 group-hover:rotate-6">
+            <ArrowUpRight aria-hidden="true" className="size-4" />
+          </span>
+        </Link>
+      ) : (
+        <BaseButton href={authLink.href} label={authLink.label} />
+      )}
     </div>
   );
 }

@@ -6,7 +6,6 @@ import {
   ArrowUpRight,
   BarChart3,
   BookOpen,
-  ChevronRight,
   LayoutGrid,
   LoaderCircle,
   RefreshCw,
@@ -23,7 +22,6 @@ import {
 import StudentDetailsDialog, {
   type TeacherStudentContact,
 } from "@/components/dashboard/teacher/lessons/student-details-dialog";
-import { AppBreadcrumb } from "@/components/ui/app-breadcrumb";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,6 +44,7 @@ import { useTeacherLessons } from "@/hooks/use-teacher-lessons";
 import { getUserFacingErrorMessage } from "@/lib/error-messages";
 import { normalizeText } from "@/lib/func";
 import { cn } from "@/lib/utils";
+import { TeacherSectionTabs } from "@/components/dashboard/teacher/teacher-section-tabs";
 import { fetchUserById } from "@/services/user";
 import type { Course } from "@/types/course";
 import type {
@@ -57,6 +56,12 @@ import type { User } from "@/types/user";
 
 type TeacherLessonsWorkspaceMode = "workspace" | "progress" | "analytics";
 type EnrollmentFilter = EnrollmentStatus | "all";
+
+type StudentProfileState = {
+  user: User | null;
+  loading: boolean;
+  error: string | null;
+};
 
 type CourseRow = {
   course: Course;
@@ -161,30 +166,42 @@ const MODE_META: Record<
   }
 > = {
   workspace: {
-    badge: "Рабочая зона уроков",
-    title: "Курсы, ученики и контакты преподавателя в одном месте",
-    subtitle:
-      "Основной контур по урокам: список курсов, текущие ученики, контактная карточка и быстрый переход в сам курс.",
+    badge: "Студенты",
+    title: "Студенты",
+    subtitle: "Список учеников, их курсы, контакты и текущий статус обучения.",
     icon: LayoutGrid,
   },
   progress: {
     badge: "Прогресс обучения",
-    title: "Отслеживание прогресса, активности и группы внимания",
-    subtitle:
-      "Здесь видно, кто учится активно, кто завершил курс, где прогресс замедляется и кого преподавателю стоит посмотреть в первую очередь.",
+    title: "Прогресс студентов",
+    subtitle: "Посмотрите, кто учится активно, а кому нужна помощь.",
     icon: TrendingUp,
   },
   analytics: {
     badge: "Аналитика уроков",
-    title: "Четкая аналитика по урокам, прогрессу и нагрузке на курсы",
-    subtitle:
-      "Таблицы, проценты, гистограммы и bar charts показывают полную картину по enrollments, прогрессу и активности учеников.",
+    title: "Аналитика обучения",
+    subtitle: "Общая картина по прогрессу, активности и нагрузке на курсы.",
     icon: BarChart3,
   },
 };
 
+const countFormatter = new Intl.NumberFormat("ru-RU");
+const integerFormatter = new Intl.NumberFormat("ru-RU", {
+  maximumFractionDigits: 0,
+});
+const decimalFormatter = new Intl.NumberFormat("ru-RU", {
+  maximumFractionDigits: 1,
+});
+const dateTimeFormatter = new Intl.DateTimeFormat("ru-RU", {
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
 function formatCount(value: number) {
-  return new Intl.NumberFormat("ru-RU").format(value);
+  return countFormatter.format(value);
 }
 
 function formatDateTime(value?: string | null) {
@@ -193,13 +210,7 @@ function formatDateTime(value?: string | null) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "—";
 
-  return new Intl.DateTimeFormat("ru-RU", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date);
+  return dateTimeFormatter.format(date);
 }
 
 function formatProgress(value: number | string) {
@@ -223,9 +234,9 @@ function formatAverage(value: number) {
   const normalized =
     value >= 10 ? Math.round(value) : Math.round(value * 10) / 10;
 
-  return new Intl.NumberFormat("ru-RU", {
-    maximumFractionDigits: normalized % 1 === 0 ? 0 : 1,
-  }).format(normalized);
+  return (normalized % 1 === 0 ? integerFormatter : decimalFormatter).format(
+    normalized,
+  );
 }
 
 function formatShare(part: number, whole: number) {
@@ -353,57 +364,6 @@ function MetricCard({
       </div>
       <div className="mt-2 text-sm leading-5 text-zinc-600">{note}</div>
     </div>
-  );
-}
-
-function SectionLink({
-  href,
-  title,
-  description,
-  note,
-  icon: Icon,
-  active,
-}: {
-  href: string;
-  title: string;
-  description: string;
-  note: string;
-  icon: React.ElementType;
-  active: boolean;
-}) {
-  return (
-    <Link
-      href={href}
-      className={cn(
-        "group bg-white p-4 transition-colors hover:bg-zinc-50",
-        active && "bg-zinc-50",
-      )}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="space-y-3">
-          <div className="inline-flex h-9 w-9 items-center justify-center border border-zinc-300 bg-white text-zinc-900">
-            <Icon className="h-4 w-4" />
-          </div>
-          <div>
-            <div className="text-sm font-semibold text-zinc-950">{title}</div>
-            <div className="mt-1 text-sm leading-5 text-zinc-600">
-              {description}
-            </div>
-          </div>
-        </div>
-
-        <ChevronRight
-          className={cn(
-            "mt-1 h-4 w-4 text-zinc-400 transition-transform group-hover:translate-x-0.5",
-            active && "text-zinc-900",
-          )}
-        />
-      </div>
-
-      <div className="mt-4 border-t border-zinc-200 pt-3 text-xs uppercase tracking-[0.16em] text-zinc-500">
-        {note}
-      </div>
-    </Link>
   );
 }
 
@@ -629,15 +589,40 @@ export default function TeacherLessonsWorkspace({
     string | null
   >(null);
   const [studentProfiles, setStudentProfiles] = React.useState<
-    Record<
-      string,
-      {
-        user: User | null;
-        loading: boolean;
-        error: string | null;
-      }
-    >
+    Record<string, StudentProfileState>
   >({});
+  const pendingProfileUpdatesRef = React.useRef<
+    Record<string, StudentProfileState>
+  >({});
+  const profileUpdateFrameRef = React.useRef<number | null>(null);
+
+  const queueProfileUpdate = React.useCallback(
+    (userId: string, profileState: StudentProfileState) => {
+      pendingProfileUpdatesRef.current[userId] = profileState;
+
+      if (profileUpdateFrameRef.current !== null) return;
+
+      profileUpdateFrameRef.current = window.requestAnimationFrame(() => {
+        profileUpdateFrameRef.current = null;
+        const updates = pendingProfileUpdatesRef.current;
+        pendingProfileUpdatesRef.current = {};
+
+        setStudentProfiles((current) => ({ ...current, ...updates }));
+      });
+    },
+    [],
+  );
+
+  React.useEffect(() => {
+    return () => {
+      if (profileUpdateFrameRef.current !== null) {
+        window.cancelAnimationFrame(profileUpdateFrameRef.current);
+        profileUpdateFrameRef.current = null;
+      }
+
+      pendingProfileUpdatesRef.current = {};
+    };
+  }, []);
 
   const deferredQuery = React.useDeferredValue(query);
   const normalizedQuery = normalizeText(deferredQuery);
@@ -813,36 +798,30 @@ export default function TeacherLessonsWorkspace({
         .then((user) => {
           if (!active) return;
 
-          setStudentProfiles((current) => ({
-            ...current,
-            [userId]: {
-              user,
-              loading: false,
-              error: null,
-            },
-          }));
+          queueProfileUpdate(userId, {
+            user,
+            loading: false,
+            error: null,
+          });
         })
         .catch((loadError) => {
           if (!active) return;
 
-          setStudentProfiles((current) => ({
-            ...current,
-            [userId]: {
-              user: null,
-              loading: false,
-              error: getUserFacingErrorMessage(
-                loadError,
-                "Не удалось загрузить полный профиль ученика",
-              ),
-            },
-          }));
+          queueProfileUpdate(userId, {
+            user: null,
+            loading: false,
+            error: getUserFacingErrorMessage(
+              loadError,
+              "Не удалось загрузить полный профиль ученика",
+            ),
+          });
         });
     });
 
     return () => {
       active = false;
     };
-  }, [selectedCourseRow]);
+  }, [queueProfileUpdate, selectedCourseRow]);
 
   React.useEffect(() => {
     const userId = selectedEnrollment?.user_id;
@@ -869,35 +848,29 @@ export default function TeacherLessonsWorkspace({
       .then((user) => {
         if (!active) return;
 
-        setStudentProfiles((current) => ({
-          ...current,
-          [userId]: {
-            user,
-            loading: false,
-            error: null,
-          },
-        }));
+        queueProfileUpdate(userId, {
+          user,
+          loading: false,
+          error: null,
+        });
       })
       .catch((loadError) => {
         if (!active) return;
 
-        setStudentProfiles((current) => ({
-          ...current,
-          [userId]: {
-            user: null,
-              loading: false,
-              error: getUserFacingErrorMessage(
-                loadError,
-                "Не удалось загрузить полный профиль ученика",
-              ),
-          },
-        }));
+        queueProfileUpdate(userId, {
+          user: null,
+          loading: false,
+          error: getUserFacingErrorMessage(
+            loadError,
+            "Не удалось загрузить полный профиль ученика",
+          ),
+        });
       });
 
     return () => {
       active = false;
     };
-  }, [selectedEnrollment, studentProfiles]);
+  }, [queueProfileUpdate, selectedEnrollment, studentProfiles]);
 
   const selectedStudentUserId = selectedEnrollment?.user_id ?? null;
   const selectedProfileState = selectedStudentUserId
@@ -1177,44 +1150,6 @@ export default function TeacherLessonsWorkspace({
     secondary: `${formatCount(row.totalStudents)} учеников, completion ${row.completionRate}%`,
   }));
 
-  const lessonLinks = [
-    {
-      href: "/dashboard/teacher/lessons",
-      title: "Рабочая зона",
-      description:
-        "Курсы, список учеников, контакты и быстрый переход в курс преподавателя.",
-      note: initialLoading
-        ? "Собираем данные"
-        : `${formatCount(totalCoursesWithStudents)} курсов с учениками`,
-      icon: LayoutGrid,
-    },
-    {
-      href: "/dashboard/teacher/lessons/progress",
-      title: "Прогресс",
-      description:
-        "Группа внимания, полный список enrollments и контроль текущего движения учеников.",
-      note: initialLoading
-        ? "Собираем данные"
-        : `${formatCount(staleActiveCount)} активных требуют внимания`,
-      icon: TrendingUp,
-    },
-    {
-      href: "/dashboard/teacher/lessons/analytics",
-      title: "Аналитика",
-      description:
-        "Нагрузка по курсам, completion rate, источники enrollments и histogram по прогрессу.",
-      note: initialLoading ? "Собираем данные" : `${completionRate}% completion rate`,
-      icon: BarChart3,
-    },
-  ];
-
-  const currentModeHref =
-    mode === "workspace"
-      ? "/dashboard/teacher/lessons"
-      : mode === "progress"
-        ? "/dashboard/teacher/lessons/progress"
-        : "/dashboard/teacher/lessons/analytics";
-
   const summaryMetrics = React.useMemo(() => {
     if (mode === "workspace") {
       return [
@@ -1304,24 +1239,6 @@ export default function TeacherLessonsWorkspace({
     uniqueStudentsCount,
   ]);
 
-  const breadcrumbItems =
-    mode === "workspace"
-      ? [
-          { label: "Главная", href: "/dashboard" },
-          { label: "Уроки", href: "/dashboard/teacher/lessons" },
-        ]
-      : mode === "progress"
-        ? [
-            { label: "Главная", href: "/dashboard" },
-            { label: "Уроки", href: "/dashboard/teacher/lessons" },
-            { label: "Прогресс" },
-          ]
-        : [
-            { label: "Главная", href: "/dashboard" },
-            { label: "Уроки", href: "/dashboard/teacher/lessons" },
-            { label: "Аналитика" },
-          ];
-
   const handleOpenStudent = React.useCallback((enrollment: Enrollment) => {
     setSelectedEnrollmentId(enrollment.enrollment_id);
   }, []);
@@ -1375,16 +1292,6 @@ export default function TeacherLessonsWorkspace({
 
   const renderWorkspaceView = (
     <div className="space-y-6">
-      <div className="grid gap-px border border-zinc-300 bg-zinc-300 xl:grid-cols-3">
-        {lessonLinks.map((link) => (
-          <SectionLink
-            key={link.href}
-            {...link}
-            active={currentModeHref === link.href}
-          />
-        ))}
-      </div>
-
       {!initialLoading && courses.length === 0 ? (
         <div className="border border-zinc-300 bg-white p-8 text-center">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-zinc-300 bg-zinc-50 text-zinc-600">
@@ -1751,16 +1658,6 @@ export default function TeacherLessonsWorkspace({
 
   const renderProgressView = (
     <div className="space-y-6">
-      <div className="grid gap-px border border-zinc-300 bg-zinc-300 xl:grid-cols-3">
-        {lessonLinks.map((link) => (
-          <SectionLink
-            key={link.href}
-            {...link}
-            active={currentModeHref === link.href}
-          />
-        ))}
-      </div>
-
       <div className="grid gap-px border border-zinc-300 bg-zinc-300 xl:grid-cols-2">
         <Panel
           title="Группа внимания"
@@ -2001,16 +1898,6 @@ export default function TeacherLessonsWorkspace({
 
   const renderAnalyticsView = (
     <div className="space-y-6">
-      <div className="grid gap-px border border-zinc-300 bg-zinc-300 xl:grid-cols-3">
-        {lessonLinks.map((link) => (
-          <SectionLink
-            key={link.href}
-            {...link}
-            active={currentModeHref === link.href}
-          />
-        ))}
-      </div>
-
       <div className="grid gap-px border border-zinc-300 bg-zinc-300 xl:grid-cols-2">
         <Panel
           title="Нагрузка по курсам"
@@ -2312,9 +2199,8 @@ export default function TeacherLessonsWorkspace({
 
   return (
     <div className="w-full bg-background">
-      <AppBreadcrumb items={breadcrumbItems} />
-
-      <div className="space-y-6 bg-[#f8fafd] px-4 py-6 md:px-6">
+      <div className="teacher-workspace space-y-5 bg-[#f7f8fa] px-4 py-6 md:px-6">
+        <TeacherSectionTabs section="lessons" />
         <section className="border border-zinc-300 bg-white p-5">
           <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
             <div className="space-y-5">
@@ -2324,7 +2210,7 @@ export default function TeacherLessonsWorkspace({
               </div>
 
               <div>
-                <h1 className="text-3xl font-semibold tracking-tight text-zinc-950">
+                <h1 className="text-[28px] font-semibold tracking-tight text-zinc-950">
                   {meta.title}
                 </h1>
                 <p className="mt-3 max-w-3xl text-sm leading-7 text-zinc-600">
@@ -2357,7 +2243,7 @@ export default function TeacherLessonsWorkspace({
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2">
-              {summaryMetrics.map((metric) => (
+              {summaryMetrics.slice(0, 3).map((metric) => (
                 <MetricCard
                   key={metric.label}
                   label={metric.label}

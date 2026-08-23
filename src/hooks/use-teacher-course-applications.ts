@@ -3,6 +3,7 @@
 import * as React from "react";
 
 import { apiFetch } from "@/lib/api";
+import { invalidateClientFetchCache } from "@/lib/client-fetch";
 import { getUserFacingErrorMessage } from "@/lib/error-messages";
 import { readApiData } from "@/lib/api-response";
 import { CourseApplicationsAPI } from "@/services/course-application";
@@ -28,6 +29,7 @@ export function useTeacherCourseApplications() {
   const [pendingAction, setPendingAction] =
     React.useState<ApplicationWorkflowAction | null>(null);
   const [actionError, setActionError] = React.useState<string | null>(null);
+  const requestIdRef = React.useRef(0);
 
   const clearActionError = React.useCallback(() => {
     setActionError(null);
@@ -35,6 +37,7 @@ export function useTeacherCourseApplications() {
 
   const load = React.useCallback(
     async (options: { background?: boolean } = {}) => {
+      const requestId = ++requestIdRef.current;
       const isBackground = !!options.background;
 
       if (isBackground) {
@@ -45,6 +48,8 @@ export function useTeacherCourseApplications() {
 
       if (!isBackground) {
         setError(null);
+      } else {
+        invalidateClientFetchCache();
       }
 
       try {
@@ -59,9 +64,21 @@ export function useTeacherCourseApplications() {
           }),
         ]);
 
-        setCourses(nextCourses);
-        setApplications(nextApplications);
+        if (requestId !== requestIdRef.current) return;
+
+        const updateData = () => {
+          setCourses(nextCourses);
+          setApplications(nextApplications);
+        };
+
+        if (isBackground) {
+          React.startTransition(updateData);
+        } else {
+          updateData();
+        }
       } catch (loadError) {
+        if (requestId !== requestIdRef.current) return;
+
         setError(
           getUserFacingErrorMessage(
             loadError,
@@ -69,8 +86,10 @@ export function useTeacherCourseApplications() {
           ),
         );
       } finally {
-        setLoading(false);
-        setRefreshing(false);
+        if (requestId === requestIdRef.current) {
+          setLoading(false);
+          setRefreshing(false);
+        }
       }
     },
     [],
@@ -78,6 +97,10 @@ export function useTeacherCourseApplications() {
 
   React.useEffect(() => {
     void load();
+
+    return () => {
+      requestIdRef.current += 1;
+    };
   }, [load]);
 
   const applyApplicationAction = React.useCallback(

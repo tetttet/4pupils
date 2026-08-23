@@ -403,7 +403,7 @@ export default function TeacherInboxShell({
   const canToggleStar = folder === "inbox" || mode === "favorites";
 
   return (
-    <div className="w-full bg-background">
+    <div className="teacher-workspace w-full bg-background">
       <AppBreadcrumb
         items={[
           { label: "Главная", href: "/dashboard" },

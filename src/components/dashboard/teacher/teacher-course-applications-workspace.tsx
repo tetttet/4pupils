@@ -5,7 +5,6 @@ import Link from "next/link";
 import {
   BarChart3,
   BookOpen,
-  ChevronRight,
   Clipboard,
   LayoutGrid,
   RefreshCw,
@@ -15,6 +14,7 @@ import {
 import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
+import { TeacherSectionTabs } from "@/components/dashboard/teacher/teacher-section-tabs";
 import { getUserFacingErrorMessage } from "@/lib/error-messages";
 import { useTeacherCourseApplications } from "@/hooks/use-teacher-course-applications";
 import type {
@@ -92,6 +92,13 @@ type HorizontalBarChartRow = {
   secondary?: string;
 };
 
+const integerFormatter = new Intl.NumberFormat("ru-RU", {
+  maximumFractionDigits: 0,
+});
+const decimalFormatter = new Intl.NumberFormat("ru-RU", {
+  maximumFractionDigits: 1,
+});
+
 type HistogramRow = {
   label: string;
   value: number;
@@ -167,24 +174,21 @@ const MODE_META: Record<
   }
 > = {
   workspace: {
-    badge: "Рабочая зона заявок",
-    title: "Все входящие заявки преподавателя в одном рабочем контуре",
-    subtitle:
-      "Здесь собраны курсы, очередь заявок, быстрый доступ к sidebar и ближайшие обращения, которые лучше не откладывать.",
+    badge: "Заявки",
+    title: "Заявки на обучение",
+    subtitle: "Просматривайте обращения и принимайте решения без лишних шагов.",
     icon: LayoutGrid,
   },
   pipeline: {
     badge: "Поток заявок",
-    title: "Контроль статусов, очереди и возраста открытых обращений",
-    subtitle:
-      "Смотри, где заявок становится много, какие статусы проседают и какие обращения начинают задерживаться в обработке.",
+    title: "Заявки по статусам",
+    subtitle: "Быстро находите обращения, которые задержались в обработке.",
     icon: Clipboard,
   },
   analytics: {
     badge: "Аналитика заявок",
-    title: "Четкая аналитика по спросу, конверсии и скорости решений",
-    subtitle:
-      "Таблицы, проценты, histogram, bar charts и операционные срезы помогают увидеть всю картину по заявкам без ручного подсчета.",
+    title: "Аналитика заявок",
+    subtitle: "Спрос, конверсия и скорость решений в понятном виде.",
     icon: BarChart3,
   },
 };
@@ -198,9 +202,9 @@ function formatAverage(value: number) {
   const normalized =
     value >= 10 ? Math.round(value) : Math.round(value * 10) / 10;
 
-  return new Intl.NumberFormat("ru-RU", {
-    maximumFractionDigits: normalized % 1 === 0 ? 0 : 1,
-  }).format(normalized);
+  return (normalized % 1 === 0 ? integerFormatter : decimalFormatter).format(
+    normalized,
+  );
 }
 
 function daysSince(value?: string | null) {
@@ -236,9 +240,7 @@ function formatDuration(value?: number | null) {
 
   const days = value / 24;
 
-  return `${new Intl.NumberFormat("ru-RU", {
-    maximumFractionDigits: days < 10 ? 1 : 0,
-  }).format(days)} дн.`;
+  return `${(days < 10 ? decimalFormatter : integerFormatter).format(days)} дн.`;
 }
 
 function formatAgeLabel(value?: string | null) {
@@ -267,58 +269,6 @@ function MonoPill({
     >
       {children}
     </span>
-  );
-}
-
-function SectionLink({
-  href,
-  title,
-  description,
-  note,
-  icon: Icon,
-  active,
-}: {
-  href: string;
-  title: string;
-  description: string;
-  note: string;
-  icon: React.ElementType;
-  active: boolean;
-}) {
-  return (
-    <Link
-      href={href}
-      className={cn(
-        "group bg-white p-4 transition-colors hover:bg-zinc-50",
-        active && "bg-zinc-50",
-      )}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="space-y-3">
-          <div className="inline-flex h-9 w-9 items-center justify-center border border-zinc-300 bg-white text-zinc-900">
-            <Icon className="h-4 w-4" />
-          </div>
-
-          <div>
-            <div className="text-sm font-semibold text-zinc-950">{title}</div>
-            <div className="mt-1 text-sm leading-5 text-zinc-600">
-              {description}
-            </div>
-          </div>
-        </div>
-
-        <ChevronRight
-          className={cn(
-            "mt-1 h-4 w-4 text-zinc-400 transition-transform group-hover:translate-x-0.5",
-            active && "text-zinc-900",
-          )}
-        />
-      </div>
-
-      <div className="mt-4 border-t border-zinc-200 pt-3 text-xs uppercase tracking-[0.16em] text-zinc-500">
-        {note}
-      </div>
-    </Link>
   );
 }
 
@@ -1266,37 +1216,6 @@ export default function TeacherCourseApplicationsWorkspace({
     secondary: `${formatShare(row.count, totalApplications)} всех отправок`,
   }));
 
-  const applicationLinks = [
-    {
-      href: "/dashboard/teacher/applications",
-      title: "Рабочая зона",
-      description:
-        "Курсы, общая таблица заявок и быстрый вход в sidebar по каждому обращению.",
-      note: initialLoading
-        ? "Собираем данные"
-        : `${formatCount(openApplications)} нужно посмотреть`,
-      icon: LayoutGrid,
-    },
-    {
-      href: "/dashboard/teacher/applications/pipeline",
-      title: "Поток заявок",
-      description:
-        "Очередь по статусам, возраст открытых заявок и точки, где копится нагрузка.",
-      note: initialLoading
-        ? "Собираем данные"
-        : `${formatCount(backlogOver7Days)} старше 7 дней`,
-      icon: Clipboard,
-    },
-    {
-      href: "/dashboard/teacher/applications/analytics",
-      title: "Аналитика",
-      description:
-        "Спрос по курсам, approve rate, скорость решения и покрытие материалами.",
-      note: initialLoading ? "Собираем данные" : `Approve rate ${approvalRate}%`,
-      icon: BarChart3,
-    },
-  ];
-
   const summaryMetrics = React.useMemo(() => {
     if (mode === "workspace") {
       return [
@@ -1386,13 +1305,6 @@ export default function TeacherCourseApplicationsWorkspace({
     statusCounts.reviewing,
     totalApplications,
   ]);
-
-  const currentModeHref =
-    mode === "workspace"
-      ? "/dashboard/teacher/applications"
-      : mode === "pipeline"
-        ? "/dashboard/teacher/applications/pipeline"
-        : "/dashboard/teacher/applications/analytics";
 
   const renderToolbar = (
     <div className="grid gap-px border-b border-zinc-300 bg-zinc-300 lg:grid-cols-[minmax(0,1fr)_220px]">
@@ -1505,16 +1417,6 @@ export default function TeacherCourseApplicationsWorkspace({
 
   const renderWorkspaceView = (
     <div className="space-y-6">
-      <div className="grid gap-px border border-zinc-300 bg-zinc-300 xl:grid-cols-3">
-        {applicationLinks.map((link) => (
-          <SectionLink
-            key={link.href}
-            {...link}
-            active={currentModeHref === link.href}
-          />
-        ))}
-      </div>
-
       <Panel
         title="Фокус на ближайшие решения"
         subtitle="Показываем самые старые открытые заявки, чтобы очередь не копилась и приоритетные обращения не терялись."
@@ -2023,7 +1925,8 @@ export default function TeacherCourseApplicationsWorkspace({
   return (
     <>
       <div className="min-h-full">
-        <div className="flex w-full flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
+        <div className="teacher-workspace flex w-full flex-col gap-5 bg-[#f7f8fa] px-4 py-6 sm:px-6 lg:px-8">
+          <TeacherSectionTabs section="applications" />
           <section className="border border-zinc-300 bg-white">
             <div className="grid gap-6 p-5 lg:grid-cols-[1.15fr_0.85fr] lg:p-6">
               <div className="space-y-5">
@@ -2033,7 +1936,7 @@ export default function TeacherCourseApplicationsWorkspace({
                 </div>
 
                 <div>
-                  <h1 className="text-3xl font-semibold tracking-tight text-zinc-950">
+                  <h1 className="text-[28px] font-semibold tracking-tight text-zinc-950">
                     {meta.title}
                   </h1>
                   <p className="mt-3 max-w-3xl text-sm leading-7 text-zinc-600">
@@ -2064,7 +1967,7 @@ export default function TeacherCourseApplicationsWorkspace({
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2">
-                {summaryMetrics.map((metric) => (
+                {summaryMetrics.slice(0, 3).map((metric) => (
                   <StatCard
                     key={metric.label}
                     label={metric.label}

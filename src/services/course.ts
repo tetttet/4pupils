@@ -85,9 +85,12 @@ export function getApprovedCoursesSnapshot() {
   return approvedCoursesCache;
 }
 
-async function loadApprovedCourses() {
+async function loadApprovedCourses(forceFresh: boolean) {
   const requestVersion = approvedCoursesVersion;
-  const res = await http("/api/courses/public", { method: "GET" });
+  const res = await http("/api/courses/public", {
+    method: "GET",
+    cache: forceFresh ? "no-store" : undefined,
+  });
   const data = await readCourseResponse<Course[]>(res);
 
   if (requestVersion === approvedCoursesVersion) {
@@ -115,7 +118,7 @@ export async function fetchApprovedCourses(
     }
   }
 
-  const request = loadApprovedCourses();
+  const request = loadApprovedCourses(forceFresh);
   approvedCoursesRequest = request;
 
   try {

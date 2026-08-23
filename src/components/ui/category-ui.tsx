@@ -1,4 +1,3 @@
-import { indigo_dark, indigo_dark_hover } from "@/constant/color";
 import { cn } from "@/lib/utils";
 
 export function CategoryChip({
@@ -15,10 +14,10 @@ export function CategoryChip({
       type="button"
       onClick={onClick}
       className={cn(
-        "rounded-sm border px-6 py-4 text-[16px] font-normal leading-none transition",
+        "rounded-full border px-5 py-3 text-[13px] font-medium leading-none transition duration-300 sm:text-[14px]",
         active
-          ? `border-[${indigo_dark}] bg-[${indigo_dark}] text-white hover:bg-[${indigo_dark_hover}]`
-          : "border-[#d0d0d0] bg-transparent text-[#363636] hover:bg-[#e9e9e9]",
+          ? "border-[#5D75CB] bg-[#5D75CB] text-white shadow-[0_10px_24px_rgba(93,117,203,0.18)] hover:bg-[#4C63B8]"
+          : "border-[#D7DDF8] bg-[#F7F8FF] text-[#3F4568] hover:border-[#B8C2EF] hover:bg-[#ECEFFF] hover:text-[#202858]",
       )}
     >
       {label}
@@ -37,7 +36,7 @@ export function FilterSection({
 }) {
   return (
     <section className={className}>
-      <h2 className="mb-5 text-[16px] font-semibold leading-none text-[#262626]">
+      <h2 className="mb-5 text-[14px] font-medium leading-none text-[#202858]">
         {title}
       </h2>
       {children}
@@ -55,7 +54,7 @@ export function CheckboxItem({
   onChange: () => void;
 }) {
   return (
-    <label className="flex cursor-pointer items-center gap-2">
+    <label className="group flex cursor-pointer items-center gap-2.5">
       <input
         type="checkbox"
         checked={checked}
@@ -64,20 +63,20 @@ export function CheckboxItem({
       />
       <span
         className={cn(
-          "flex h-6.25 w-6.25 items-center justify-center rounded-sm border transition",
+          "flex size-5.5 items-center justify-center rounded-[7px] border transition",
           checked
-            ? "border-[#2b2b2b] bg-[#242424]"
-            : "border-[#cfcfcf] bg-transparent",
+            ? "border-[#5D75CB] bg-[#5D75CB]"
+            : "border-[#D7DDF8] bg-[#F7F8FF] group-hover:border-[#B8C2EF]",
         )}
       >
         <span
           className={cn(
-            "h-2.5 w-2.5 rounded-sm bg-white transition",
+            "size-2 rounded-[2px] bg-white transition",
             checked ? "opacity-100" : "opacity-0",
           )}
         />
       </span>
-      <span className="text-[16px] font-normal leading-none text-[#2f2f2f] select-none">
+      <span className="select-none text-[14px] leading-none text-[#3F4568] transition group-hover:text-[#202858]">
         {label}
       </span>
     </label>

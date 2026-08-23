@@ -1,14 +1,11 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
-import { Button } from "@/components/ui/button";
-import { ChevronLeftIcon } from "lucide-react";
+import { AuthShell } from "@/components/auth/auth-shell";
 import { useAuth } from "@/context/auth-context";
 import { SignUpWizard } from "@/components/auth/sign-up/sign-up-wizard";
-import { SignUpRightPanel } from "@/components/auth/sign-up/sign-up-right-panel";
 import { buildAuthHref, getSafeNextPath } from "@/lib/auth-redirect";
 
 type Role = "student" | "teacher";
@@ -76,38 +73,23 @@ export default function SignUpPage() {
   }
 
   return (
-    <main className="relative min-h-screen border-t border-gray-300">
-      <Button asChild className="absolute left-5 top-7 z-20" variant="ghost">
-        <Link href="/o">
-          <ChevronLeftIcon className="mr-2 h-4 w-4" />
-          Главная страница
-        </Link>
-      </Button>
-
-      <div className="grid min-h-screen lg:grid-cols-2">
-        <div className="flex w-full items-center justify-center p-4 sm:p-8">
-          <div className="w-full max-w-md">
-            <SignUpWizard
-              loading={loading}
-              submitting={submitting}
-              error={error}
-              onErrorChange={setError}
-              values={{ role, firstName, lastName, email, password }}
-              onChange={{
-                setRole,
-                setFirstName,
-                setLastName,
-                setEmail,
-                setPassword,
-              }}
-              signInHref={buildAuthHref("/auth/sign-in", requestedNext)}
-              onFinalSubmit={onFinalSubmit}
-            />
-          </div>
-        </div>
-
-        <SignUpRightPanel />
-      </div>
-    </main>
+    <AuthShell mode="sign-up">
+      <SignUpWizard
+        loading={loading}
+        submitting={submitting}
+        error={error}
+        onErrorChange={setError}
+        values={{ role, firstName, lastName, email, password }}
+        onChange={{
+          setRole,
+          setFirstName,
+          setLastName,
+          setEmail,
+          setPassword,
+        }}
+        signInHref={buildAuthHref("/auth/sign-in", requestedNext)}
+        onFinalSubmit={onFinalSubmit}
+      />
+    </AuthShell>
   );
 }

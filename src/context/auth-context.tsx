@@ -6,6 +6,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import type { User } from "@/types/user";
@@ -63,25 +64,37 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const refreshMeRequestRef = useRef<Promise<User | null> | null>(null);
 
-  const refreshMe = useCallback(async (): Promise<User | null> => {
-    try {
-      const response = await http("/api/auth/me", { method: "GET" });
+  const refreshMe = useCallback((): Promise<User | null> => {
+    if (refreshMeRequestRef.current) {
+      return refreshMeRequestRef.current;
+    }
 
-      if (!response.ok) {
+    const request = (async () => {
+      try {
+        const response = await http("/api/auth/me", { method: "GET" });
+
+        if (!response.ok) {
+          setUser(null);
+          return null;
+        }
+
+        const data = await response.json().catch(() => ({}));
+        const nextUser = (data?.user ?? null) as User | null;
+
+        setUser(nextUser);
+        return nextUser;
+      } catch {
         setUser(null);
         return null;
+      } finally {
+        refreshMeRequestRef.current = null;
       }
+    })();
 
-      const data = await response.json().catch(() => ({}));
-      const nextUser = (data?.user ?? null) as User | null;
-
-      setUser(nextUser);
-      return nextUser;
-    } catch {
-      setUser(null);
-      return null;
-    }
+    refreshMeRequestRef.current = request;
+    return request;
   }, []);
 
   const login = useCallback(

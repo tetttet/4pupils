@@ -78,14 +78,18 @@ export function StudentInboxProvider({
   children: React.ReactNode;
 }) {
   const { user, loading: authLoading } = useAuth();
+  const userId = user?.id ?? null;
   const [state, setState] = React.useState<StudentInboxState>(INITIAL_STATE);
+  const refreshIdRef = React.useRef(0);
 
   const refresh = React.useCallback(async () => {
     if (authLoading) {
       return;
     }
 
-    if (!user) {
+    const refreshId = ++refreshIdRef.current;
+
+    if (!userId) {
       React.startTransition(() => {
         setState({
           ...INITIAL_STATE,
@@ -104,6 +108,7 @@ export function StudentInboxProvider({
 
     try {
       const snapshot = await fetchInboxSnapshot();
+      if (refreshId !== refreshIdRef.current) return;
 
       React.startTransition(() => {
         setState({
@@ -115,6 +120,8 @@ export function StudentInboxProvider({
         });
       });
     } catch (error) {
+      if (refreshId !== refreshIdRef.current) return;
+
       React.startTransition(() => {
         setState((current) => ({
           ...current,
@@ -128,7 +135,7 @@ export function StudentInboxProvider({
         }));
       });
     }
-  }, [authLoading, user]);
+  }, [authLoading, userId]);
 
   const markAsRead = React.useCallback<
     StudentInboxContextValue["markAsRead"]
@@ -182,7 +189,7 @@ export function StudentInboxProvider({
 
     void refresh();
 
-    if (!user) {
+    if (!userId) {
       return;
     }
 
@@ -214,6 +221,7 @@ export function StudentInboxProvider({
     );
 
     return () => {
+      refreshIdRef.current += 1;
       window.clearInterval(intervalId);
       window.removeEventListener("focus", handleFocus);
       document.removeEventListener("visibilitychange", handleVisibility);
@@ -222,7 +230,7 @@ export function StudentInboxProvider({
         handleInboxRefresh as EventListener,
       );
     };
-  }, [authLoading, refresh, user]);
+  }, [authLoading, refresh, userId]);
 
   const value = React.useMemo<StudentInboxContextValue>(
     () => ({

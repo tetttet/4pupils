@@ -5,7 +5,10 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const qs = url.searchParams.toString();
 
-  const r = await backendFetch(`/api/mail${qs ? `?${qs}` : ""}`, { method: "GET" });
+  const r = await backendFetch(`/api/mail${qs ? `?${qs}` : ""}`, {
+    method: "GET",
+    signal: req.signal,
+  });
 
   const text = await r.text();
   return new NextResponse(text, { status: r.status, headers: { "Content-Type": "application/json" } });

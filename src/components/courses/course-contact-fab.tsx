@@ -127,7 +127,7 @@ export default function CourseContactFab() {
             openPanel();
           }
         }}
-        className="fixed bottom-4 right-4 z-40 h-10 rounded-lg px-5 text-[14px] font-semibold shadow-[0_20px_60px_rgba(35,48,103,0.28)] sm:bottom-6 sm:right-6 sm:h-10 sm:px-6"
+        className="fixed bottom-4 right-4 z-40 h-12 rounded-full px-5 text-[13px] font-medium shadow-[0_18px_46px_rgba(35,48,103,0.28)] sm:bottom-6 sm:right-6 sm:px-6 sm:text-[14px]"
         style={{
           backgroundColor: indigo_dark,
         }}

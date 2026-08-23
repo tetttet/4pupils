@@ -79,7 +79,7 @@ const Segmented = React.memo(function Segmented({
     <div
       role="tablist"
       aria-label="Выбор категории"
-      className="inline-flex items-center rounded-full border border-[rgba(var(--frontier-home-border-rgb),0.9)] bg-[rgba(var(--frontier-home-primary-rgb),0.07)] p-1.5 backdrop-blur-md"
+      className="inline-flex max-w-full items-center overflow-x-auto rounded-full border border-[#D7DDF8] bg-[#F7F8FF] p-1.5"
     >
       {options.map((opt) => {
         const active = opt.key === value;
@@ -92,8 +92,8 @@ const Segmented = React.memo(function Segmented({
             type="button"
             onClick={() => onChange(opt.key)}
             className={[
-              "relative h-11 rounded-full px-6",
-              "text-[12px] lg:text-[15px] font-semibold",
+              "relative h-11 shrink-0 rounded-full px-5 sm:px-6",
+              "text-[12px] font-medium sm:text-[14px]",
               "transition-colors duration-200",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(var(--frontier-home-primary-rgb),0.20)] focus-visible:ring-offset-2",
               active
@@ -104,7 +104,7 @@ const Segmented = React.memo(function Segmented({
             {active && (
               <motion.span
                 layoutId="segmented-pill"
-                className="absolute inset-0 rounded-full bg-white shadow-[0_10px_24px_rgba(var(--frontier-home-primary-deep-rgb),0.10)]"
+                className="absolute inset-0 rounded-full bg-white shadow-[0_8px_20px_rgba(35,48,103,0.09)]"
                 transition={{ type: "spring", stiffness: 500, damping: 38 }}
               />
             )}
@@ -316,7 +316,7 @@ function buildSubjectsData(courses: Course[]): Record<TabKey, SubjectItem[]> {
 function SubjectCardSkeleton({ index }: { index: number }) {
   return (
     <div
-      className="animate-pulse rounded-3xl border border-[rgba(var(--frontier-home-border-rgb),0.8)] bg-white/90 p-5 shadow-[0_10px_30px_rgba(var(--frontier-home-primary-deep-rgb),0.08)] md:p-6"
+      className="animate-pulse rounded-[28px] border border-[#ECEFFF] bg-[#F7F8FF] p-5 md:p-6"
       style={{ animationDelay: `${index * 60}ms` }}
     >
       <div className="h-11 w-11 rounded-2xl bg-[rgba(var(--frontier-home-primary-rgb),0.12)]" />
@@ -344,7 +344,7 @@ function SubjectCard({
       type="button"
       disabled={disabled}
       onClick={onClick}
-      initial={{ opacity: 0, y: 18, scale: 0.98 }}
+      initial={false}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 10, scale: 0.98 }}
       transition={{
@@ -355,19 +355,21 @@ function SubjectCard({
       whileHover={{ y: -4 }}
       whileTap={{ scale: 0.985 }}
       className={[
-        "group relative overflow-hidden rounded-3xl border text-left",
-        "bg-white/90 backdrop-blur-sm",
-        "p-5 md:p-6",
-        "shadow-[0_10px_30px_rgba(var(--frontier-home-primary-deep-rgb),0.08)]",
+        "group relative min-h-[210px] overflow-hidden rounded-[24px] border text-left sm:min-h-[220px] sm:rounded-[28px]",
+        "p-4 sm:p-5 md:p-6",
         "transition-all duration-300",
         "disabled:pointer-events-none disabled:opacity-70",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(var(--frontier-home-primary-rgb),0.20)] focus-visible:ring-offset-2",
         item.featured
-          ? "border-[rgba(var(--frontier-home-primary-rgb),0.28)] bg-linear-to-br from-[rgba(var(--frontier-home-primary-rgb),0.10)] to-white"
-          : "border-[rgba(var(--frontier-home-border-rgb),0.85)] hover:border-[rgba(var(--frontier-home-primary-rgb),0.25)]",
+          ? "border-[#5D75CB] bg-[#5D75CB] shadow-[0_16px_34px_rgba(93,117,203,0.18)]"
+          : "border-[#ECEFFF] bg-[#F7F8FF] hover:border-[#D7DDF8] hover:bg-white hover:shadow-[0_16px_36px_rgba(35,48,103,0.07)]",
       ].join(" ")}
     >
-      <div className="absolute inset-0 bg-linear-to-br from-white/40 via-transparent to-[rgba(var(--frontier-home-primary-rgb),0.05)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+      <div
+        className={`absolute -bottom-16 -right-16 size-44 rounded-full border-[34px] border-current opacity-[0.055] transition-transform duration-500 group-hover:scale-110 ${
+          item.featured ? "text-white" : "text-[#5D75CB]"
+        }`}
+      />
 
       <div className="relative z-10 flex items-start justify-between gap-4">
         <div>
@@ -375,26 +377,44 @@ function SubjectCard({
             className={[
               "mb-4 inline-flex h-11 w-11 items-center justify-center rounded-2xl",
               item.featured
-                ? "bg-[var(--frontier-home-primary)] text-white shadow-[0_12px_30px_rgba(var(--frontier-home-primary-rgb),0.28)]"
-                : "bg-[rgba(var(--frontier-home-primary-rgb),0.10)] text-[var(--frontier-home-primary-deep)]",
+                ? "bg-white text-[#5D75CB]"
+                : "bg-white text-[#4C63B8] shadow-[0_8px_20px_rgba(35,48,103,0.06)]",
             ].join(" ")}
           >
             {item.icon}
           </div>
 
-          <div className="max-w-[18ch] text-[17px] font-semibold leading-6 text-[var(--frontier-home-ink)] md:text-[18px]">
+          <div
+            className={`max-w-[18ch] text-[17px] font-medium leading-6 md:text-[18px] ${
+              item.featured ? "text-white" : "text-[#202858]"
+            }`}
+          >
             {item.label}
           </div>
         </div>
 
-        <div className="mt-1 flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(var(--frontier-home-border-rgb),0.85)] bg-white text-[var(--frontier-home-ink-muted)] transition-all duration-300 group-hover:border-[rgba(var(--frontier-home-primary-rgb),0.24)] group-hover:bg-[rgba(var(--frontier-home-primary-rgb),0.10)] group-hover:text-[var(--frontier-home-primary-deep)]">
+        <div
+          className={`mt-1 flex h-9 w-9 items-center justify-center rounded-full border bg-white transition-all duration-300 group-hover:translate-x-0.5 ${
+            item.featured
+              ? "border-white text-[#5D75CB]"
+              : "border-[#D7DDF8] text-[#68719B] group-hover:text-[#233067]"
+          }`}
+        >
           <ChevronRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
         </div>
       </div>
 
-      <div className="relative z-10 mt-5 h-px w-full bg-linear-to-r from-[rgba(var(--frontier-home-primary-rgb),0.22)] via-[rgba(var(--frontier-home-border-rgb),0.9)] to-transparent" />
+      <div
+        className={`relative z-10 mt-5 h-px w-full ${
+          item.featured ? "bg-white/[0.18]" : "bg-[#D7DDF8]"
+        }`}
+      />
 
-      <p className="relative z-10 mt-4 text-sm leading-6 text-[var(--frontier-home-ink-muted)]">
+      <p
+        className={`relative z-10 mt-4 line-clamp-3 text-[12px] leading-5 sm:text-[13px] sm:leading-6 ${
+          item.featured ? "text-white/[0.72]" : "text-[#68719B]"
+        }`}
+      >
         Подберём подходящих преподавателей и удобный формат обучения.
       </p>
     </motion.button>
@@ -427,26 +447,27 @@ export default function Subjects() {
   );
 
   return (
-    <main className="relative overflow-hidden bg-white">
-      <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+    <section className="relative overflow-hidden bg-transparent">
+      <div className="pointer-events-none absolute -left-48 top-32 size-[520px] rounded-full bg-[#F7F8FF] blur-3xl" />
+      <div className="relative mx-auto max-w-[1200px] px-4 py-20 sm:px-5 sm:py-24 lg:py-28">
         {/* top row */}
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-2xl">
-            <h1 className="mt-5 text-3xl font-extrabold tracking-tight text-[var(--frontier-home-ink)] md:text-5xl">
+        <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end lg:gap-12">
+          <div className="max-w-[720px]">
+            <h2 className="text-[36px] font-medium leading-[1.04] tracking-[-0.045em] text-[#202858] sm:text-[44px] lg:text-[52px]">
               Сделайте первый шаг
-              <span className="block text-[var(--frontier-home-primary)]">
+              <span className="block text-[#5D75CB]">
                 к новым знаниям
               </span>
-            </h1>
+            </h2>
 
-            <p className="mt-4 max-w-176 text-base leading-7 text-[var(--frontier-home-ink-muted)] md:text-lg">
+            <p className="mt-5 max-w-[64ch] text-[14px] leading-7 text-[#68719B] sm:text-[15px]">
               Выберите направление, формат или стартовый уровень — чтобы найти
               подходящие курсы, удобные варианты обучения и актуальные категории
               из каталога.
             </p>
           </div>
 
-          <div className="lg:pb-1">
+          <div>
             <Segmented
               value={tab}
               onChange={handleTabChange}
@@ -456,9 +477,9 @@ export default function Subjects() {
         </div>
 
         {/* cards */}
-        <div className="mt-12 md:mt-16">
+        <div className="mt-10 md:mt-14">
           {loading ? (
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
               {Array.from({ length: 8 }).map((_, index) => (
                 <SubjectCardSkeleton key={index} index={index} />
               ))}
@@ -492,11 +513,11 @@ export default function Subjects() {
             <AnimatePresence mode="wait">
               <motion.div
                 key={tab}
-                initial={{ opacity: 0, y: 8 }}
+                initial={false}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 8 }}
                 transition={{ duration: 0.25 }}
-                className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4"
+                className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4"
               >
                 {subjects.map((item, index) => (
                   <SubjectCard
@@ -528,6 +549,6 @@ export default function Subjects() {
           )}
         </div>
       </div>
-    </main>
+    </section>
   );
 }

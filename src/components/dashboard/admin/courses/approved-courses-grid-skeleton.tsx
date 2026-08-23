@@ -4,9 +4,40 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ApprovedCoursesGridSkeleton({
   count = 6,
+  variant = "default",
 }: {
   count?: number;
+  variant?: "default" | "home";
 }) {
+  if (variant === "home") {
+    return (
+      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+        {Array.from({ length: count }, (_, index) => (
+          <div
+            className="flex min-h-[520px] flex-col rounded-[30px] border border-white bg-white p-3"
+            key={index}
+          >
+            <Skeleton className="h-[250px] w-full rounded-[24px] bg-[#ECEFFF]" />
+            <div className="flex flex-1 flex-col px-3 pb-3 pt-5">
+              <Skeleton className="h-3 w-28 rounded-full bg-[#ECEFFF]" />
+              <Skeleton className="mt-3 h-7 w-full rounded-full bg-[#ECEFFF]" />
+              <Skeleton className="mt-2 h-7 w-3/4 rounded-full bg-[#ECEFFF]" />
+              <Skeleton className="mt-5 h-3 w-full rounded-full bg-[#F3F5FF]" />
+              <Skeleton className="mt-2 h-3 w-5/6 rounded-full bg-[#F3F5FF]" />
+              <div className="mt-auto flex items-end justify-between border-t border-[#ECEFFF] pt-5">
+                <div className="space-y-2">
+                  <Skeleton className="h-3 w-24 rounded-full bg-[#ECEFFF]" />
+                  <Skeleton className="h-3 w-28 rounded-full bg-[#F3F5FF]" />
+                </div>
+                <Skeleton className="size-10 rounded-full bg-[#ECEFFF]" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
       {Array.from({ length: count }, (_, index) => (

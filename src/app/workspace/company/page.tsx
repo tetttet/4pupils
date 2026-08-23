@@ -4,11 +4,11 @@ import WorkspaceThemeTransition from "@/components/workspace/workspace-theme-tra
 
 const CompanyWorkspace = () => {
   return (
-    <div>
+    <main className="bg-[#F3F5FF]">
       <CorporatePlatformLanding />
       <WorkspaceThemeTransition />
       <WorkSpaceFaq />
-    </div>
+    </main>
   );
 };
 

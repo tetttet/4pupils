@@ -17,7 +17,6 @@ import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 import {
-  Search,
   RefreshCcw,
   Send,
   ChevronDown,

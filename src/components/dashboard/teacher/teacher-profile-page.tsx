@@ -160,7 +160,7 @@ export function TeacherProfilePage() {
         items={[{ label: "Главная", href: "/dashboard" }, { label: "Профиль" }]}
       />
 
-      <div className="space-y-4 bg-[#f6f6f6] px-4 py-4 md:px-6 md:py-5">
+      <div className="teacher-workspace space-y-4 bg-[#f7f8fa] px-4 py-4 md:px-6 md:py-5">
         <section className="border border-zinc-300 bg-white p-4 md:p-5">
           <div className="space-y-4">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">

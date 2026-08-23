@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 
 type Props = {
   href: string;
@@ -6,9 +7,62 @@ type Props = {
   cover?: string;
   date?: string;
   description?: string;
+  home?: boolean;
 };
 
-export function GuideCard({ href, title, cover, date, description }: Props) {
+export function GuideCard({
+  href,
+  title,
+  cover,
+  date,
+  description,
+  home = false,
+}: Props) {
+  if (home) {
+    return (
+      <Link
+        href={href}
+        className="group grid h-full overflow-hidden rounded-[30px] border border-white bg-white p-3 shadow-[0_12px_34px_rgba(35,48,103,0.055)] outline-none transition duration-500 hover:-translate-y-1 hover:shadow-[0_22px_48px_rgba(35,48,103,0.11)] focus-visible:ring-2 focus-visible:ring-[#5D75CB] focus-visible:ring-offset-2 md:grid-cols-[1.2fr_0.8fr]"
+      >
+        <div className="overflow-hidden rounded-[24px] bg-[#ECEFFF]">
+          <div className="relative aspect-[16/10] h-full min-h-[260px] w-full md:min-h-[340px]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={cover ?? "/images/guides/guide-1.jpg"}
+              alt={title}
+              className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.035]"
+              loading="lazy"
+            />
+          </div>
+        </div>
+
+        <div className="flex min-w-0 flex-col p-4 sm:p-6 md:p-7">
+          {date ? (
+            <p className="w-fit rounded-full bg-[#F3F5FF] px-3 py-1.5 text-[11px] font-medium text-[#68719B] sm:text-[12px]">
+              {date}
+            </p>
+          ) : null}
+
+          <h3 className="mt-5 text-[26px] font-medium leading-[1.05] tracking-[-0.04em] text-[#202858] sm:text-[30px]">
+            {title}
+          </h3>
+
+          {description ? (
+            <p className="mt-4 line-clamp-4 text-[13px] leading-6 text-[#68719B] sm:text-[14px]">
+              {description}
+            </p>
+          ) : null}
+
+          <span className="mt-auto inline-flex items-center justify-end border-t border-[#ECEFFF] pt-5">
+            <span className="grid size-10 place-items-center rounded-full bg-[#233067] text-white transition-transform duration-300 group-hover:rotate-6">
+              <ArrowUpRight className="size-4" />
+            </span>
+          </span>
+        </div>
+      </Link>
+    );
+  }
+
   return (
     <Link
       href={href}

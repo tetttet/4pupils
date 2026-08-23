@@ -95,12 +95,15 @@ export default function Page() {
     });
   }, [admins, debouncedSearch]);
 
-  const fetchAdmins = useCallback(async () => {
+  const fetchAdmins = useCallback(async (forceFresh = false) => {
     setFetching(true);
     try {
       // ✅ filter role server-side for speed
       const url = `/api/users?role=admin&limit=10&offset=0`;
-      const r = await http(url, { method: "GET" });
+      const r = await http(url, {
+        method: "GET",
+        cache: forceFresh ? "no-store" : undefined,
+      });
       if (!r.ok) {
         const data = await r.json().catch(() => ({}));
         throw new Error(
@@ -125,18 +128,8 @@ export default function Page() {
   }, []);
 
   useEffect(() => {
-    if (!loading && isAdmin) fetchAdmins();
+    if (!loading && isAdmin) void fetchAdmins();
   }, [loading, isAdmin, fetchAdmins]);
-
-  const openEdit = (u: User) => {
-    setEditUser(u);
-    setEditOpen(true);
-  };
-
-  const openDelete = (u: User) => {
-    setDeleteUser(u);
-    setDeleteOpen(true);
-  };
 
   const onSaveEdit = async () => {
     if (!editUser) return;
@@ -262,7 +255,11 @@ export default function Page() {
             onChange={(e) => setSearch(e.target.value)}
             className="w-64"
           />
-          <Button variant="secondary" onClick={fetchAdmins} disabled={fetching}>
+          <Button
+            variant="secondary"
+            onClick={() => void fetchAdmins(true)}
+            disabled={fetching}
+          >
             {fetching ? "Перезагрузка..." : "Перезагрузить"}
           </Button>
         </div>

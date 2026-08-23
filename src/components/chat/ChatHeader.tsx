@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { productBrand } from "@/lib/atlas/brand";
 import { ChatAccountMenu } from "./ChatAccountMenu";
 
@@ -5,6 +6,12 @@ type ChatHeaderProps = {
   activeTitle: string;
   onOpenSidebar: () => void;
 };
+
+const primaryLinks = [
+  { href: "/o", label: "Главная" },
+  { href: "/courses", label: "Курсы" },
+  { href: "/workspace/company", label: "Корпоративный" },
+];
 
 function FloatingMenuIcon() {
   return (
@@ -46,7 +53,7 @@ export function ChatHeader({ activeTitle, onOpenSidebar }: ChatHeaderProps) {
           </span>
         </button>
 
-        <div className="min-w-0 rounded-2xl bg-[var(--surface)] px-4 py-2 backdrop-blur transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+        <div className="hidden min-w-0 rounded-2xl bg-[var(--surface)] px-4 py-2 backdrop-blur transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md lg:block">
           <h1 className="truncate text-sm font-semibold leading-5 text-[var(--text)] sm:text-base">
             {activeTitle}
           </h1>
@@ -56,6 +63,21 @@ export function ChatHeader({ activeTitle, onOpenSidebar }: ChatHeaderProps) {
           </p>
         </div>
       </div>
+
+      <nav
+        aria-label="Основная навигация"
+        className="pointer-events-auto absolute left-1/2 top-2 flex h-12 -translate-x-1/2 items-center rounded-[1.4rem] border border-[var(--border)] bg-[var(--surface)] p-1 backdrop-blur-xl"
+      >
+        {primaryLinks.map((link) => (
+          <Link
+            className="whitespace-nowrap rounded-[1.05rem] px-2 py-2 text-[10px] font-semibold text-[var(--muted)] transition-all duration-200 hover:bg-[var(--control-hover)] hover:text-[var(--text)] focus:outline-none focus:ring-4 focus:ring-[var(--focus-ring)] sm:px-3 sm:text-[13px]"
+            href={link.href}
+            key={link.href}
+          >
+            {link.label}
+          </Link>
+        ))}
+      </nav>
 
       <div className="pointer-events-auto ml-3 shrink-0 rounded-2xl bg-[var(--surface)] p-1 backdrop-blur transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
         <ChatAccountMenu />

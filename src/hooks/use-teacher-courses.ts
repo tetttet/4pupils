@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { apiFetch } from "@/lib/api";
+import { invalidateClientFetchCache } from "@/lib/client-fetch";
 import {
   getUserFacingErrorMessage,
   toUserFacingErrorMessage,
@@ -74,6 +75,7 @@ export function useTeacherCourses() {
 
   const activeCourseId = active?.course_id ?? null;
   const activeCourseIdRef = React.useRef<string | null>(null);
+  const requestIdRef = React.useRef(0);
 
   React.useEffect(() => {
     activeCourseIdRef.current = activeCourseId;
@@ -81,6 +83,7 @@ export function useTeacherCourses() {
 
   const load = React.useCallback(
     async (options: { background?: boolean } = {}) => {
+      const requestId = ++requestIdRef.current;
       const isBackground = !!options.background;
 
       if (isBackground) {
@@ -91,6 +94,8 @@ export function useTeacherCourses() {
 
       if (!options.background) {
         setError(null);
+      } else {
+        invalidateClientFetchCache();
       }
 
       try {
@@ -98,6 +103,8 @@ export function useTeacherCourses() {
         const json = (await readJsonSafe(res)) as ApiOk<Course[]> | ApiErr | null;
 
         if (!res.ok) {
+          if (requestId !== requestIdRef.current) return;
+
           setError(getErrorMessage(json, "Не удалось загрузить курсы", res.status));
           if (!options.background) {
             setRows([]);
@@ -106,6 +113,9 @@ export function useTeacherCourses() {
         }
 
         const data = (json as ApiOk<Course[]>)?.data ?? [];
+
+        if (requestId !== requestIdRef.current) return;
+
         setRows(data);
 
         const currentActiveCourseId = activeCourseIdRef.current;
@@ -121,6 +131,8 @@ export function useTeacherCourses() {
           }
         }
       } catch (err) {
+        if (requestId !== requestIdRef.current) return;
+
         const message = getUserFacingErrorMessage(
           err,
           "Не удалось загрузить курсы",
@@ -131,8 +143,10 @@ export function useTeacherCourses() {
           setRows([]);
         }
       } finally {
-        setLoading(false);
-        setRefreshing(false);
+        if (requestId === requestIdRef.current) {
+          setLoading(false);
+          setRefreshing(false);
+        }
       }
     },
     [],
@@ -140,6 +154,10 @@ export function useTeacherCourses() {
 
   React.useEffect(() => {
     void load();
+
+    return () => {
+      requestIdRef.current += 1;
+    };
   }, [load]);
 
   const openCourse = React.useCallback((course: Course) => {

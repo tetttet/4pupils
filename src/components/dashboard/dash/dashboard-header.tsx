@@ -130,6 +130,7 @@ export function DashboardHeader({
   const fullName =
     [user?.first_name, user?.last_name].filter(Boolean).join(" ") || "Аккаунт";
   const roleLabel = getRoleLabel(user?.role);
+  const isTeacher = user?.role === "teacher";
   const menuItems = React.useMemo(() => getMenuItems(user?.role), [user?.role]);
 
   const handleNavigate = React.useCallback(
@@ -159,14 +160,14 @@ export function DashboardHeader({
 
           <div className="min-w-0 flex-1 p-2">
             <div className="truncate --web-kit-text font-semibold">
-              Добро пожаловать
-              {user?.first_name && (
+              {isTeacher ? "Рабочее пространство" : "Добро пожаловать"}
+              {!isTeacher && user?.first_name && (
                 <span className="ml-1 text-primary font-bold">
                   {user.first_name}
                   {user?.last_name && ` ${user.last_name}`}
                 </span>
-              )}{" "}
-              👋
+              )}
+              {!isTeacher ? " 👋" : null}
             </div>
 
             <div className="mt-0.5 flex items-center gap-2 text-[11px] text-muted-foreground">
@@ -179,7 +180,7 @@ export function DashboardHeader({
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className="ml-auto flex shrink-0 items-center gap-3 border-l border-b border-[#e5e5e5] bg-background/80 px-2 py-2.5 text-left transition-colors hover:bg-background sm:px-3"
+                className="ml-auto flex shrink-0 items-center gap-3 rounded-xl px-2 py-1.5 text-left transition-colors hover:bg-slate-50 sm:px-3"
                 aria-label="Открыть меню пользователя"
               >
                 <Avatar className="h-9 w-9 border border-border/70">

@@ -4,8 +4,10 @@ import {
   createAtlasIntroPayload,
   isAtlasIntroRequest,
 } from "./intro";
+import { generateAtlasAnswer } from "./openrouter";
 import type {
   AtlasIntent,
+  AtlasHistoryMessage,
   AtlasMemory,
   BotReply,
   ChatAction,
@@ -299,6 +301,24 @@ const platformTopics: PlatformTopic[] = [
   },
 ];
 
+function buildPlatformKnowledge() {
+  return platformTopics
+    .map((topic) => {
+      const links = topic.links
+        .map((link) => `${link.label}: ${link.href}`)
+        .join("; ");
+
+      return [
+        `[${topic.title}]`,
+        `Проверенные сведения: ${topic.answer.join(" ")}`,
+        `Доступные пути: ${links}.`,
+      ].join("\n");
+    })
+    .join("\n\n");
+}
+
+const platformKnowledge = buildPlatformKnowledge();
+
 function normalize(value: string) {
   return value.toLocaleLowerCase("ru").replace(/\s+/g, " ").trim();
 }
@@ -307,11 +327,27 @@ function hasAny(text: string, keywords: string[]) {
   return keywords.some((keyword) => text.includes(keyword));
 }
 
+const roleOnlyKeywords = new Set([
+  "админ",
+  "администратор",
+  "преподав",
+  "студент",
+  "тьютор",
+  "ученик",
+  "учитель",
+]);
+
 function scoreTopic(topic: PlatformTopic, text: string) {
-  return topic.keywords.reduce(
-    (score, keyword) => score + (text.includes(keyword) ? 1 : 0),
-    0,
-  );
+  return topic.keywords.reduce((score, keyword) => {
+    if (!text.includes(keyword)) return score;
+
+    if (roleOnlyKeywords.has(keyword)) {
+      return score + 0.35;
+    }
+
+    const wordCount = keyword.trim().split(/\s+/).length;
+    return score + (wordCount > 1 ? 2.5 : 1);
+  }, 0);
 }
 
 function detectRole(text: string): UserContext["role"] | undefined {
@@ -596,20 +632,65 @@ export async function createBotReply(
   userMessage: string,
   previousMemory?: AtlasMemory,
   previousContext?: UserContext,
+  history?: AtlasHistoryMessage[],
+  signal?: AbortSignal,
 ) {
-  return createReply(userMessage, previousMemory, previousContext);
+  const localReply = createReply(
+    userMessage,
+    previousMemory,
+    previousContext,
+  );
+
+  try {
+    const answer = await generateAtlasAnswer({
+      context: localReply.context,
+      history,
+      memory: previousMemory,
+      message: userMessage,
+      platformKnowledge,
+      signal,
+      topic: localReply.topic,
+    });
+
+    return {
+      ...localReply,
+      answer,
+      engine: "openrouter" as const,
+      memory: {
+        ...localReply.memory,
+        lastBotAnswer: answer,
+      },
+    };
+  } catch (error) {
+    if (signal?.aborted) {
+      throw error;
+    }
+
+    console.warn(
+      "Atlas OpenRouter fallback:",
+      error instanceof Error ? error.message : "unknown error",
+    );
+
+    return {
+      ...localReply,
+      engine: "openrouter-fallback" as const,
+    };
+  }
 }
 
 export async function createBotResponse(
   userMessage: string,
   previousMemory?: AtlasMemory,
   previousContext?: UserContext,
+  history?: AtlasHistoryMessage[],
   signal?: AbortSignal,
 ) {
   const reply = await createBotReply(
     userMessage,
     previousMemory,
     previousContext,
+    history,
+    signal,
   );
   const answerChunks = splitReplyIntoChunks(reply.answer);
 

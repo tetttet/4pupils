@@ -51,6 +51,7 @@ export async function proxyBackendRequest(
     headers: buildHeaders(req, hasBody),
     body: init.body,
     cache: "no-store",
+    signal: req.signal,
   });
 
   const text = await response.text();

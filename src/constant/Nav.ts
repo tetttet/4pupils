@@ -1,6 +1,5 @@
 import {
   Archive,
-  BarChart3,
   BookOpen,
   Check,
   Clipboard,
@@ -10,10 +9,7 @@ import {
   LayoutGrid,
   PencilIcon,
   Send,
-  Settings,
-  TrendingUp,
   User,
-  UserRound,
   UserPen,
   UserStar,
 } from "lucide-react";
@@ -48,129 +44,11 @@ export const STUDENT_NAV = [
 ];
 
 export const TEACHER_NAV = [
-  { title: "Главная Преподавателя", href: "/dashboard", icon: LayoutGrid },
-  {
-    title: "Почта",
-    href: "/dashboard/teacher/inbox",
-    icon: Inbox,
-    subtitles: [
-      { title: "Входящие", href: "/dashboard/teacher/inbox", icon: Inbox },
-      {
-        title: "Отправленные",
-        href: "/dashboard/teacher/inbox/sent",
-        icon: Send,
-      },
-      {
-        title: "Избранные",
-        href: "/dashboard/teacher/inbox/favorites",
-        icon: UserStar,
-        badge: "Важно",
-      },
-      {
-        title: "Черновики",
-        href: "/dashboard/teacher/inbox/drafts",
-        icon: Clipboard,
-        badge: "В работе",
-      },
-      {
-        title: "Архив",
-        href: "/dashboard/teacher/inbox/archive",
-        icon: Archive,
-      },
-    ],
-  },
-  {
-    title: "Курсы",
-    href: "/dashboard/teacher/courses",
-    icon: BookOpen,
-    subtitles: [
-      {
-        title: "Рабочая Зона",
-        href: "/dashboard/teacher/courses",
-        icon: LayoutGrid,
-      },
-      {
-        title: "Поток Курсов",
-        href: "/dashboard/teacher/courses/pipeline",
-        icon: Clipboard,
-      },
-      {
-        title: "Аналитика",
-        href: "/dashboard/teacher/courses/insights",
-        icon: BookOpen,
-      },
-      {
-        title: "Чек-Лист",
-        href: "/dashboard/teacher/courses/readiness",
-        icon: Check,
-      },
-      {
-        title: "Создать Курс",
-        href: "/dashboard/teacher/courses/create",
-        icon: Send,
-      },
-    ],
-  },
-  {
-    title: "Заявки",
-    href: "/dashboard/teacher/applications",
-    icon: FileText,
-    subtitles: [
-      {
-        title: "Рабочая Зона",
-        href: "/dashboard/teacher/applications",
-        icon: LayoutGrid,
-      },
-      {
-        title: "Поток Заявок",
-        href: "/dashboard/teacher/applications/pipeline",
-        icon: Clipboard,
-      },
-      {
-        title: "Аналитика",
-        href: "/dashboard/teacher/applications/analytics",
-        icon: BarChart3,
-      },
-    ],
-  },
-  {
-    title: "Уроки",
-    href: "/dashboard/teacher/lessons",
-    icon: GraduationCap,
-    subtitles: [
-      {
-        title: "Рабочая Зона",
-        href: "/dashboard/teacher/lessons",
-        icon: LayoutGrid,
-      },
-      {
-        title: "Прогресс",
-        href: "/dashboard/teacher/lessons/progress",
-        icon: TrendingUp,
-      },
-      {
-        title: "Аналитика",
-        href: "/dashboard/teacher/lessons/analytics",
-        icon: BarChart3,
-      },
-    ],
-  },
-  {
-    title: "Настройки",
-    href: "/dashboard/teacher/settings",
-    icon: Settings,
-  },
-  {
-    title: "Профиль",
-    href: "/dashboard/teacher/profile",
-    icon: UserRound,
-  },
-  // {
-  //   title: "Настройки",
-  //   href: "/dashboard/teacher/settings",
-  //   icon: Settings,
-  //   badge: "todo",
-  // },
+  { title: "Главная", href: "/dashboard", icon: LayoutGrid },
+  { title: "Курсы", href: "/dashboard/teacher/courses", icon: BookOpen },
+  { title: "Заявки", href: "/dashboard/teacher/applications", icon: FileText },
+  { title: "Студенты", href: "/dashboard/teacher/lessons", icon: GraduationCap },
+  { title: "Сообщения", href: "/dashboard/teacher/inbox", icon: Inbox },
 ];
 
 export const ADMIN_NAV = [

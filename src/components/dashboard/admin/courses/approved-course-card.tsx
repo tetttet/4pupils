@@ -63,7 +63,7 @@ type Props = {
   course: Course;
   href?: string;
   imagePriority?: boolean;
-  variant?: "grid" | "horizontal";
+  variant?: "grid" | "horizontal" | "home";
 };
 
 export default function ApprovedCourseCard(props: Props) {
@@ -83,6 +83,74 @@ export default function ApprovedCourseCard(props: Props) {
   const rating = Number(course.rating_avg ?? 0);
   const hasRating = rating > 0;
   const metaLine = [language, publishedAt].filter(Boolean).join(" • ");
+
+  if (variant === "home") {
+    return (
+      <Link
+        href={targetHref}
+        className="group block h-full rounded-[34px] outline-none focus-visible:ring-2 focus-visible:ring-[#5D75CB] focus-visible:ring-offset-2"
+      >
+        <article className="flex h-full min-h-[520px] flex-col overflow-hidden rounded-[30px] border border-white bg-white p-3 shadow-[0_12px_34px_rgba(35,48,103,0.055)] transition duration-500 group-hover:-translate-y-1 group-hover:shadow-[0_22px_48px_rgba(35,48,103,0.11)]">
+          <div className="relative overflow-hidden rounded-[24px] bg-[#ECEFFF]">
+            <div className="absolute left-3 top-3 z-10 rounded-full bg-white/92 px-3 py-1.5 text-[11px] font-medium text-[#233067] backdrop-blur-sm">
+              {category}
+            </div>
+            <div className="absolute right-3 top-3 z-10 rounded-full bg-[#5D75CB] px-3 py-1.5 text-[11px] font-medium text-white shadow-[0_8px_20px_rgba(93,117,203,0.2)]">
+              {priceBadge}
+            </div>
+            {hasRating ? (
+              <div className="absolute bottom-3 left-3 z-10 inline-flex items-center gap-1.5 rounded-full bg-[#233067]/80 px-2.5 py-1 text-[12px] font-medium text-white backdrop-blur-sm">
+                <Star className="h-3.5 w-3.5 fill-current text-white" />
+                {rating.toFixed(1)}
+              </div>
+            ) : null}
+
+            <div className="transition-transform duration-700 ease-out group-hover:scale-[1.035]">
+              <CourseIcon
+                type={type}
+                className="h-[220px] rounded-[24px] sm:h-[235px] lg:h-[250px]"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-1 flex-col px-3 pb-3 pt-5">
+            <p className="line-clamp-1 text-[12px] leading-5 text-[#7A82A8] sm:text-[13px]">
+              {tagLine}
+            </p>
+            <h3 className="mt-1.5 line-clamp-2 text-[23px] font-medium leading-[1.08] tracking-[-0.04em] text-[#202858] lg:text-[26px]">
+              {course.title}
+            </h3>
+
+            {course.short_description ? (
+              <p className="mt-3 line-clamp-2 text-[13px] leading-6 text-[#68719B]">
+                {course.short_description}
+              </p>
+            ) : null}
+
+            <div className="mt-auto flex items-end justify-between gap-4 border-t border-[#ECEFFF] pt-5">
+              <div className="min-w-0">
+                <p className="text-[14px] font-medium leading-none text-[#3F4568]">
+                  {level}
+                </p>
+                {metaLine ? (
+                  <p className="mt-2 text-[11px] leading-none text-[#7A82A8] sm:text-[12px]">
+                    {metaLine}
+                  </p>
+                ) : null}
+              </div>
+
+              <span className="inline-flex shrink-0 items-center gap-2 text-[13px] font-medium text-[#233067]">
+                Смотреть
+                <span className="grid size-10 place-items-center rounded-full bg-[#233067] text-white transition-transform duration-300 group-hover:rotate-6">
+                  <ArrowUpRight className="size-4" />
+                </span>
+              </span>
+            </div>
+          </div>
+        </article>
+      </Link>
+    );
+  }
 
   if (variant === "horizontal") {
     return (

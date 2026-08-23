@@ -6,17 +6,27 @@ import type {
 
 import type { ApplicationWorkflowAction } from "./types";
 
+const dateFormatter = new Intl.DateTimeFormat("ru-RU", {
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
+});
+const dateTimeFormatter = new Intl.DateTimeFormat("ru-RU", {
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+});
+const countFormatter = new Intl.NumberFormat("ru-RU");
+
 export function formatDate(value?: string | null) {
   if (!value) return "—";
 
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return "—";
 
-  return new Intl.DateTimeFormat("ru-RU", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).format(parsed);
+  return dateFormatter.format(parsed);
 }
 
 export function formatDateTime(value?: string | null) {
@@ -25,17 +35,11 @@ export function formatDateTime(value?: string | null) {
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return "—";
 
-  return new Intl.DateTimeFormat("ru-RU", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(parsed);
+  return dateTimeFormatter.format(parsed);
 }
 
 export function formatCount(value: number) {
-  return new Intl.NumberFormat("ru-RU").format(value);
+  return countFormatter.format(value);
 }
 
 export function normalizeText(value: string) {

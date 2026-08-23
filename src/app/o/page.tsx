@@ -27,8 +27,7 @@ const homeTheme = {
   "--frontier-home-bg-end": "#F1F4FF",
   "--primary": "#5D75CB",
   "--ring": "#5D75CB",
-  background:
-    "linear-gradient(180deg, var(--frontier-home-bg-start) 0%, var(--frontier-home-bg-mid) 48%, var(--frontier-home-bg-end) 100%)",
+  background: "var(--frontier-home-bg-start)",
 } as CSSProperties;
 
 export default function Home() {
@@ -43,7 +42,7 @@ export default function Home() {
       <Subjects />
       <ApprovedCoursesSection />
       <HowWeWorkWithTutors />
-      <GuidesSection items={guides} />
+      <GuidesSection items={guides} home />
       <FaqsSection />
     </div>
   );

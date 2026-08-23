@@ -1,9 +1,21 @@
 import Link from "next/link";
 import React from "react";
+import { cn } from "@/lib/utils";
 
-const UnderAuth = ({ text }: { text: string }) => {
+const UnderAuth = ({
+  text,
+  className,
+}: {
+  text: string;
+  className?: string;
+}) => {
   return (
-    <p className="text-start text-xs text-muted-foreground leading-relaxed">
+    <p
+      className={cn(
+        "text-start text-xs leading-relaxed text-muted-foreground",
+        className,
+      )}
+    >
       Нажимая «{text}», вы соглашаетесь с{" "}
       <Link
         className="underline underline-offset-4 hover:text-primary"

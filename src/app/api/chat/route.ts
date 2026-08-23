@@ -1,5 +1,29 @@
 import { createBotResponse } from "@/lib/atlas/bot";
-import type { ChatRequest } from "@/lib/atlas/types";
+import type {
+  AtlasHistoryMessage,
+  ChatRequest,
+} from "@/lib/atlas/types";
+
+function sanitizeHistory(value: unknown): AtlasHistoryMessage[] {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .filter(
+      (item): item is Record<string, unknown> =>
+        Boolean(item) && typeof item === "object",
+    )
+    .filter(
+      (item) =>
+        (item.role === "assistant" || item.role === "user") &&
+        typeof item.content === "string",
+    )
+    .map((item) => ({
+      role: item.role as AtlasHistoryMessage["role"],
+      content: (item.content as string).trim().slice(0, 2_000),
+    }))
+    .filter((item) => item.content.length > 0)
+    .slice(-10);
+}
 
 export async function POST(request: Request) {
   try {
@@ -24,6 +48,7 @@ export async function POST(request: Request) {
       message,
       body.memory,
       body.context,
+      sanitizeHistory(body.history),
       request.signal,
     );
   } catch {

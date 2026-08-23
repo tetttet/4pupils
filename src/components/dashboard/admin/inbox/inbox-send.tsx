@@ -32,14 +32,6 @@ function uniq(arr: string[]) {
   return Array.from(new Set(arr));
 }
 
-function debounce<T extends (...args: unknown[]) => void>(fn: T, ms: number) {
-  let t: NodeJS.Timeout | undefined;
-  return (...args: Parameters<T>) => {
-    clearTimeout(t);
-    t = setTimeout(() => fn(...args), ms);
-  };
-}
-
 function formatBytes(n: number) {
   if (n < 1024) return `${n} B`;
   const kb = n / 1024;
@@ -96,10 +88,6 @@ export default function InboxSend() {
 
   const [selectedTags, setSelectedTags] = React.useState<MailTag>([]);
 
-  const [toRaw, setToRaw] = React.useState("");
-  const [ccRaw, setCcRaw] = React.useState("");
-  const [bccRaw, setBccRaw] = React.useState("");
-
   const [files, setFiles] = React.useState<File[]>([]);
   const [uploaded, setUploaded] = React.useState<
     { id: string; name: string; url: string; size: number; mime: string }[]
@@ -113,6 +101,7 @@ export default function InboxSend() {
   const [autosaveState, setAutosaveState] = React.useState<
     "idle" | "saving" | "saved" | "error"
   >("idle");
+  const autosaveRequestIdRef = React.useRef(0);
 
   const to = React.useMemo(() => uniq(toIds), [toIds]);
   const cc = React.useMemo(() => uniq(ccIds), [ccIds]);
@@ -195,43 +184,42 @@ export default function InboxSend() {
     }
   }
 
-  // Autosave (без лагов): только updateDraft, без upload, debounce 900ms
-  const autosave = React.useMemo(
-    () =>
-      debounce(async () => {
-        if (!draftId) return;
+  // Autosave: один отменяемый таймер и только один актуальный результат.
+  React.useEffect(() => {
+    const requestId = ++autosaveRequestIdRef.current;
+    if (!draftId) return;
 
-        setAutosaveState("saving");
-        try {
-          await MailAPI.updateDraft(draftId, {
-            subject,
-            preview: body ? body.slice(0, 140) : "",
-            body,
-            to,
-            cc,
-            bcc,
-            tags: selectedTags,
-          });
+    const timeoutId = window.setTimeout(async () => {
+      setAutosaveState("saving");
+
+      try {
+        await MailAPI.updateDraft(draftId, {
+          subject,
+          preview: body ? body.slice(0, 140) : "",
+          body,
+          to,
+          cc,
+          bcc,
+          tags: selectedTags,
+        });
+
+        if (requestId === autosaveRequestIdRef.current) {
           setAutosaveState("saved");
-        } catch {
+        }
+      } catch {
+        if (requestId === autosaveRequestIdRef.current) {
           setAutosaveState("error");
         }
-      }, 900),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [
-      draftId,
-      subject,
-      body,
-      toIds.join("|"),
-      ccIds.join("|"),
-      bccIds.join("|"),
-      selectedTags.join("|"),
-    ],
-  );
+      }
+    }, 900);
 
-  React.useEffect(() => {
-    autosave();
-  }, [autosave]);
+    return () => {
+      window.clearTimeout(timeoutId);
+      if (requestId === autosaveRequestIdRef.current) {
+        autosaveRequestIdRef.current += 1;
+      }
+    };
+  }, [bcc, body, cc, draftId, selectedTags, subject, to]);
 
   async function onSend() {
     setError(null);
@@ -313,10 +301,6 @@ export default function InboxSend() {
                   setToIds([]);
                   setCcIds([]);
                   setBccIds([]);
-
-                  setToRaw("");
-                  setCcRaw("");
-                  setBccRaw("");
 
                   setShowCc(false);
                   setShowBcc(false);
@@ -420,12 +404,6 @@ export default function InboxSend() {
           <div className="p-5 space-y-4">
             {/* Recipients */}
             <InboxRecipients
-              toRaw={toRaw}
-              setToRaw={setToRaw}
-              ccRaw={ccRaw}
-              setCcRaw={setCcRaw}
-              bccRaw={bccRaw}
-              setBccRaw={setBccRaw}
               toIds={toIds}
               setToIds={setToIds}
               ccIds={ccIds}

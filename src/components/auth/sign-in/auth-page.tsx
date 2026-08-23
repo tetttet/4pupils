@@ -1,10 +1,9 @@
 "use client";
 
 import * as React from "react";
-import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 
-import { Logo } from "@/components/layout/logo";
+import { AuthShell } from "@/components/auth/auth-shell";
 import { Button } from "@/components/ui/button";
 import {
   InputGroup,
@@ -12,17 +11,17 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import {
+  ArrowRightIcon,
   AtSignIcon,
-  ChevronLeftIcon,
+  EyeIcon,
+  EyeOffIcon,
   LockIcon,
+  ShieldCheckIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/context/auth-context";
 import { buildAuthHref, getSafeNextPath } from "@/lib/auth-redirect";
-import { brand } from "@/lib/brand";
 import UnderAuth from "../under-auth";
-
-const authPhotoSrc = "/images/bg/bg-article.jpg";
 
 export function AuthPage() {
   const router = useRouter();
@@ -31,6 +30,7 @@ export function AuthPage() {
 
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
+  const [showPassword, setShowPassword] = React.useState(false);
 
   const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -82,173 +82,145 @@ export function AuthPage() {
   }
 
   return (
-    <main className="relative md:h-screen md:overflow-hidden lg:grid lg:grid-cols-2 border-t border-gray-300">
-      {/* Left / Marketing */}
-      <div className="relative hidden h-full overflow-hidden border-r bg-black lg:flex">
-        {/* Replace authPhotoSrc above when the final sign-in photo is ready. */}
-        <Image
-          src={authPhotoSrc}
-          alt="Учебное пространство"
-          fill
-          priority
-          sizes="50vw"
-          className="object-cover"
-        />
-        <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/75 via-black/25 to-black/45" />
+    <AuthShell mode="sign-in">
+      <div className="space-y-6">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#0F3B57]">
+            Личный кабинет
+          </p>
+          <h1 className="mt-3 text-[32px] font-semibold leading-tight tracking-[-0.03em] text-slate-950 sm:text-[38px]">
+            Вход в систему
+          </h1>
+          <p className="mt-3 text-[14px] leading-6 text-slate-500">
+            Введите email и пароль, указанные при регистрации.
+          </p>
+        </div>
 
-        <div className="relative z-10 flex h-full w-full flex-col p-10 text-white">
-          <div className="inline-flex w-fit rounded-md bg-white/90 px-3 py-2 shadow-sm">
-            <Logo />
+        {error && (
+          <div
+            role="alert"
+            className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-[13px] leading-5 text-red-700"
+          >
+            {error}
+          </div>
+        )}
+
+        <form className="space-y-5" onSubmit={onSubmit}>
+          <div className="space-y-2">
+            <label
+              className="text-[12px] font-semibold text-slate-700"
+              htmlFor="sign-in-email"
+            >
+              Email
+            </label>
+            <InputGroup className="h-12 rounded-lg border-slate-300 bg-white shadow-none has-[[data-slot=input-group-control]:focus-visible]:border-[#0F3B57] has-[[data-slot=input-group-control]:focus-visible]:ring-[#0F3B57]/10">
+              <InputGroupAddon className="pl-4 text-slate-400">
+                <AtSignIcon aria-hidden="true" className="size-[17px]" />
+              </InputGroupAddon>
+              <InputGroupInput
+                id="sign-in-email"
+                className="h-full px-3 text-[14px] text-slate-900 placeholder:text-slate-400"
+                placeholder="name@example.com"
+                type="email"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={submitting || loading}
+              />
+            </InputGroup>
           </div>
 
-          <div className="mt-auto max-w-xl space-y-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/70">
-              {brand.name}
-            </p>
-            <h2 className="text-5xl font-bold leading-tight">
-              Добро пожаловать обратно
-            </h2>
-            <p className="max-w-md text-base leading-relaxed text-white/80">
-              Войдите в аккаунт, чтобы продолжить обучение, вернуться к курсам
-              и видеть свой прогресс без лишних шагов.
-            </p>
-            <div className="flex max-w-md items-center gap-4 border-t border-white/25 pt-5">
-              <p className="text-sm text-white/75">
-                Курсы, материалы и прогресс в одном личном кабинете.
-              </p>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-4">
+              <label
+                className="text-[12px] font-semibold text-slate-700"
+                htmlFor="sign-in-password"
+              >
+                Пароль
+              </label>
+              <Link
+                href="/auth/forgot-password"
+                className="text-[12px] font-medium text-[#0F3B57] underline-offset-4 hover:underline"
+              >
+                Забыли пароль?
+              </Link>
             </div>
+
+            <InputGroup className="h-12 rounded-lg border-slate-300 bg-white shadow-none has-[[data-slot=input-group-control]:focus-visible]:border-[#0F3B57] has-[[data-slot=input-group-control]:focus-visible]:ring-[#0F3B57]/10">
+              <InputGroupAddon className="pl-4 text-slate-400">
+                <LockIcon aria-hidden="true" className="size-[17px]" />
+              </InputGroupAddon>
+              <InputGroupInput
+                id="sign-in-password"
+                className="h-full px-3 text-[14px] text-slate-900 placeholder:text-slate-400"
+                placeholder="Введите пароль"
+                type={showPassword ? "text" : "password"}
+                autoComplete="current-password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={submitting || loading}
+              />
+              <InputGroupAddon align="inline-end" className="pr-2">
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((value) => !value)}
+                  disabled={submitting || loading}
+                  className="grid size-8 place-items-center rounded-md text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 disabled:opacity-50"
+                  aria-label={showPassword ? "Скрыть пароль" : "Показать пароль"}
+                >
+                  {showPassword ? (
+                    <EyeOffIcon aria-hidden="true" className="size-[17px]" />
+                  ) : (
+                    <EyeIcon aria-hidden="true" className="size-[17px]" />
+                  )}
+                </button>
+              </InputGroupAddon>
+            </InputGroup>
           </div>
-        </div>
-      </div>
 
-      {/* Right / Form */}
-      <div className="relative flex min-h-screen flex-col justify-center p-4">
-        <div
-          aria-hidden
-          className="-z-10 absolute inset-0 isolate opacity-60 contain-strict"
+          <Button
+            className="group h-12 w-full rounded-lg bg-[#0F3B57] px-5 text-[14px] text-white shadow-none transition-colors hover:bg-[#0A2D43]"
+            type="submit"
+            disabled={submitting || loading}
+          >
+            <span>
+              {submitting ? "Входим..." : "Войти в аккаунт"}
+            </span>
+            <ArrowRightIcon
+              aria-hidden="true"
+              className="size-4 transition-transform group-hover:translate-x-0.5"
+            />
+          </Button>
+
+          <div className="flex items-center justify-center gap-2 text-[11px] text-slate-400">
+            <ShieldCheckIcon aria-hidden="true" className="size-3.5" />
+            Ваши данные защищены
+          </div>
+        </form>
+
+        <div className="flex items-center gap-3">
+          <div className="h-px flex-1 bg-slate-200" />
+          <span className="text-[11px] text-slate-400">Нет аккаунта?</span>
+          <div className="h-px flex-1 bg-slate-200" />
+        </div>
+
+        <Button
+          asChild
+          className="h-12 w-full rounded-lg border-slate-300 bg-white text-[13px] font-semibold text-[#0F3B57] shadow-none transition-colors hover:border-slate-400 hover:bg-slate-50"
+          variant="outline"
         >
-          <div className="-translate-y-87.5 absolute top-0 right-0 h-320 w-140 rounded-full bg-[radial-gradient(68.54%_68.72%_at_55.02%_31.46%,--theme(--color-foreground/.06)_0,hsla(0,0%,55%,.02)_50%,--theme(--color-foreground/.01)_80%)]" />
-          <div className="absolute top-0 right-0 h-320 w-60 rounded-full bg-[radial-gradient(50%_50%_at_50%_50%,--theme(--color-foreground/.04)_0,--theme(--color-foreground/.01)_80%,transparent_100%)] [translate:5%_-50%]" />
-          <div className="-translate-y-87.5 absolute top-0 right-0 h-320 w-60 rounded-full bg-[radial-gradient(50%_50%_at_50%_50%,--theme(--color-foreground/.04)_0,--theme(--color-foreground/.01)_80%,transparent_100%)]" />
-        </div>
-
-        <Button asChild className="absolute top-7 left-5" variant="ghost">
-          <Link href="/o">
-            <ChevronLeftIcon />
-            Главная страница
+          <Link href={buildAuthHref("/auth/sign-up", requestedNext)}>
+            Создать аккаунт
           </Link>
         </Button>
 
-        <div className="mx-auto w-full space-y-5 sm:w-sm">
-          <div className="flex flex-col space-y-2">
-            <div className="space-y-1">
-              <h1 className="font-bold text-2xl tracking-wide mt-4 lg:mt-0">
-                Вход в аккаунт
-              </h1>
-              <p className="text-base text-muted-foreground">
-                Введите email и пароль, чтобы продолжить
-              </p>
-            </div>
-          </div>
-
-          <div className="p-4 sm:p-0 space-y-4">
-            {error && (
-              <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
-                {error}
-              </div>
-            )}
-
-            <form className="space-y-3" onSubmit={onSubmit}>
-              <div className="space-y-2">
-                <p className="text-start text-muted-foreground text-xs">
-                  Email
-                </p>
-                <InputGroup>
-                  <InputGroupInput
-                    placeholder="your.email@example.com"
-                    type="email"
-                    autoComplete="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    disabled={submitting || loading}
-                  />
-                  <InputGroupAddon>
-                    <AtSignIcon />
-                  </InputGroupAddon>
-                </InputGroup>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <p className="text-start text-muted-foreground text-xs">
-                    Пароль
-                  </p>
-                  <Link
-                    href="/auth/forgot-password"
-                    className="text-xs underline underline-offset-4 text-muted-foreground hover:text-primary"
-                  >
-                    Забыли пароль?
-                  </Link>
-                </div>
-
-                <InputGroup>
-                  <InputGroupInput
-                    placeholder="Введите пароль"
-                    type="password"
-                    autoComplete="current-password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    disabled={submitting || loading}
-                  />
-                  <InputGroupAddon>
-                    <LockIcon />
-                  </InputGroupAddon>
-                </InputGroup>
-              </div>
-
-              <Button
-                className="w-full"
-                type="submit"
-                size="lg"
-                disabled={submitting || loading}
-              >
-                {submitting ? "Входим..." : "Войти"}
-              </Button>
-
-              <p className="text-center text-xs text-muted-foreground">
-                Мы не передаём ваши данные третьим лицам
-              </p>
-            </form>
-
-            <div className="mt-4">
-              <div className="h-px w-full bg-border" />
-              <div className="mt-4 rounded-lg border bg-muted/30 p-4 text-center text-[12px] text-muted-foreground">
-                Получите доступ ко всем возможностям платформы и сохраните
-                прогресс обучения
-              </div>
-
-              <p className="mt-4 text-center text-sm text-muted-foreground">
-                Нет аккаунта?{" "}
-              </p>
-
-              <Button
-                asChild
-                className="w-full mt-2"
-                size="lg"
-                variant="outline"
-              >
-                <Link href={buildAuthHref("/auth/sign-up", requestedNext)}>
-                  Зарегистрироваться
-                </Link>
-              </Button>
-            </div>
-          </div>
-
-          <UnderAuth text="Войти" />
-        </div>
+        <UnderAuth
+          text="Войти"
+          className="text-center text-[11px] text-slate-400"
+        />
       </div>
-    </main>
+    </AuthShell>
   );
 }

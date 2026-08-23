@@ -191,11 +191,14 @@ export default function UserListTable({ userType }: { userType: USER_ROLES }) {
       ? "Управляйте аккаунтами студентов: редактируйте, меняйте роль, удаляйте."
       : "Управляйте аккаунтами преподавателей: редактируйте, меняйте роль, удаляйте.";
 
-  const fetchUsers = useCallback(async () => {
+  const fetchUsers = useCallback(async (forceFresh = false) => {
     setFetching(true);
     try {
       const url = `/api/users?role=${userType}&limit=100&offset=0`;
-      const r = await http(url, { method: "GET" });
+      const r = await http(url, {
+        method: "GET",
+        cache: forceFresh ? "no-store" : undefined,
+      });
 
       if (!r.ok) {
         const data = await r.json().catch(() => ({}));
@@ -222,7 +225,7 @@ export default function UserListTable({ userType }: { userType: USER_ROLES }) {
   }, [userType]);
 
   useEffect(() => {
-    if (!loading && isAdmin) fetchUsers();
+    if (!loading && isAdmin) void fetchUsers();
   }, [loading, isAdmin, fetchUsers]);
 
   // collect available tags for filter dropdown
@@ -554,7 +557,7 @@ export default function UserListTable({ userType }: { userType: USER_ROLES }) {
           <Button
             variant="outline"
             className="gap-2"
-            onClick={fetchUsers}
+            onClick={() => void fetchUsers(true)}
             disabled={fetching}
           >
             <RefreshCw

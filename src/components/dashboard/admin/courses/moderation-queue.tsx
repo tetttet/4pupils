@@ -5,6 +5,7 @@ import { Search, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import type { Course, CourseLifecycle } from "@/types/course";
 import { getUserFacingErrorMessage } from "@/lib/error-messages";
+import { invalidateClientFetchCache } from "@/lib/client-fetch";
 import { cn } from "@/lib/utils";
 import {
   fetchModerationCourses,
@@ -195,6 +196,8 @@ export default function ModerationQueue() {
 
     if (!options.background) {
       setErr(null);
+    } else {
+      invalidateClientFetchCache();
     }
 
     try {

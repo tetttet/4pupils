@@ -8,6 +8,7 @@ export async function GET(req: Request) {
     method: "GET",
     headers: { cookie },
     cache: "no-store",
+    signal: req.signal,
   });
 
   const data = await r.json().catch(() => ({}));

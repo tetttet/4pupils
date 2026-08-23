@@ -22,11 +22,11 @@ import {
   FilterSection,
 } from "@/components/ui/category-ui";
 import CourseContactFab from "@/components/courses/course-contact-fab";
-import { CourseIcon } from "@/components/ui/course-icon";
+import ApprovedCourseCard from "@/components/dashboard/admin/courses/approved-course-card";
+import ApprovedCoursesGridSkeleton from "@/components/dashboard/admin/courses/approved-courses-grid-skeleton";
 import { getCourseIconType } from "@/lib/course-icon-type";
 import { SearchCourse } from "@/components/ui/search-course";
 import {
-  CourseCardSkeleton,
   SidebarSkeleton,
   ToolbarSkeleton,
 } from "@/components/ui/skeleton-ui";
@@ -39,7 +39,6 @@ import {
   toggleArrayValue,
 } from "@/lib/func";
 import { brand } from "@/lib/brand";
-import { indigo_dark } from "@/constant/color";
 
 const ALL_COURSES_LABEL = "Все курсы";
 
@@ -126,64 +125,33 @@ function buildPreparedCourse(course: Course): PreparedCourse {
   };
 }
 
-function CourseCard({ item }: { item: PreparedCourse }) {
-  return (
-    <Link
-      href={item.href}
-      className="group block transition-colors duration-100 hover:bg-[#f5f5f5] rounded-4xl"
-    >
-      <article className="w-full">
-        <div className="relative overflow-hidden">
-          <div className="absolute right-3.5 top-3 z-10 rounded-sm bg-[#3b79d6] px-2.5 py-1 text-[14px] font-medium leading-none text-white shadow-sm">
-            {item.badge}
-          </div>
-
-          <div className="transition-transform duration-300 ease-out group-hover:scale-[1.11]">
-            <CourseIcon type={item.type} />
-          </div>
-        </div>
-
-        <div className="py-4 px-2 pt-2.5">
-          <p className="mb-1 text-[14px] lg:text-[16px] leading-[1.2] text-[#747474]">
-            {item.tag?.split(", ").slice(0, 3).join(", ")}
-          </p>
-          <h3 className="line-clamp-2 text-[16px] lg:text-[20px] font-normal leading-[1.12] tracking-[-0.03em] text-[#222222]">
-            {item.course.title}
-          </h3>
-          <p className="mt-1.5 text-[14px] lg:text-[16px] leading-none text-[#6b6b6b]">
-            {item.level}
-          </p>
-        </div>
-      </article>
-    </Link>
-  );
-}
-
 function CoursesPageFallback() {
   return (
-    <div className="min-h-screen bg-[#ffffff] text-[#252525]">
-      <div className="mx-auto max-w-355 px-4 pb-12 pt-6 sm:px-8 lg:px-10 xl:px-12 2xl:px-0">
-        <header className="ml-0.5 sm:ml-1.5">
-          <h1 className="text-[34px] font-normal leading-[1.08] tracking-[-0.04em] text-[#2a2a2a] sm:text-[48px]">
-            {`Каталог курсов ${brand.upper}`}
-          </h1>
-          <p className="mt-0.5 text-[26px] font-normal leading-[1.12] tracking-[-0.04em] text-[#bdbdbd] sm:text-[48px]">
-            Все опубликованные курсы в одном месте
+    <div className="min-h-screen bg-[#F3F5FF] text-[#202858]">
+      <div className="mx-auto w-full max-w-[1400px] px-4 pb-20 pt-8 sm:px-5 sm:pb-24 sm:pt-12">
+        <header className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr] lg:items-end lg:gap-12">
+          <div>
+            <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[#5D75CB] sm:text-[13px]">
+              Образовательная платформа {brand.name}
+            </p>
+            <h1 className="mt-4 max-w-[12ch] text-[42px] font-medium leading-[1.02] tracking-[-0.05em] text-[#202858] sm:text-[54px] lg:text-[64px]">
+              Каталог курсов
+              <span className="block text-[#5D75CB]">для вашего роста</span>
+            </h1>
+          </div>
+          <p className="max-w-[58ch] text-[14px] leading-7 text-[#68719B] sm:text-[15px] lg:justify-self-end">
+            Выбирайте проверенные программы, сравнивайте направления и находите
+            обучение, которое подходит именно вам.
           </p>
         </header>
 
-        <section className="mt-8.5 sm:mt-10.5">
+        <section className="mt-10 rounded-[28px] border border-white bg-white p-4 shadow-[0_12px_34px_rgba(35,48,103,0.055)] sm:p-5">
           <ToolbarSkeleton />
         </section>
 
-        <section className="mt-10 grid grid-cols-1 gap-10 xl:mt-17 xl:grid-cols-[225px_minmax(0,1fr)] xl:gap-8">
+        <section className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-[240px_minmax(0,1fr)]">
           <SidebarSkeleton />
-
-          <div className="grid grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-3 2xl:grid-cols-4">
-            {Array.from({ length: 8 }).map((_, index) => (
-              <CourseCardSkeleton key={index} />
-            ))}
-          </div>
+          <ApprovedCoursesGridSkeleton count={6} variant="home" />
         </section>
       </div>
       <CourseContactFab />
@@ -353,33 +321,40 @@ function CoursesPageContent() {
 
   return (
     <Dialog open={mobileFiltersOpen} onOpenChange={setMobileFiltersOpen}>
-      <div className="min-h-screen bg-[#ffffff] text-[#252525]">
-        <div className="mx-auto max-w-355 px-4 pb-12 pt-6 sm:px-8 lg:px-10 xl:px-12 2xl:px-0">
-          <header className="ml-0.5 sm:ml-1.5">
-            <h1 className="text-[34px] font-normal leading-[1.08] tracking-[-0.04em] text-[#2a2a2a] sm:text-[48px]">
-              {`Каталог курсов ${brand.upper}`}
-            </h1>
-            <p className="mt-0.5 text-[26px] font-normal leading-[1.12] tracking-[-0.04em] text-[#bdbdbd] sm:text-[48px]">
-              Все опубликованные курсы в одном месте
+      <div className="min-h-screen bg-[#F3F5FF] text-[#202858]">
+        <div className="mx-auto w-full max-w-[1400px] px-4 pb-20 pt-8 sm:px-5 sm:pb-24 sm:pt-12">
+          <header className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr] lg:items-end lg:gap-12">
+            <div>
+              <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[#5D75CB] sm:text-[13px]">
+                Образовательная платформа {brand.name}
+              </p>
+              <h1 className="mt-4 max-w-[12ch] text-[42px] font-medium leading-[1.02] tracking-[-0.05em] text-[#202858] sm:text-[54px] lg:text-[64px]">
+                Каталог курсов
+                <span className="block text-[#5D75CB]">для вашего роста</span>
+              </h1>
+            </div>
+            <p className="max-w-[58ch] text-[14px] leading-7 text-[#68719B] sm:text-[15px] lg:justify-self-end">
+              Выбирайте проверенные программы, сравнивайте направления и
+              находите обучение, которое подходит именно вам.
             </p>
           </header>
 
-          <section className="mt-8.5 sm:mt-10.5">
+          <section className="mt-10 rounded-[28px] border border-white bg-white p-4 shadow-[0_12px_34px_rgba(35,48,103,0.055)] sm:p-5">
             {loading ? (
               <ToolbarSkeleton />
             ) : (
               <>
                 <div className="flex items-center gap-3 xl:hidden">
-                  <div className="flex h-14 flex-1 items-center rounded-sm border border-[#e5e5e5] bg-transparent px-4">
+                  <div className="flex h-14 flex-1 items-center rounded-[18px] border border-[#ECEFFF] bg-[#F7F8FF] px-4 transition focus-within:border-[#B8C2EF] focus-within:bg-white">
                     <input
                       type="text"
                       value={searchQuery}
                       onChange={(event) => setSearchQuery(event.target.value)}
                       placeholder="Навык или курс"
-                      className="h-full w-full bg-transparent text-[16px] text-[#2f2f2f] outline-none placeholder:text-[#9d9d9d]"
+                      className="h-full w-full bg-transparent text-[15px] text-[#202858] outline-none placeholder:text-[#7A82A8]"
                     />
                     <Search
-                      className="h-4.75 w-4.75 text-[#8d8d8d]"
+                      className="h-4.75 w-4.75 text-[#5D75CB]"
                       strokeWidth={2.2}
                     />
                   </div>
@@ -387,12 +362,12 @@ function CoursesPageContent() {
                   <button
                     type="button"
                     onClick={() => setMobileFiltersOpen(true)}
-                    className="relative flex h-14 w-14 items-center justify-center rounded-sm border bg-[#f0f0f0] text-[#2f2f2f] transition hover:bg-white"
+                    className="relative flex h-14 w-14 items-center justify-center rounded-[18px] border border-[#D7DDF8] bg-[#ECEFFF] text-[#4C63B8] transition hover:border-[#B8C2EF] hover:bg-[#F7F8FF]"
                     aria-label="Открыть фильтры"
                   >
                     <SlidersHorizontal className="h-5 w-5" strokeWidth={2.2} />
                     {activeFiltersCount > 0 ? (
-                      <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#242424] px-1 text-[11px] font-medium text-white">
+                      <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#233067] px-1 text-[11px] font-medium text-white">
                         {activeFiltersCount}
                       </span>
                     ) : null}
@@ -400,22 +375,22 @@ function CoursesPageContent() {
                 </div>
 
                 <div className="mt-4 flex items-center justify-between xl:hidden">
-                  <p className="text-[16px] font-normal text-[#333333]">
+                  <p className="text-[14px] font-medium text-[#3F4568]">
                     {mobileResultLabel}
                   </p>
                   {hasFilterSelections ? (
                     <button
                       type="button"
                       onClick={resetFilters}
-                      className="text-[15px] text-[#6b6b6b] transition hover:text-[#242424]"
+                      className="text-[14px] font-medium text-[#5D75CB] transition hover:text-[#233067]"
                     >
                       Сбросить
                     </button>
                   ) : null}
                 </div>
 
-                <div className="hidden flex-col gap-6 xl:flex xl:flex-row xl:items-start xl:justify-between">
-                  <div className="flex max-w-245 flex-wrap gap-2.5">
+                <div className="hidden flex-col gap-6 xl:flex xl:flex-row xl:items-center xl:justify-between">
+                  <div className="flex max-w-[920px] flex-wrap gap-2.5">
                     {filterOptions.categories.map((item) => (
                       <CategoryChip
                         key={item}
@@ -426,7 +401,7 @@ function CoursesPageContent() {
                     ))}
                   </div>
 
-                  <div className="w-full xl:max-w-98.5">
+                  <div className="w-full xl:max-w-[360px]">
                     <SearchCourse
                       searchQuery={searchQuery}
                       setSearchQuery={setSearchQuery}
@@ -437,11 +412,11 @@ function CoursesPageContent() {
             )}
           </section>
 
-          <section className="mt-10 grid grid-cols-1 gap-10 xl:mt-17 xl:grid-cols-[225px_minmax(0,1fr)] xl:gap-8">
+          <section className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-[240px_minmax(0,1fr)]">
             {loading ? (
               <SidebarSkeleton />
             ) : (
-              <aside className="hidden xl:block sticky top-3 self-start max-h-[calc(100vh-20px)] overflow-y-auto pt-1.5">
+              <aside className="sticky top-24 hidden max-h-[calc(100vh-7rem)] self-start overflow-y-auto rounded-[28px] border border-white bg-white p-6 shadow-[0_12px_34px_rgba(35,48,103,0.045)] xl:block">
                 {filterOptions.levels.length > 0 ? (
                   <FilterSection title="Уровень">
                     <div className="space-y-2.5">
@@ -464,7 +439,7 @@ function CoursesPageContent() {
                 {filterOptions.prices.length > 0 ? (
                   <FilterSection
                     title="Стоимость"
-                    className={filterOptions.levels.length > 0 ? "mt-7.5" : ""}
+                    className={filterOptions.levels.length > 0 ? "mt-8" : ""}
                   >
                     <div className="space-y-2.5">
                       {filterOptions.prices.map((item) => (
@@ -483,67 +458,73 @@ function CoursesPageContent() {
                   </FilterSection>
                 ) : null}
 
-                <p className="mt-5 text-[16px] font-normal text-[#333333]">
+                <p className="mt-8 border-t border-[#ECEFFF] pt-5 text-[13px] font-medium leading-5 text-[#68719B]">
                   Найдено: {filteredCourses.length} курсов
                 </p>
 
                 <button
                   type="button"
                   onClick={resetFilters}
-                  className="text-[16px] bg-[#f0f0f0] mt-5 rounded-sm w-full py-3 text-[#2f2f2f] transition hover:bg-[#e5e5e5] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="mt-4 w-full rounded-full border border-[#D7DDF8] bg-[#F7F8FF] px-4 py-3 text-[13px] font-medium text-[#4C63B8] transition hover:border-[#B8C2EF] hover:bg-[#ECEFFF] disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={!hasFilterSelections}
                 >
                   Сбросить фильтры
                 </button>
               </aside>
             )}
 
-            <div className="grid grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-3 2xl:grid-cols-4">
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
               {loading ? (
-                Array.from({ length: 8 }).map((_, index) => (
-                  <CourseCardSkeleton key={index} />
-                ))
+                <div className="col-span-full">
+                  <ApprovedCoursesGridSkeleton count={6} variant="home" />
+                </div>
               ) : error ? (
-                <div className="col-span-full rounded-sm border border-[#e3bcbc] bg-[#fff4f4] p-6">
-                  <p className="text-[18px] font-medium text-[#2a2a2a]">
+                <div className="col-span-full rounded-[28px] border border-red-200 bg-red-50 p-6 sm:p-8">
+                  <p className="text-[20px] font-medium text-[#202858]">
                     Не удалось загрузить курсы
                   </p>
-                  <p className="mt-2 text-[16px] leading-[1.45] text-[#666666]">
+                  <p className="mt-2 text-[14px] leading-6 text-[#68719B]">
                     {error}
                   </p>
                   <button
                     type="button"
                     onClick={refresh}
-                    className="mt-5 rounded-sm bg-[#242424] px-5 py-3 text-[16px] text-white transition hover:opacity-90"
+                    className="mt-5 rounded-full bg-[#233067] px-5 py-3 text-[14px] font-medium text-white transition hover:bg-[#19224c]"
                   >
                     Повторить попытку
                   </button>
                 </div>
               ) : filteredCourses.length > 0 ? (
                 filteredCourses.map((item) => (
-                  <CourseCard key={item.course.course_id} item={item} />
+                  <ApprovedCourseCard
+                    key={item.course.course_id}
+                    course={item.course}
+                    href={item.href}
+                    variant="home"
+                  />
                 ))
               ) : (
-                <div className="col-span-full rounded-sm border border-[#e5e5e5] bg-white px-6 py-8">
-                  <p className="text-[18px] font-medium text-[#2a2a2a]">
+                <div className="col-span-full rounded-[28px] border border-white bg-white px-6 py-8 shadow-[0_12px_34px_rgba(35,48,103,0.045)] sm:p-10">
+                  <p className="text-[20px] font-medium text-[#202858]">
                     Курсы не найдены
                   </p>
-                  <p className="mt-2 text-[16px] leading-[1.45] text-[#666666]">
+                  <p className="mt-2 max-w-[60ch] text-[14px] leading-6 text-[#68719B]">
                     Попробуйте изменить направление, снять фильтры или ввести
                     другой поисковый запрос.
                   </p>
                 </div>
               )}
-              <div className="col-span-full rounded-2xl border border-[#e5e5e5] bg-white p-6">
-                <p className="text-[14px] lg:text-[16px] leading-[1.45] text-[#666666]">
-                  Не нашли подходящий курс?{" "}
-                  <Link
-                    href="/contact"
-                    className="text-[#242424] font-medium underline transition hover:text-[#2a2a2a]"
-                  >
-                    Свяжитесь с нами
-                  </Link>{" "}
-                  и расскажите, какой курс вы хотели бы видеть в каталоге.
+              <div className="col-span-full flex flex-col items-start justify-between gap-5 rounded-[26px] border border-white bg-white px-5 py-5 shadow-[0_10px_30px_rgba(35,48,103,0.045)] sm:flex-row sm:items-center sm:px-7">
+                <p className="max-w-[68ch] text-[13px] leading-6 text-[#68719B] sm:text-[14px]">
+                  Не нашли подходящий курс? Расскажите нам, какое направление
+                  вам нужно, и мы поможем с выбором.
                 </p>
+                <Link
+                  href={`mailto:${brand.supportEmail}`}
+                  className="inline-flex h-12 shrink-0 items-center rounded-full bg-[#233067] px-5 text-[13px] font-medium text-white transition hover:bg-[#19224c]"
+                >
+                  Связаться с нами
+                </Link>
               </div>
             </div>
           </section>
@@ -553,22 +534,28 @@ function CoursesPageContent() {
 
       <DialogContent
         showCloseButton={false}
-        className="left-0 top-0 h-dvh w-screen max-w-none translate-x-0 translate-y-0 gap-0 rounded-none border-0 bg-[#f6f6f6] p-0 xl:hidden"
+        className="left-0 top-0 h-dvh w-screen max-w-none translate-x-0 translate-y-0 gap-0 rounded-none border-0 bg-[#F3F5FF] p-0 xl:hidden"
       >
         <div className="flex h-full flex-col">
-          <div className="border-b border-[#dddddd] bg-[#f6f6f6] px-4 py-5">
+          <div className="border-b border-[#D7DDF8] bg-white px-4 py-5">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <DialogTitle className="text-[28px] font-normal tracking-[-0.04em] text-[#2a2a2a]">
+                <DialogTitle className="text-[28px] font-medium tracking-[-0.04em] text-[#202858]">
                   Фильтры
                 </DialogTitle>
-                <DialogDescription className="mt-1 text-[15px] text-[#7b7b7b]">
+                <DialogDescription className="mt-1 text-[14px] text-[#68719B]">
                   Направление, уровень и стоимость
                 </DialogDescription>
               </div>
 
               <DialogClose asChild>
-                <X className="h-6 w-6" strokeWidth={2.2} />
+                <button
+                  aria-label="Закрыть фильтры"
+                  className="grid size-11 place-items-center rounded-full bg-[#F7F8FF] text-[#4C63B8] transition hover:bg-[#ECEFFF]"
+                  type="button"
+                >
+                  <X className="h-5 w-5" strokeWidth={2.2} />
+                </button>
               </DialogClose>
             </div>
           </div>
@@ -626,12 +613,12 @@ function CoursesPageContent() {
             ) : null}
           </div>
 
-          <div className="border-t border-[#dddddd] bg-[#f6f6f6] px-4 py-4">
+          <div className="border-t border-[#D7DDF8] bg-white px-4 py-4">
             <div className="flex gap-3">
               <button
                 type="button"
                 onClick={resetFilters}
-                className="h-13.5 flex-1 rounded-[10px] border border-[#d0d0d0] text-[16px] text-[#2f2f2f] transition disabled:cursor-not-allowed disabled:opacity-50"
+                className="h-13.5 flex-1 rounded-full border border-[#D7DDF8] bg-[#F7F8FF] text-[15px] font-medium text-[#4C63B8] transition hover:bg-[#ECEFFF] disabled:cursor-not-allowed disabled:opacity-50"
                 disabled={!hasFilterSelections}
               >
                 Сбросить
@@ -640,7 +627,7 @@ function CoursesPageContent() {
               <DialogClose asChild>
                 <button
                   type="button"
-                  className={`h-13.5 flex-[1.3] rounded-[10px] bg-[${indigo_dark}] px-5 text-[16px] text-white transition hover:opacity-90`}
+                  className="h-13.5 flex-[1.3] rounded-full bg-[#233067] px-5 text-[15px] font-medium text-white transition hover:bg-[#19224c]"
                 >
                   Показать {filteredCourses.length}
                 </button>

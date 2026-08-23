@@ -297,15 +297,6 @@ function RecipientPicker({
 }
 
 type InboxRecipientsProps = {
-  // ✅ теперь "сырой текст" не нужен, но оставлю совместимость (можно выпилить)
-  toRaw: string;
-  setToRaw: (v: string) => void;
-  ccRaw: string;
-  setCcRaw: (v: string) => void;
-  bccRaw: string;
-  setBccRaw: (v: string) => void;
-
-  // ✅ НОВОЕ: реальные ids, которые ты отправляешь на backend
   toIds: string[];
   setToIds: (v: string[]) => void;
   ccIds: string[];
@@ -320,13 +311,6 @@ type InboxRecipientsProps = {
 };
 
 export default function InboxRecipients({
-  toRaw,
-  setToRaw,
-  ccRaw,
-  setCcRaw,
-  bccRaw,
-  setBccRaw,
-
   toIds,
   setToIds,
   ccIds,
@@ -363,12 +347,6 @@ export default function InboxRecipients({
   React.useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
-
-  // ✅ Совместимость: если где-то ещё используется toRaw/ccRaw/bccRaw как uuid CSV
-  // синхронизируем ids → raw
-  React.useEffect(() => setToRaw(toIds.join(", ")), [toIds, setToRaw]);
-  React.useEffect(() => setCcRaw(ccIds.join(", ")), [ccIds, setCcRaw]);
-  React.useEffect(() => setBccRaw(bccIds.join(", ")), [bccIds, setBccRaw]);
 
   return (
     <div className="space-y-3">
@@ -479,13 +457,6 @@ export default function InboxRecipients({
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Если хочешь оставить старые Input (uuid csv) как fallback/дебаг — раскомментируй */}
-      {/* <div className="space-y-2">
-        <Input value={toRaw} onChange={(e) => setToRaw(e.target.value)} />
-        {showCc ? <Input value={ccRaw} onChange={(e) => setCcRaw(e.target.value)} /> : null}
-        {showBcc ? <Input value={bccRaw} onChange={(e) => setBccRaw(e.target.value)} /> : null}
-      </div> */}
     </div>
   );
 }
